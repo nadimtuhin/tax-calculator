@@ -20,6 +20,7 @@
           type="number"
           min="0"
           max="999999"
+          step="1000"
           :value="months[index]['salary']"
           @input="changeSubsequentSalaries($event, index)"
         >
@@ -28,6 +29,7 @@
         <input
           max="99999"
           min="0"
+          step="500"
           type="number"
           :value="months[index]['tds']"
           @input="changeSubsequentTds($event, index)"

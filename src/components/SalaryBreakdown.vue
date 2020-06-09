@@ -3,7 +3,14 @@
     <tr>
       <td>Last months salary</td>
       <td>
-        $ <input type="number" min="0" max="999999" :value="totalSalary" @input="updateTotalSalary">
+        $ <input
+          step="1000"
+          type="number"
+          min="0"
+          max="999999"
+          :value="totalSalary"
+          @input="updateTotalSalary"
+          />
       </td>
       <td>{{totalPercentage}} %</td>
     </tr>
@@ -15,6 +22,7 @@
           type="number"
           max="999999"
           min="0"
+          step="1000"
           :value="salaryBreakdown[part].amount"
           @input="changeBreakdownAmount($event, part)"
         >
@@ -23,6 +31,7 @@
         <input
           max="100"
           min="0"
+          step="5"
           type="number"
           :value="salaryBreakdown[part].percentage"
           @input="changeBreakdownPercentage($event, part)"
