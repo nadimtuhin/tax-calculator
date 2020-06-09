@@ -14,16 +14,16 @@
         <input
           type="number"
           min="0"
-          v-model="months[index]['salary']"
-          @change="changeSubsequentSalaries(index)"
+          :value="months[index]['salary']"
+          @input="changeSubsequentSalaries($event, index)"
         >
       </td>
       <td>
         <input
           min="0"
           type="number"
-          v-model="months[index]['tds']"
-          @change="changeSubsequentTds(index)"
+          :value="months[index]['tds']"
+          @input="changeSubsequentTds($event, index)"
         >
       </td>
     </tr>
@@ -37,53 +37,28 @@
 </template>
 
 <script>
+import { mapState, mapGetters } from "vuex";
+
 export default {
   name: "salaries",
-  data: () => ({
-    months: [
-      { id: "January", salary: 0, tds: 0 },
-      { id: "February", salary: 0, tds: 0 },
-      { id: "March", salary: 0, tds: 0 },
-      { id: "April", salary: 0, tds: 0 },
-      { id: "May", salary: 0, tds: 0 },
-      { id: "June", salary: 0, tds: 0 },
-      { id: "July", salary: 0, tds: 0 },
-      { id: "August", salary: 0, tds: 0 },
-      { id: "September", salary: 0, tds: 0 },
-      { id: "October", salary: 0, tds: 0 },
-      { id: "November", salary: 0, tds: 0 },
-      { id: "December", salary: 0, tds: 0 },
-      { id: "Bonus", salary: 0, tds: 0 },
-      { id: "Others", salary: 0, tds: 0 }
-    ]
-  }),
+
   methods: {
-    changeSubsequentSalaries(index) {
-      for (let ii = index + 1; ii <= 11; ii++) {
-        this.months[ii].salary = this.months[index].salary;
-      }
+    changeSubsequentSalaries($event, index) {
+      this.$store.commit('changeSubsequentSalaries', { index, value: $event.target.value });
     },
-    changeSubsequentTds(index) {
-      for (let ii = index + 1; ii <= 11; ii++) {
-        this.months[ii].tds = this.months[index].tds;
-      }
+    changeSubsequentTds($event, index) {
+      this.$store.commit('changeSubsequentTds', { index, value: $event.target.value });
     }
   },
+
   computed: {
-    totalSalary() {
-      return this.months.reduceRight((carry, item) => carry + +item.salary, 0);
-    },
-    totalTds() {
-      return this.months.reduceRight((carry, item) => carry + +item.tds, 0);
-    }
-  },
-  watch: {
-    salaries(val) {
-      console.log(val);
-    },
-    tds(val) {
-      console.log(val);
-    }
+    ...mapState({
+      months: state => state.salaries.months,
+    }),
+    ...mapGetters({
+      totalSalary: 'totalSalary',
+      totalTds: 'totalTds'
+    }),
   }
 };
 </script>

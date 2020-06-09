@@ -3,17 +3,18 @@
     <tr>
       <td>Last months salary</td>
       <td>
-        <input type="number" min="0" :value="totalSalary" @input="updateTotalSalary">
+        $ <input type="number" min="0" :value="totalSalary" @input="updateTotalSalary">
       </td>
-      <td>{{totalPercentage}}</td>
+      <td>{{totalPercentage}} %</td>
     </tr>
-    <!-- <tr v-for="(part, index) in ['basic', 'house', 'medical', 'transport', 'lfa']">
+
+    <tr v-for="part in this.parts" v-bind:key="part">
       <td>{{part}}</td>
       <td>
-        <input
+        $  <input
           type="number"
           :value="salaryBreakDown[part].amount"
-          @change="changeBreakdownAmount(part)"
+          @input="changeBreakdownAmount($event, part)"
         >
       </td>
       <td>
@@ -22,61 +23,42 @@
           min="0"
           type="number"
           :value="salaryBreakDown[part].percentage"
-          @change="changeBreakdownPercentage(part)"
-        >
+          @input="changeBreakdownPercentage($event, part)"
+        > %
       </td>
-    </tr>-->
+    </tr>
   </table>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "salary-breakdown",
   data: () => ({}),
   mounted() {
     // this.totalSalary = 35000;
+    this.$store.commit("updateTotalSalary", 35000);
   },
   methods: {
     updateTotalSalary(e) {
       this.$store.commit("updateTotalSalary", e.target.value);
     },
-    changeBreakdownPercentage(part) {
-      this.salaryBreakDown[part].amount = Math.round(
-        this.totalSalary * (this.salaryBreakDown[part].percentage / 100)
-      );
+    changeBreakdownPercentage(e, part) {
+      this.$store.commit("changeBreakdownPercentage", { part, value: e.target.value });
     },
-    changeBreakdownAmount(part) {
-      const { basic, house, medical, lfa, transport } = this.salaryBreakDown;
-
-      this.totalSalary = Math.round(
-        +basic.amount +
-          +house.amount +
-          +medical.amount +
-          +lfa.amount +
-          +transport.amount
-      );
-
-      this.salaryBreakDown[part].percentage =
-        (this.salaryBreakDown[part].amount * 100) / this.totalSalary;
-    }
-  },
-
-  watch: {
-    totalSalary() {
-      const keys = Object.keys(this.salaryBreakDown);
-      keys.forEach(key => {
-        this.salaryBreakDown[key].amount =
-          this.totalSalary * (this.salaryBreakDown[key].percentage / 100);
-      });
+    changeBreakdownAmount(e, part) {
+      this.$store.commit("changeBreakdownAmount", { part, value: e.target.value });
     }
   },
   computed: {
     ...mapState({
-      totalSalary: state => state.totalSalary,
-      totalPercentage: state => state.totalPercentage,
-      salaryBreakDown: state => state.salaryBreakDown
+      parts: state => state.breakdown.parts,
+      totalSalary: state => state.breakdown.totalSalary,
+      salaryBreakDown: state => state.breakdown.salaryBreakDown
+    }),
+    ...mapGetters({
+      totalPercentage: 'totalPercentage',
     })
   }
 };
