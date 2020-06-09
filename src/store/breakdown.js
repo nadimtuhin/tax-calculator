@@ -1,5 +1,5 @@
-function getTotalSalary(salaryBreakDown) {
-  const { basic, house, medical, lfa, transport } = salaryBreakDown;
+function getTotalSalary(salaryBreakdown) {
+  const { basic, house, medical, lfa, transport } = salaryBreakdown;
   return Math.round(
     +basic.amount +
       +house.amount +
@@ -13,7 +13,7 @@ const breakdown = {
   state: () => ({
     totalSalary: 0,
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
-    salaryBreakDown: {
+    salaryBreakdown: {
       basic: { amount: 0, percentage: 50 },
       house: { amount: 0, percentage: 25 },
       medical: { amount: 0, percentage: 10 },
@@ -23,7 +23,7 @@ const breakdown = {
   }),
   getters: {
     totalPercentage: (state) => {
-      const { basic, house, medical, lfa, transport } = state.salaryBreakDown;
+      const { basic, house, medical, lfa, transport } = state.salaryBreakdown;
       return Math.round(
         +basic.percentage +
           +house.percentage +
@@ -38,26 +38,26 @@ const breakdown = {
       state.totalSalary = +totalSalary;
 
       state.parts.forEach(part => {
-        const amount = state.totalSalary * (state.salaryBreakDown[part].percentage / 100);
-        state.salaryBreakDown[part].amount = Math.round(amount);
+        const amount = state.totalSalary * (state.salaryBreakdown[part].percentage / 100);
+        state.salaryBreakdown[part].amount = Math.round(amount);
       });
     },
 
     changeBreakdownPercentage(state, { part, value }) {
-      state.salaryBreakDown[part].percentage = +value;
+      state.salaryBreakdown[part].percentage = +value;
 
-      const amount = state.totalSalary * (state.salaryBreakDown[part].percentage / 100);
-      state.salaryBreakDown[part].amount = Math.round(amount);
-      state.totalSalary = getTotalSalary(state.salaryBreakDown);
+      const amount = state.totalSalary * (state.salaryBreakdown[part].percentage / 100);
+      state.salaryBreakdown[part].amount = Math.round(amount);
+      state.totalSalary = getTotalSalary(state.salaryBreakdown);
     },
 
     changeBreakdownAmount(state, { part, value }) {
-      state.salaryBreakDown[part].amount = +value;
+      state.salaryBreakdown[part].amount = +value;
 
-      state.totalSalary = getTotalSalary(state.salaryBreakDown);
+      state.totalSalary = getTotalSalary(state.salaryBreakdown);
 
-      state.salaryBreakDown[part].percentage =
-        (state.salaryBreakDown[part].amount * 100) / state.totalSalary;
+      state.salaryBreakdown[part].percentage =
+        (state.salaryBreakdown[part].amount * 100) / state.totalSalary;
 
     },
   }

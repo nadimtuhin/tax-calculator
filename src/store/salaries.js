@@ -1,21 +1,21 @@
 const salaries = {
   state: () => ({
     months: [
-      { id: "January", salary: 0, tds: 0 },
-      { id: "February", salary: 0, tds: 0 },
-      { id: "March", salary: 0, tds: 0 },
-      { id: "April", salary: 0, tds: 0 },
-      { id: "May", salary: 0, tds: 0 },
-      { id: "June", salary: 0, tds: 0 },
       { id: "July", salary: 0, tds: 0 },
       { id: "August", salary: 0, tds: 0 },
       { id: "September", salary: 0, tds: 0 },
       { id: "October", salary: 0, tds: 0 },
       { id: "November", salary: 0, tds: 0 },
       { id: "December", salary: 0, tds: 0 },
-      { id: "Bonus", salary: 0, tds: 0 },
-      { id: "Others", salary: 0, tds: 0 }
-    ]
+      { id: "January", salary: 0, tds: 0 },
+      { id: "February", salary: 0, tds: 0 },
+      { id: "March", salary: 0, tds: 0 },
+      { id: "April", salary: 0, tds: 0 },
+      { id: "May", salary: 0, tds: 0 },
+      { id: "June", salary: 0, tds: 0 },
+    ],
+    bonus: 0,
+    others: 0,
   }),
   mutations: {
     changeSubsequentSalaries(state, { index, value }) {
@@ -31,7 +31,13 @@ const salaries = {
       for (let ii = index + 1; ii <= 11; ii++) {
         state.months[ii].tds = state.months[index].tds;
       }
-    }
+    },
+    changeOthers(state, value) {
+      state.others = +value;
+    },
+    changeBonus(state, value) {
+      state.bonus = +value;
+    },
   },
   getters: {
     totalSalary(state) {
