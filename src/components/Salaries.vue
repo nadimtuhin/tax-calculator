@@ -86,6 +86,13 @@ import { mapState, mapGetters } from "vuex";
 export default {
   name: "salaries",
 
+  mounted() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const salary = urlParams.get("salary") || 35000;
+
+    this.$store.commit('changeSubsequentSalaries', { index: 0, value: salary });
+  },
+
   methods: {
     changeSubsequentSalaries($event, index) {
       this.$store.commit('changeSubsequentSalaries', { index, value: $event.target.value });
