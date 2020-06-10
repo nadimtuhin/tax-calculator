@@ -7,52 +7,52 @@
     <th>Taxable</th>
   </tr>
   <tr>
-    <td>Basic</td>
+    <td><strong>Basic</strong></td>
     <td>{{totalBasic}}</td>
     <td>0</td>
     <td>{{totalBasic}}</td>
   </tr>
   <tr>
-    <td>House</td>
+    <td><strong>House</strong></td>
     <td>{{totalHouse}}</td>
     <td>{{houseExempt}}</td>
     <td>{{totalHouse - houseExempt}}</td>
   </tr>
   <tr>
-    <td>Medical</td>
+    <td><strong>Medical</strong></td>
     <td>{{totalMedical}}</td>
     <td>{{medicalExempt}}</td>
     <td>{{totalMedical - medicalExempt}}</td>
   </tr>
   <tr>
-    <td>Transport</td>
+    <td><strong>Transport</strong></td>
     <td>{{totalTransport}}</td>
     <td>{{transportExempt}}</td>
     <td>{{totalTransport - transportExempt}}</td>
   </tr>
   <tr>
-    <td>LFA</td>
+    <td><strong>LFA</strong></td>
     <td>{{totalLfa}}</td>
     <td>{{lfaExempt}}</td>
     <td>{{totalLfa - lfaExempt}}</td>
   </tr>
   <tr>
-    <td>Others</td>
+    <td><strong>Others</strong></td>
     <td>{{others}}</td>
     <td>0</td>
     <td>{{others}}</td>
   </tr>
   <tr>
-    <td>Bonus</td>
+    <td><strong>Bonus</strong></td>
     <td>{{bonus}}</td>
     <td>0</td>
     <td>{{bonus}}</td>
   </tr>
   <tr>
-    <td>Gross Salary</td>
-    <td>{{totalSalary}}</td>
-    <td>{{medicalExempt + transportExempt + lfaExempt + houseExempt}}</td>
-    <td>{{totalSalary - (medicalExempt + transportExempt + lfaExempt + houseExempt)}}</td>
+    <td><strong>Gross Salary</strong></td>
+    <td><strong>{{totalSalary}}</strong></td>
+    <td><strong>{{medicalExempt + transportExempt + lfaExempt + houseExempt}}</strong></td>
+    <td><strong>{{totalSalary - (medicalExempt + transportExempt + lfaExempt + houseExempt)}}</strong></td>
   </tr>
 </table>
 </template>

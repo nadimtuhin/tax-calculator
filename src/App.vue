@@ -1,18 +1,16 @@
 <template>
   <div id="app" class="container">
-    <div class="row">
-      <div class="col col-8">
+      <div>
         <h2>Enter salary information</h2>
         <salaries/>
       </div>
-      <div class="w-100"></div>
-      <div class="col col-7">
+    <hr>
+      <div style="margin-top: 100px">
         <h2>Taxable income breakdown</h2>
         <taxable-income />
       </div>
-    </div>
     <hr>
-    <div class="row">
+    <div class="row" style="margin-top: 100px">
       <div class="col-sm">
         <proposed/>
       </div>

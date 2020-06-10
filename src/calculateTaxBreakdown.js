@@ -17,7 +17,7 @@ export default function calculateTaxBreakdown(taxableSalary, slabs) {
       slabAmount = slabUpper - slabLower;
     }
 
-    slabCut = getPercentage(slabAmount, slabPercentage);
+    slabCut = Math.round(getPercentage(slabAmount, slabPercentage));
 
     return {
       slabTitle,

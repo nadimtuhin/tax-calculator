@@ -1,7 +1,12 @@
+<style lang="css" scoped>
+  input {
+    width: 150px;
+  }
+</style>
 <template>
   <table class="">
     <tr>
-      <th>month</th>
+      <th></th>
       <th>salary</th>
       <th>
         <span title="tax deduction at source">tds*</span>
@@ -14,12 +19,13 @@
     </tr>
 
     <tr v-for="(month, index) in months" v-bind:key="month.id">
-      <td>{{month.id}}</td>
+      <td><strong>{{month.id}}</strong></td>
       <td>
         <input
           type="number"
           min="0"
           max="999999"
+          class="input"
           step="1000"
           :value="months[index]['salary']"
           @input="changeSubsequentSalaries($event, index)"

@@ -63,7 +63,7 @@ export default {
       totalTds: 'totalTds',
     }),
     totalTax() {
-      return this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)
+      return Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
     },
     taxBreakdown() {
       return calculateTaxBreakdown(this.taxableSalary, this.slabs);
