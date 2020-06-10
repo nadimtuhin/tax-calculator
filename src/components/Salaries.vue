@@ -35,13 +35,20 @@
           @input="changeSubsequentTds($event, index)"
         >
       </td>
-      <td>{{ Math.round(months[index]['salary'] * salaryBreakdown.basic.percentage/100)}}</td>
-      <td>{{ Math.round(months[index]['salary'] * salaryBreakdown.house.percentage/100)}}</td>
-      <td>{{ Math.round(months[index]['salary'] * salaryBreakdown.medical.percentage/100)}}</td>
-      <td>{{ Math.round(months[index]['salary'] * salaryBreakdown.transport.percentage/100)}}</td>
-      <td>{{ Math.round(months[index]['salary'] * salaryBreakdown.lfa.percentage/100)}}</td>
-    </tr>
 
+      <template v-for="part in parts">
+        <td v-bind:key="part">
+          <input
+            max="99999"
+            min="0"
+            step="500"
+            type="number"
+            :value="months[index].breakdown[part]"
+            @input="changeBreakdown($event, index, part)"
+          >
+        </td>
+      </template>
+    </tr>
 
     <tr>
       <td>Bonus</td>
@@ -96,9 +103,13 @@ export default {
     changeOthers($event) {
       this.$store.commit('changeOthers', $event.target.value );
     },
+    changeBreakdown($event, index, part) {
+      this.$store.commit('changeParts', { index, part, value: $event.target.value } );
+    }
   },
   computed: {
     ...mapState({
+      parts: state => state.salaries.parts,
       months: state => state.salaries.months,
       salaryBreakdown: state => state.breakdown.salaryBreakdown,
       bonus: state => state.salaries.bonus,

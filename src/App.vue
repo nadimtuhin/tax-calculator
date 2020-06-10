@@ -1,10 +1,8 @@
 <template>
   <div id="app">
     <h1>Step 1:</h1>
-    <salary-breakdown/>
-    <h1>Step 2:</h1>
     <salaries/>
-    <h1>Step 3:</h1>
+    <h1>Step 2:</h1>
     <proposed/>
     <current/>
   </div>
@@ -22,7 +20,6 @@ export default {
   components: {
     Proposed,
     Current,
-    SalaryBreakdown,
     Salaries
   }
 };
