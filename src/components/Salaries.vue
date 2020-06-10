@@ -90,7 +90,10 @@ export default {
     const urlParams = new URLSearchParams(window.location.search);
     const salary = urlParams.get("salary") || 35000;
 
-    this.$store.commit('changeSubsequentSalaries', { index: 0, value: salary });
+    // load from query param if nothing found on local storage
+    if (!this.months[0].salary) {
+      this.$store.commit('changeSubsequentSalaries', { index: 0, value: salary });
+    }
   },
 
   methods: {
