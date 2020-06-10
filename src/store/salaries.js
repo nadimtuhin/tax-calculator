@@ -145,8 +145,8 @@ const salaries = {
       return totalTransport > maxExempt ? maxExempt : totalTransport;
     },
     lfaExempt(state, getters) {
-      const { totalTransport, totalMedical, totalHouse, totalLfa } = getters;
-      const totalBenifits = totalTransport+totalMedical+totalHouse;
+      const { transportExempt, medicalExempt, houseExempt, totalLfa } = getters;
+      const totalBenifits = transportExempt+medicalExempt+houseExempt;
       const maxBenifits = 575000;
 
       const availableBenifits = maxBenifits - totalBenifits;
