@@ -1,39 +1,65 @@
 <template>
-  <table border="1" cellpadding="1" cellspacing="1" style="width:500px">
-    <caption>
-      <strong>Proposed tax rate [%]</strong>
-    </caption>
+<div>
+  <h2>Tax on proposed rate {{taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)}}</h2>
+  <table class="table table-bordered">
     <tbody>
       <tr>
-        <td>First Tk3 lakh</td>
-        <td>00</td>
+        <td>
+          <strong>Income (per year)</strong>
+        </td>
+        <td>
+          <strong>Proposed rate [%]</strong>
+        </td>
+        <td>
+          <strong>Tax (BDT)</strong>
+        </td>
+      </tr>
+      <tr v-for="slab in taxBreakdown" v-bind:key="slab.slabTitle">
+        <td>{{slab.slabTitle}}</td>
+        <td>{{slab.slabPercentage}}</td>
+        <td>{{slab.slabCut}}</td>
       </tr>
       <tr>
-        <td>Next Tk1 lakh</td>
-        <td>5</td>
-      </tr>
-      <tr>
-        <td>Next Tk3 lakh</td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td>Next Tk4 lakh</td>
-        <td>15</td>
-      </tr>
-      <tr>
-        <td>Next Tk5 lakh</td>
-        <td>20</td>
-      </tr>
-      <tr>
-        <td>Above</td>
-        <td>25</td>
+        <td>
+          <strong>Total tax</strong>
+        </td>
+        <td>
+        </td>
+        <td>
+          <strong>{{taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)}}</strong>
+        </td>
       </tr>
     </tbody>
   </table>
+</div>
+
 </template>
 
 <script>
+import { mapState, mapGetters } from "vuex";
+import calculateTaxBreakdown from '../calculateTaxBreakdown';
+
+const LAKH = 100000;
+
 export default {
-  name: "Proposed"
+  name: "Proposed",
+  data: () => ({
+    slabs: [
+      ['First Tk3 lakh', 0, 3*LAKH, 0],
+      ['Next Tk1 lakh', 3*LAKH, (3+1)*LAKH, 5],
+      ['Next Tk3 lakh', (3+1)*LAKH, (3+1+3)*LAKH, 10],
+      ['Next Tk4 lakh', (3+1+3)*LAKH, (3+1+3+4)*LAKH, 15],
+      ['Next Tk5 lakh', (3+1+3+4)*LAKH, (3+1+3+4+5)*LAKH, 20],
+      ['Above', (3+1+3+4+5)*LAKH, Infinity, 25],
+    ],
+  }),
+  computed: {
+    ...mapGetters({
+      taxableSalary: 'taxableSalary',
+    }),
+    taxBreakdown() {
+      return calculateTaxBreakdown(this.taxableSalary, this.slabs);
+    }
+  }
 };
 </script>

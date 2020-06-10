@@ -77,38 +77,6 @@
         >
       </td>
     </tr>
-
-    <tr>
-      <td></td>
-      <td>
-        {{ totalSalary }}
-        <br/> total salary
-      </td>
-      <td>
-        {{ totalTds }}
-        <br/> total tds
-      </td>
-      <td>
-        {{ totalBasic }}
-        <br/> total basic
-      </td>
-      <td>
-        {{ totalHouse }}
-        <br/> total house
-      </td>
-      <td>
-        {{ totalMedical }}
-        <br/> total medical
-      </td>
-      <td>
-        {{ totalTransport }}
-        <br/> total transport
-      </td>
-      <td>
-        {{ totalLfa }}
-        <br/> total lfa
-      </td>
-    </tr>
   </table>
 </template>
 

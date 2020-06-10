@@ -1,12 +1,25 @@
 <template>
   <div id="app" class="container">
-    <h1>Step 1:</h1>
-    <salaries/>
-    <h1>Step 2:</h1>
-    <taxable-income />
-    <h1>Step 3:</h1>
-    <proposed/>
-    <current/>
+    <div class="row">
+      <div class="col col-8">
+        <h2>Enter salary information</h2>
+        <salaries/>
+      </div>
+      <div class="w-100"></div>
+      <div class="col col-7">
+        <h2>Taxable income breakdown</h2>
+        <taxable-income />
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-sm">
+        <proposed/>
+      </div>
+      <div class="col-sm">
+        <current/>
+      </div>
+    </div>
   </div>
 </template>
 
