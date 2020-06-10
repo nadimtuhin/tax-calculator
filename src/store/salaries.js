@@ -112,7 +112,22 @@ const salaries = {
     },
     totalTds(state) {
       return state.months.reduceRight((carry, item) => carry + +item.tds, 0);
-    }
+    },
+    totalBasic({ months }) {
+      return arraySum(months.map(month => month.breakdown.basic));
+    },
+    totalHouse({ months }) {
+      return arraySum(months.map(month => month.breakdown.house));
+    },
+    totalMedical({ months }) {
+      return arraySum(months.map(month => month.breakdown.medical));
+    },
+    totalTransport({ months }) {
+      return arraySum(months.map(month => month.breakdown.transport));
+    },
+    totalLfa({ months }) {
+      return arraySum(months.map(month => month.breakdown.lfa));
+    },
   }
 };
 

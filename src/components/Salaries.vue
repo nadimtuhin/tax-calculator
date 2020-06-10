@@ -78,8 +78,34 @@
 
     <tr>
       <td></td>
-      <td>salary: {{ totalSalary }}</td>
-      <td>tds: {{ totalTds }}</td>
+      <td>
+        {{ totalSalary }}
+        <br/> total salary
+      </td>
+      <td>
+        {{ totalTds }}
+        <br/> total tds
+      </td>
+      <td>
+        {{ totalBasic }}
+        <br/> total basic
+      </td>
+      <td>
+        {{ totalHouse }}
+        <br/> total house
+      </td>
+      <td>
+        {{ totalMedical }}
+        <br/> total medical
+      </td>
+      <td>
+        {{ totalTransport }}
+        <br/> total transport
+      </td>
+      <td>
+        {{ totalLfa }}
+        <br/> total lfa
+      </td>
     </tr>
   </table>
 </template>
@@ -117,7 +143,12 @@ export default {
     }),
     ...mapGetters({
       totalSalary: 'totalSalary',
-      totalTds: 'totalTds'
+      totalTds: 'totalTds',
+      totalHouse: 'totalHouse',
+      totalLfa: 'totalLfa',
+      totalMedical: 'totalMedical',
+      totalTransport: 'totalTransport',
+      totalBasic: 'totalBasic',
     }),
   }
 };
