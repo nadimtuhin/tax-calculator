@@ -128,6 +128,35 @@ const salaries = {
     totalLfa({ months }) {
       return arraySum(months.map(month => month.breakdown.lfa));
     },
+    houseExempt(state, getters) {
+      const { totalBasic, totalHouse } = getters;
+      const houseExempt = totalBasic/2 < totalHouse ? totalBasic/2 : totalHouse;
+      const maxExempt = 300000;
+
+      return houseExempt > maxExempt ? maxExempt : houseExempt;
+    },
+    medicalExempt(state, getters) {
+      const { totalBasic, totalMedical } = getters;
+      return totalBasic/10 < totalMedical ? totalBasic/10 : totalMedical;
+    },
+    transportExempt(state, getters) {
+      const { totalTransport } = getters;
+      const maxExempt = 30000;
+      return totalTransport > maxExempt ? maxExempt : totalTransport;
+    },
+    lfaExempt(state, getters) {
+      const { totalTransport, totalMedical, totalHouse, totalLfa } = getters;
+      const totalBenifits = totalTransport+totalMedical+totalHouse;
+      const maxBenifits = 575000;
+
+      const availableBenifits = maxBenifits - totalBenifits;
+
+      if (availableBenifits > 0) {
+        return totalLfa > availableBenifits ? availableBenifits : totalLfa;
+      }
+
+      return 0;
+    }
   }
 };
 

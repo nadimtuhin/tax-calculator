@@ -1,5 +1,5 @@
 <template>
-  <table>
+  <table class="">
     <tr>
       <th>month</th>
       <th>salary</th>

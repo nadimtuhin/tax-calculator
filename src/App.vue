@@ -1,8 +1,10 @@
 <template>
-  <div id="app">
+  <div id="app" class="container">
     <h1>Step 1:</h1>
     <salaries/>
     <h1>Step 2:</h1>
+    <taxable-income />
+    <h1>Step 3:</h1>
     <proposed/>
     <current/>
   </div>
@@ -13,6 +15,7 @@ import Proposed from "./components/Proposed";
 import Current from "./components/Current";
 import SalaryBreakdown from "./components/SalaryBreakdown";
 import Salaries from "./components/Salaries";
+import TaxableIncome from "./components/TaxableIncome";
 
 export default {
   name: "App",
@@ -20,7 +23,8 @@ export default {
   components: {
     Proposed,
     Current,
-    Salaries
+    Salaries,
+    TaxableIncome,
   }
 };
 </script>
