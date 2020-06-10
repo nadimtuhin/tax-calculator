@@ -45,6 +45,7 @@ const salaries = {
   }),
   mutations: {
     changeSubsequentSalaries(state, { index, value }) {
+      window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
       const { months, parts } = state;
 
       months[index].salary = +value;
