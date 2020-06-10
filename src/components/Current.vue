@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax on current rate {{taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)}}</h2>
+  <h2>Tax on current rate {{totalTax}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -20,14 +20,18 @@
         <td>{{slab.slabCut}}</td>
       </tr>
       <tr>
-        <td>
-          <strong>Total tax</strong>
-        </td>
-        <td>
-        </td>
-        <td>
-          <strong>{{taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)}}</strong>
-        </td>
+        <td> <strong>Total tax</strong> </td> <td> </td>
+        <td> <strong>{{totalTax}}</strong> </td>
+      </tr>
+      <tr>
+        <td> <strong>Total deducted</strong> </td>
+        <td> </td>
+        <td> <strong>{{totalTds}}</strong> </td>
+      </tr>
+      <tr>
+        <td> <strong>Due</strong> </td>
+        <td> </td>
+        <td> <strong>{{totalTax - totalTds}}</strong> </td>
       </tr>
     </tbody>
   </table>
@@ -56,7 +60,11 @@ export default {
   computed: {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
+      totalTds: 'totalTds',
     }),
+    totalTax() {
+      return this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0)
+    },
     taxBreakdown() {
       return calculateTaxBreakdown(this.taxableSalary, this.slabs);
     }
