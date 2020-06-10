@@ -39,7 +39,7 @@
       <template v-for="part in parts">
         <td v-bind:key="part">
           <input
-            max="99999"
+            max="999999"
             min="0"
             step="500"
             type="number"
