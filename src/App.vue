@@ -4,7 +4,6 @@
         <h2>Enter salary information</h2>
         <salaries/>
       </div>
-    <hr>
       <div style="margin-top: 100px">
         <h2>Taxable income breakdown</h2>
         <taxable-income />
