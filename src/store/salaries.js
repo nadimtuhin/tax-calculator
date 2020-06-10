@@ -156,6 +156,13 @@ const salaries = {
       }
 
       return 0;
+    },
+    totalExempt(state, getters) {
+      const { medicalExempt, transportExempt, lfaExempt, houseExempt } = getters;
+      return medicalExempt + transportExempt + lfaExempt + houseExempt;
+    },
+    taxableSalary(state, getters) {
+      return getters.totalSalary - getters.totalExempt;
     }
   }
 };
