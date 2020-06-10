@@ -108,7 +108,7 @@ const salaries = {
   },
   getters: {
     totalSalary(state) {
-      return state.months.reduceRight((carry, item) => carry + +item.salary, 0);
+      return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus;
     },
     totalTds(state) {
       return state.months.reduceRight((carry, item) => carry + +item.tds, 0);

@@ -57,6 +57,7 @@
           type="number"
           min="0"
           max="999999"
+          step="1000"
           :value="bonus"
           @input="changeBonus"
         >
@@ -70,6 +71,7 @@
           type="number"
           min="0"
           max="999999"
+          step="1000"
           :value="others"
           @input="changeOthers"
         >
