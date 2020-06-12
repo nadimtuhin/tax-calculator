@@ -24,14 +24,19 @@
         <td> <strong>{{totalTax}}</strong> </td>
       </tr>
       <tr>
-        <td> <strong>Total deducted</strong> </td>
+        <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
         <td> <strong>{{totalTds}}</strong> </td>
       </tr>
       <tr>
-        <td> <strong>Due</strong> </td>
+        <td> <strong>Tax rebate on investment</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds}}</strong> </td>
+        <td> <strong>{{investmentRebate}}</strong> </td>
+      </tr>
+      <tr>
+        <td> <strong>Payable</strong> </td>
+        <td> </td>
+        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
       </tr>
     </tbody>
   </table>
@@ -61,6 +66,7 @@ export default {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
+      investmentRebate: 'investmentRebate',
     }),
     totalTax() {
       return Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
