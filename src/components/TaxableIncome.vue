@@ -1,4 +1,6 @@
 <template>
+<div>
+<h2>Taxable income breakdown</h2>
 <table class="table">
   <tr>
     <th></th>
@@ -51,10 +53,11 @@
   <tr>
     <td><strong>Gross Salary</strong></td>
     <td><strong>{{totalSalary}}</strong></td>
-    <td><strong>{{medicalExempt + transportExempt + lfaExempt + houseExempt}}</strong></td>
-    <td><strong>{{totalSalary - (medicalExempt + transportExempt + lfaExempt + houseExempt)}}</strong></td>
+    <td><strong>{{totalExempt}}</strong></td>
+    <td><strong>{{taxableSalary}}</strong></td>
   </tr>
 </table>
+</div>
 </template>
 
 <script>
@@ -82,6 +85,8 @@ export default {
       medicalExempt: 'medicalExempt',
       transportExempt: 'transportExempt',
       lfaExempt: 'lfaExempt',
+      taxableSalary: 'taxableSalary',
+      totalExempt: 'totalExempt',
     }),
   }
 }

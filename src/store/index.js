@@ -1,15 +1,16 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import createPersistedState from "vuex-persistedstate";
 
-import breakdown from "./breakdown";
 import salaries from "./salaries";
-import VuexLocalStorage from "./plugins/VuexLocalStorage";
 
 Vue.use(Vuex);
 
+const appVersion = '0.5';
+
 const store = new Vuex.Store({
-  plugins: [VuexLocalStorage],
-  modules: { breakdown, salaries },
+  plugins: [createPersistedState({ key: appVersion })],
+  modules: { salaries },
 });
 
 export default store;

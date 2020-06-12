@@ -4,6 +4,9 @@
   }
 </style>
 <template>
+<div>
+  <h2>Enter salary information</h2>
+
   <table class="">
     <tr>
       <th></th>
@@ -84,6 +87,7 @@
       </td>
     </tr>
   </table>
+</div>
 </template>
 
 <script>

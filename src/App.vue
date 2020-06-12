@@ -1,14 +1,14 @@
 <template>
   <div id="app" class="container">
-      <div>
-        <h2>Enter salary information</h2>
-        <salaries/>
-      </div>
-      <div style="margin-top: 100px">
-        <h2>Taxable income breakdown</h2>
+    <Salaries />
+    <div class="row" style="margin-top: 100px">
+      <div class="col-sm">
         <taxable-income />
       </div>
-    <hr>
+      <div class="col-sm">
+        <investment />
+      </div>
+    </div>
     <div class="row" style="margin-top: 100px">
       <div class="col-sm">
         <proposed/>
@@ -21,10 +21,12 @@
 </template>
 
 <script>
+/* eslint-disable */
 import Proposed from "./components/Proposed";
 import Current from "./components/Current";
 import SalaryBreakdown from "./components/SalaryBreakdown";
 import Salaries from "./components/Salaries";
+import Investment from "./components/Investment";
 import TaxableIncome from "./components/TaxableIncome";
 
 export default {
@@ -35,6 +37,7 @@ export default {
     Current,
     Salaries,
     TaxableIncome,
+    Investment,
   }
 };
 </script>

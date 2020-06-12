@@ -23,8 +23,17 @@ function arraySum(arr) {
   return arr.reduceRight((c, i) => (c + +i), 0);
 }
 
+const infinity = 99999999999999999999999999; // Inifiny has persist issues in localStorage
+
 const salaries = {
   state: () => ({
+    investments: [
+      { name: 'DPS', amount: 0,  maximum: 60000 },
+      { name: 'Life insurance premium', amount: 0,  maximum: infinity },
+      { name: 'Stocks', amount: 0,  maximum: infinity },
+      { name: 'Savings certificate', amount: 0,  maximum: infinity },
+      { name: 'ICB', amount: 0,  maximum: infinity },
+    ],
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
     months: [
       { id: "July",  ...monthlyDefault() },
@@ -44,6 +53,10 @@ const salaries = {
     others: 0,
   }),
   mutations: {
+    changeInvestment(state, { index, value }) {
+      state.investments[index].amount = +value;
+    },
+
     changeSubsequentSalaries(state, { index, value }) {
       window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
       const { months, parts } = state;
@@ -164,7 +177,28 @@ const salaries = {
     },
     taxableSalary(state, getters) {
       return getters.totalSalary - getters.totalExempt;
-    }
+    },
+    totalInvestment(state, getters) {
+      return state.investments.map(i => i.amount).reduce((c, n) => c+n, 0);
+    },
+    totalRebateableInvestment(state, getters) {
+      const rebateable = state.investments
+        .map(i => [i.amount, i.maximum])
+        .reduceRight((c, arr) => {
+          return c+(Math.min(...arr))
+        }, 0);
+
+      return Math.min(getters.maxRebateableInvestment, rebateable);
+    },
+    maxRebateableInvestment(state, getters) {
+      return Math.round(getters.taxableSalary/4);
+    },
+    rebatePercentage(state, getters) {
+      return getters.taxableSalary>1500000 ? 10 : 15;
+    },
+    investmentRebate(state, getters) {
+      return Math.round(getters.totalRebateableInvestment * getters.rebatePercentage/100);
+    },
   }
 };
 
