@@ -26,12 +26,12 @@
       <tr>
         <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTds}}</strong> </td>
+        <td> <strong>-{{totalTds}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax rebate on investment</strong> </td>
         <td> </td>
-        <td> <strong>{{investmentRebate}}</strong> </td>
+        <td> <strong>-{{investmentRebate}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Payable</strong> </td>

@@ -6,7 +6,7 @@
   <tr>
     <th></th>
     <th>Amount</th>
-    <th>Maximum</th>
+    <th>Maximum allowed</th>
   </tr>
 
   <tr v-for="(investment, index) in investments" v-bind:key="investment.name">
@@ -21,7 +21,7 @@
         max="9999999"
       />
     </td>
-    <td>{{investment.maximum}}</td>
+    <td>{{investment.maximum > 9999999999 ? '': investment.maximum}}</td>
   </tr>
 
   <tr>

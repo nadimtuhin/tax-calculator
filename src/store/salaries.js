@@ -32,7 +32,7 @@ const salaries = {
       { name: 'Life insurance premium', amount: 0,  maximum: infinity },
       { name: 'Stocks', amount: 0,  maximum: infinity },
       { name: 'Savings certificate', amount: 0,  maximum: infinity },
-      { name: 'ICB', amount: 0,  maximum: infinity },
+      { name: 'Others', amount: 0,  maximum: infinity },
     ],
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
     months: [
