@@ -163,7 +163,7 @@ const salaries = {
       const totalBenifits = transportExempt+medicalExempt+houseExempt;
       const maxBenifits = 575000;
 
-      const availableBenifits = maxBenifits - totalBenifits;
+      const availableBenifits = Math.min(100000, (maxBenifits - totalBenifits));
 
       if (availableBenifits > 0) {
         return totalLfa > availableBenifits ? availableBenifits : totalLfa;
