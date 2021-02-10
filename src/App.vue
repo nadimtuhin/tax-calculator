@@ -13,9 +13,9 @@
       <div class="col-sm">
         <proposed/>
       </div>
-      <div class="col-sm">
+      <!--- <div class="col-sm">
         <current/>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
