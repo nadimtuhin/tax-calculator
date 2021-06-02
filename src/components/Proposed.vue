@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax (2020-2021) ৳{{totalTax}}</h2>
+  <h2>Total Tax ৳{{totalTax.toLocaleString()}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -21,22 +21,22 @@
       </tr>
       <tr>
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> <strong>{{totalTax}}</strong> </td>
+        <td> <strong>{{totalTax.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
-        <td> <strong>-{{totalTds}}</strong> </td>
+        <td> <strong>-{{totalTds.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax rebate on investment</strong> </td>
         <td> </td>
-        <td> <strong>-{{investmentRebate}}</strong> </td>
+        <td> <strong>-{{investmentRebate.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td> <strong>{{(totalTax - totalTds - investmentRebate).toLocaleString()}}</strong> </td>
       </tr>
     </tbody>
   </table>

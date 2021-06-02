@@ -21,18 +21,18 @@
         max="9999999"
       />
     </td>
-    <td>{{investment.maximum > 9999999999 ? '': investment.maximum}}</td>
+    <td>{{investment.maximum > 9999999999 ? '': investment.maximum.toLocaleString()}}</td>
   </tr>
 
   <tr>
     <td><strong>Total Investment</strong></td>
-    <td>{{totalInvestment}}</td>
-    <td>{{maxRebateableInvestment}}</td>
+    <td>{{totalInvestment.toLocaleString()}}</td>
+    <td>{{maxRebateableInvestment.toLocaleString()}}</td>
   </tr>
 
   <tr>
     <td><strong>Total rebateable investment</strong></td>
-    <td>{{totalRebateableInvestment}}</td>
+    <td>{{totalRebateableInvestment.toLocaleString()}}</td>
     <td></td>
   </tr>
 
@@ -44,7 +44,7 @@
 
   <tr>
     <td><strong>Totat rebate on investment</strong></td>
-    <td>{{ investmentRebate }}</td>
+    <td>{{ investmentRebate.toLocaleString() }}</td>
     <td></td>
   </tr>
 </table>

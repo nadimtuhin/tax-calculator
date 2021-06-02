@@ -25,6 +25,7 @@
       <td><strong>{{month.id}}</strong></td>
       <td>
         <input
+          disabled
           type="number"
           min="0"
           max="999999"
@@ -97,19 +98,16 @@ export default {
   name: "salaries",
 
   mounted() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const salary = urlParams.get("salary") || 35000;
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const salary = urlParams.get("salary") || 35000;
 
     // load from query param if nothing found on local storage
-    if (!this.months[0].salary) {
-      this.$store.commit('changeSubsequentSalaries', { index: 0, value: salary });
-    }
+    // if (!this.months[0].salary) {
+    //   this.$store.commit('initialSalary');
+    // }
   },
 
   methods: {
-    changeSubsequentSalaries($event, index) {
-      this.$store.commit('changeSubsequentSalaries', { index, value: $event.target.value });
-    },
     changeSubsequentTds($event, index) {
       this.$store.commit('changeSubsequentTds', { index, value: $event.target.value });
     },
