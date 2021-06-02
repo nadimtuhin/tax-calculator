@@ -58,7 +58,7 @@ const salaries = {
     },
 
     changeSubsequentSalaries(state, { index, value }) {
-      window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
+      // window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
       const { months, parts } = state;
 
       months[index].salary = +value;
@@ -97,10 +97,18 @@ const salaries = {
       months[index].breakdown[part] = +value;
 
       // recalculate subsequent salary breakdowns
+      // for (let ii = index + 1; ii <= 11; ii++) {
+      //   parts.forEach(part => {
+      //     months[ii].breakdown[part] = months[index].breakdown[part];
+      //   });
+      // }
+
+      console.log(part);
+      console.log(index);
+      console.log(value);
+
       for (let ii = index + 1; ii <= 11; ii++) {
-        parts.forEach(part => {
-          months[ii].breakdown[part] = months[index].breakdown[part];
-        });
+        months[ii].breakdown[part] = months[index].breakdown[part];
       }
 
       // calculate monthly salary from breakdowns
