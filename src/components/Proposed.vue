@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax on proposed rate {{totalTax}}</h2>
+  <h2>Tax (2020-2021) ৳{{totalTax}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -8,7 +8,7 @@
           <strong>Income (per year)</strong>
         </td>
         <td>
-          <strong>Proposed rate [%]</strong>
+          <strong>Rate [%]</strong>
         </td>
         <td>
           <strong>Tax (BDT)</strong>

@@ -9,13 +9,13 @@ function monthlyDefault() {
       medical: 0,
       transport: 0,
     },
-    breakdownPercentage: {
-      basic: 50,
-      house: 25,
-      lfa: 10,
-      medical: 10,
-      transport: 5,
-    },
+    // breakdownPercentage: {
+    //   basic: 50,
+    //   house: 25,
+    //   lfa: 10,
+    //   medical: 10,
+    //   transport: 5,
+    // },
   }
 }
 
@@ -64,10 +64,10 @@ const salaries = {
       months[index].salary = +value;
 
       // calculate monthly salary percentage from breakdowns
-      parts.forEach(part => {
-        const month = months[index];
-        month.breakdown[part] = Math.round(month.breakdownPercentage[part]/100 * month.salary);
-      });
+      // parts.forEach(part => {
+      //   const month = months[index];
+      //   month.breakdown[part] = Math.round(month.breakdownPercentage[part]/100 * month.salary);
+      // });
 
       // change subsequent salaries
       for (let ii = index + 1; ii <= 11; ii++) {
@@ -75,11 +75,11 @@ const salaries = {
       }
 
       // recalculate subsequent salary breakdowns
-      for (let ii = index + 1; ii <= 11; ii++) {
-        parts.forEach(part => {
-          months[ii].breakdown[part] = months[index].breakdown[part];
-        });
-      }
+      // for (let ii = index + 1; ii <= 11; ii++) {
+      //   parts.forEach(part => {
+      //     months[ii].breakdown[part] = months[index].breakdown[part];
+      //   });
+      // }
     },
 
     changeSubsequentTds(state, { index, value }) {
@@ -109,9 +109,9 @@ const salaries = {
       });
 
       // calculate monthly salary percentage from breakdowns
-      months.forEach(month => parts.forEach(part => {
-        month.breakdownPercentage[part] = Math.round(month.breakdown[part] * 100 / month.salary);
-      }));
+      // months.forEach(month => parts.forEach(part => {
+      //   month.breakdownPercentage[part] = Math.round(month.breakdown[part] * 100 / month.salary);
+      // }));
     },
     changeOthers(state, value) {
       state.others = +value;
