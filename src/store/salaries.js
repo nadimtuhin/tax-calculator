@@ -103,10 +103,6 @@ const salaries = {
       //   });
       // }
 
-      console.log(part);
-      console.log(index);
-      console.log(value);
-
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].breakdown[part] = months[index].breakdown[part];
       }
