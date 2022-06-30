@@ -38,7 +38,7 @@
 
   <tr>
     <td><strong>Tax rebate percentage</strong></td>
-    <td>{{ taxableSalary>1500000 ? 10 : 15 }}%</td>
+    <td>15%</td>
     <td></td>
   </tr>
 
