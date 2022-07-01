@@ -9,13 +9,6 @@ function monthlyDefault() {
       medical: 0,
       transport: 0,
     },
-    // breakdownPercentage: {
-    //   basic: 50,
-    //   house: 25,
-    //   lfa: 10,
-    //   medical: 10,
-    //   transport: 5,
-    // },
   }
 }
 
@@ -63,23 +56,10 @@ const salaries = {
 
       months[index].salary = +value;
 
-      // calculate monthly salary percentage from breakdowns
-      // parts.forEach(part => {
-      //   const month = months[index];
-      //   month.breakdown[part] = Math.round(month.breakdownPercentage[part]/100 * month.salary);
-      // });
-
       // change subsequent salaries
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].salary = months[index].salary;
       }
-
-      // recalculate subsequent salary breakdowns
-      // for (let ii = index + 1; ii <= 11; ii++) {
-      //   parts.forEach(part => {
-      //     months[ii].breakdown[part] = months[index].breakdown[part];
-      //   });
-      // }
     },
 
     changeSubsequentTds(state, { index, value }) {
@@ -96,13 +76,6 @@ const salaries = {
       const { months, parts } = state;
       months[index].breakdown[part] = +value;
 
-      // recalculate subsequent salary breakdowns
-      // for (let ii = index + 1; ii <= 11; ii++) {
-      //   parts.forEach(part => {
-      //     months[ii].breakdown[part] = months[index].breakdown[part];
-      //   });
-      // }
-
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].breakdown[part] = months[index].breakdown[part];
       }
@@ -111,11 +84,6 @@ const salaries = {
       months.forEach(month => {
         month.salary = arraySum(Object.values(month.breakdown));
       });
-
-      // calculate monthly salary percentage from breakdowns
-      // months.forEach(month => parts.forEach(part => {
-      //   month.breakdownPercentage[part] = Math.round(month.breakdown[part] * 100 / month.salary);
-      // }));
     },
     changeOthers(state, value) {
       state.others = +value;
@@ -164,18 +132,6 @@ const salaries = {
     },
     lfaExempt(state, getters) {
       // no exempt on lfa
-      return 0;
-      // lets work on it later
-      const { transportExempt, medicalExempt, houseExempt, totalLfa } = getters;
-      const totalBenifits = transportExempt+medicalExempt+houseExempt;
-      const maxBenifits = 575000;
-
-      const availableBenifits = Math.min(100000, (maxBenifits - totalBenifits));
-
-      if (availableBenifits > 0) {
-        return totalLfa > availableBenifits ? availableBenifits : totalLfa;
-      }
-
       return 0;
     },
     totalExempt(state, getters) {
