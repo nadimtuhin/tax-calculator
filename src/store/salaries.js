@@ -157,9 +157,7 @@ const salaries = {
       return Math.round(getters.taxableSalary/5);
     },
     rebatePercentage(state, getters) {
-      // new rule 15 for all 2022
       return 15;
-      return getters.taxableSalary>1500000 ? 10 : 15;
     },
     investmentRebate(state, getters) {
       return Math.round(getters.totalRebateableInvestment * getters.rebatePercentage/100);
