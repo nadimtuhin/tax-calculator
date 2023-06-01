@@ -117,7 +117,7 @@ const salaries = {
     houseExempt(state, getters) {
       const { totalBasic, totalHouse } = getters;
       const houseExempt = totalBasic/2 < totalHouse ? totalBasic/2 : totalHouse;
-      const maxExempt = 300000;
+      const maxExempt = 350000;
 
       return houseExempt > maxExempt ? maxExempt : houseExempt;
     },
