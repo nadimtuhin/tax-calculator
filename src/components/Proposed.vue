@@ -54,12 +54,12 @@ export default {
   name: "Proposed",
   data: () => ({
     slabs: [
-      ['First Tk3 lakh', 0, 3*LAKH, 0],
-      ['Next Tk1 lakh', 3*LAKH, (3+1)*LAKH, 5],
-      ['Next Tk3 lakh', (3+1)*LAKH, (3+1+3)*LAKH, 10],
-      ['Next Tk4 lakh', (3+1+3)*LAKH, (3+1+3+4)*LAKH, 15],
-      ['Next Tk5 lakh', (3+1+3+4)*LAKH, (3+1+3+4+5)*LAKH, 20],
-      ['Above', (3+1+3+4+5)*LAKH, Infinity, 25],
+      ['First Tk3.5 lakh', 0, 3.5*LAKH, 0],
+      ['Next Tk1 lakh', 3.5*LAKH, (3.5+1)*LAKH, 5],
+      ['Next Tk3 lakh', (3.5+1)*LAKH, (3.5+1+3)*LAKH, 10],
+      ['Next Tk4 lakh', (3.5+1+3)*LAKH, (3.5+1+3+4)*LAKH, 15],
+      ['Next Tk5 lakh', (3.5+1+3+4)*LAKH, (3.5+1+3+4+5)*LAKH, 20],
+      ['Above', (3.5+1+3+4+5)*LAKH, Infinity, 25],
     ],
   }),
   computed: {

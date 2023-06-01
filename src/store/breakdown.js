@@ -14,11 +14,11 @@ const breakdown = {
     totalSalary: 0,
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
     salaryBreakdown: {
-      basic: { amount: 0, percentage: 50 },
+      basic: { amount: 0, percentage: 60 },
       house: { amount: 0, percentage: 25 },
       medical: { amount: 0, percentage: 10 },
       transport: { amount: 0, percentage: 5 },
-      lfa: { amount: 0, percentage: 10 }
+      lfa: { amount: 0, percentage: 0 }
     }
   }),
   getters: {
