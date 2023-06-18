@@ -119,16 +119,18 @@ const salaries = {
       const houseExempt = totalBasic/2 < totalHouse ? totalBasic/2 : totalHouse;
       const maxExempt = 300000;
 
-      return houseExempt > maxExempt ? maxExempt : houseExempt;
+      return Math.min(maxExempt, houseExempt)
     },
     medicalExempt(state, getters) {
       const { totalBasic, totalMedical } = getters;
-      return totalBasic/10 < totalMedical ? totalBasic/10 : totalMedical;
+      const maxExempt = 120000;
+      // মূল ববতদনর ১০% অথবা বাতষকড ১,২০,০০০/- টাকা (প্রততবন্ধী ব্যতির বেদত্র ১০ লে টাকা), এ দ্য’টির মদে বেটি কম বস পতরমাণ অাংক করমুি।
+      return Math.min(maxExempt, totalBasic/10, totalMedical)
     },
     transportExempt(state, getters) {
       const { totalTransport } = getters;
       const maxExempt = 30000;
-      return totalTransport > maxExempt ? maxExempt : totalTransport;
+      return Math.min(totalTransport, maxExempt)
     },
     lfaExempt(state, getters) {
       // no exempt on lfa
