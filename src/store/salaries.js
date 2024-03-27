@@ -21,7 +21,7 @@ const infinity = 99999999999999999999999999; // Inifiny has persist issues in lo
 const salaries = {
   state: () => ({
     investments: [
-      { name: 'DPS', amount: 0,  maximum: 60000 },
+      { name: 'DPS', amount: 0,  maximum: 120000 },
       { name: 'Life insurance premium', amount: 0,  maximum: infinity },
       { name: 'Stocks', amount: 0,  maximum: infinity },
       { name: 'Savings certificate', amount: 0,  maximum: infinity },
