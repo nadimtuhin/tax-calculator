@@ -46,6 +46,32 @@ const salaries = {
     others: 0,
   }),
   mutations: {
+    loadSalaries(state, salaries) {
+      state.months = salaries;
+    },
+    loadInvestments(state, investments) {
+      state.investments = investments;
+    },
+    resetSalaries(state) {
+      state.months = state.months.map((month) => ({
+        id: month.id,
+        salary: 0,
+        tds: 0,
+        breakdown: {
+          basic: 0,
+          house: 0,
+          medical: 0,
+          transport: 0,
+          lfa: 0,
+        },
+      }));
+    },
+    resetInvestments(state) {
+      state.investments = state.investments.map(investment => ({
+        ...investment,
+        amount: 0,
+      }));
+    },  
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
     },
