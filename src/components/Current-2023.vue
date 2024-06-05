@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax on current rate {{totalTax}}</h2>
+  <h2>Total Tax Current (2023) ৳{{totalTax.toLocaleString()}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -8,7 +8,7 @@
           <strong>Income (per year)</strong>
         </td>
         <td>
-          <strong>Current rate [%]</strong>
+          <strong>Rate [%]</strong>
         </td>
         <td>
           <strong>Tax (BDT)</strong>
@@ -21,22 +21,22 @@
       </tr>
       <tr>
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> <strong>{{totalTax}}</strong> </td>
+        <td> <strong>{{totalTax.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
-        <td> <strong>-{{totalTds}}</strong> </td>
+        <td> <strong>-{{totalTds.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax rebate on investment</strong> </td>
         <td> </td>
-        <td> <strong>-{{investmentRebate}}</strong> </td>
+        <td> <strong>-{{investmentRebate.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td> <strong>{{(totalTax - totalTds - investmentRebate).toLocaleString()}}</strong> </td>
       </tr>
     </tbody>
   </table>
@@ -51,15 +51,15 @@ import calculateTaxBreakdown from '../calculateTaxBreakdown';
 const LAKH = 100000;
 
 export default {
-  name: "Current",
+  name: "current-2023",
   data: () => ({
     slabs: [
-      ['First Tk2.5 lakh', 0, 2.5*LAKH, 0],
-      ['Next Tk4 lakh', 2.5*LAKH, (2.5+4)*LAKH, 10],
-      ['Next Tk5 lakh', (2.5+4)*LAKH, (2.5+4+5)*LAKH, 15],
-      ['Next Tk6 lakh', (2.5+4+5)*LAKH, (2.5+4+5+6)*LAKH, 20],
-      ['Next Tk30 lakh', (2.5+4+5+6)*LAKH, (2.5+4+5+6+30)*LAKH, 25],
-      ['Above', (2.5+4+5+6+30)*LAKH, Infinity, 30],
+      ['First Tk3.5 lakh', 0, 3.5*LAKH, 0],
+      ['Next Tk1 lakh', 3.5*LAKH, (3.5+1)*LAKH, 5],
+      ['Next Tk3 lakh', (3.5+1)*LAKH, (3.5+1+3)*LAKH, 10],
+      ['Next Tk4 lakh', (3.5+1+3)*LAKH, (3.5+1+3+4)*LAKH, 15],
+      ['Next Tk5 lakh', (3.5+1+3+4)*LAKH, (3.5+1+3+4+5)*LAKH, 20],
+      ['Above', (3.5+1+3+4+5)*LAKH, Infinity, 25],
     ],
   }),
   computed: {
