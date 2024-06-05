@@ -60,7 +60,7 @@ export default {
       ['Next Tk5 lakh', (3.5+1+4)*LAKH, (3.5+1+4+5)*LAKH, 15],
       ['Next Tk5 lakh', (3.5+1+4+5)*LAKH, (3.5+1+4+5+5)*LAKH, 20],
       ['Next Tk20 lakh', (3.5+1+4+5+5)*LAKH, (3.5+1+4+5+5+20)*LAKH, 25],
-      ['Above', (3.5+1+4+5+5+20)*LAKH, Infinity, 25],
+      ['Above', (3.5+1+4+5+5+20)*LAKH, Infinity, 30],
     ],
   }),
   computed: {
