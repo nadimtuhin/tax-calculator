@@ -1,40 +1,40 @@
 <template>
   <div id="app">
-    <nav class="bg-indigo-600 shadow-lg">
-      <div class="container mx-auto px-4 py-3">
-        <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
-          <div class="flex space-x-6">
+    <nav class="navbar navbar-expand-sm navbar-dark bg-primary shadow">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center w-100">
+          <div class="navbar-nav me-auto mb-2 mb-sm-0">
             <router-link
               to="/"
-              class="text-white hover:text-gray-200 transition-colors duration-200 font-semibold text-base"
-              active-class="text-white font-bold border-b-2 border-white pb-1"
+              class="nav-link text-white fw-semibold"
+              active-class="nav-link active fw-bold border-bottom border-white pb-1"
             >
               Home
             </router-link>
             <router-link
               to="/tax-2023"
-              class="text-white hover:text-gray-200 transition-colors duration-200 font-semibold text-base"
-              active-class="text-white font-bold border-b-2 border-white pb-1"
+              class="nav-link text-white fw-semibold"
+              active-class="nav-link active fw-bold border-bottom border-white pb-1"
             >
               2023 Tax Calculator
             </router-link>
           </div>
-          <div class="flex space-x-4">
+          <div class="d-flex gap-2">
             <button
               @click="exportData"
-              class="text-indigo-600 bg-white hover:bg-gray-50 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 shadow-sm"
+              class="btn btn-light text-primary fw-medium"
             >
               Export Data
             </button>
             <button
               @click="triggerFileInput"
-              class="text-indigo-600 bg-white hover:bg-gray-50 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 shadow-sm"
+              class="btn btn-light text-primary fw-medium"
             >
               Import Data
             </button>
             <button
               @click="resetData"
-              class="text-white bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 shadow-sm"
+              class="btn btn-primary fw-medium"
             >
               Reset Data
             </button>
@@ -116,6 +116,8 @@ export default {
 }
 
 .router-link-active {
-  @apply text-white font-bold border-b-2 border-white pb-1;
+  font-weight: bold !important;
+  border-bottom: 2px solid white !important;
+  padding-bottom: 0.25rem !important;
 }
 </style>
