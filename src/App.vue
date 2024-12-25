@@ -135,10 +135,11 @@ export default {
 .navbar {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.75rem 0;
+  background: linear-gradient(135deg, #4a90e2 0%, #2c3e94 100%) !important;
 }
 
 .nav-link {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
   transition: all 0.3s ease;
   font-weight: 500;
   padding: 0.5rem 1.25rem !important;
@@ -147,12 +148,13 @@ export default {
 
 .nav-link:hover {
   color: white !important;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .router-link-active {
   color: white !important;
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn {
@@ -195,13 +197,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .card {
   border: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
 .form-control, .form-select {
@@ -210,7 +212,30 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #4299e1;
-  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.15);
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: white;
+  color: white;
+}
+
+.btn-outline-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.5);
+  color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
 }
 </style>

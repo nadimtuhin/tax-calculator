@@ -1,14 +1,15 @@
 <template>
 <div>
-  <h2>Tax on Proposed (2024) rate {{totalTax}}</h2>
+  <h2 v-if="totalTax">Tax (2024): {{totalTax.toLocaleString()}} BDT</h2>
+  <h2 v-else>You are not liable to pay any tax</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
         <td>
-          <strong>Income (per year)</strong>
+          <strong>Income slab (per year)</strong>
         </td>
         <td>
-          <strong>Proposed rate [%]</strong>
+          <strong>Tax rate [%]</strong>
         </td>
         <td>
           <strong>Tax (BDT)</strong>
@@ -17,26 +18,33 @@
       <tr v-for="slab in taxBreakdown" v-bind:key="slab.id">
         <td>{{slab.slabTitle}}</td>
         <td>{{slab.slabPercentage}}</td>
-        <td>{{slab.slabCut}}</td>
+        <td>{{slab.slabCut.toLocaleString()}}</td>
       </tr>
       <tr>
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> <strong>{{totalTax}}</strong> </td>
+        <td> <strong>{{totalTax.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
-        <td> <strong>-{{totalTds}}</strong> </td>
+        <td> <strong v-if="totalTds">-{{totalTds.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Tax rebate on investment</strong> </td>
         <td> </td>
-        <td> <strong>-{{investmentRebate}}</strong> </td>
+        <td> <strong v-if="investmentRebate">-{{investmentRebate.toLocaleString()}}</strong> </td>
       </tr>
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td>
+          <strong>
+            {{totalTax - totalTds - investmentRebate}}
+          </strong> <br/>
+          <span v-if="totalTax - totalTds - investmentRebate < 0">
+              (You can claim this amount from the government)
+            </span>
+        </td>
       </tr>
     </tbody>
   </table>
