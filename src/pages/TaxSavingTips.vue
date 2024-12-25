@@ -8,10 +8,21 @@
         <h3>1. Investment Tax Credit</h3>
       </div>
       <p>
-        You can save on taxes by investing in DPS (Deposit Pension Scheme), paying life insurance premiums,
-        and making provident fund contributions. Government securities and stock market investments in approved IPOs
-        are also eligible for tax benefits. The maximum rebate you can get is 15% of eligible investments or 10%
-        of total tax, whichever is lower.
+        You can save on taxes by investing in various tax-saving instruments. The maximum investment allowable for tax rebate
+        is 25% of your total income or BDT 1.5 crore, whichever is lower. Eligible investments include:
+      </p>
+      <ul class="mt-3">
+        <li>Life Insurance Premiums</li>
+        <li>Deposit Pension Scheme (DPS)</li>
+        <li>Provident Fund Contributions</li>
+        <li>Government Securities and Savings Certificates</li>
+        <li>Stock Market Investments in approved IPOs</li>
+        <li>Unit Certificates</li>
+        <li>Pension Schemes</li>
+      </ul>
+      <p class="mt-3">
+        The tax rebate rate is 15% of your eligible investments or 10% of total tax, whichever is lower. For example,
+        if you invest BDT 100,000 in eligible instruments, you can receive up to BDT 15,000 in tax rebates.
       </p>
     </div>
 
@@ -21,18 +32,28 @@
         <h3>2. Tax-Free Allowances</h3>
       </div>
       <p>
-        Several allowances are exempt from tax. House rent allowance is tax-free up to 50% of basic salary or actual
-        rent paid, whichever is lower. Medical allowance of 10% of basic salary, conveyance allowance up to BDT 30,000
-        per year, and actual leave travel expenses are also tax-exempt.
+        Several allowances are exempt from tax under Bangladesh's tax laws:
       </p>
+      <ul class="mt-3">
+        <li>House Rent Allowance: Tax-free up to 50% of basic salary or actual rent paid, whichever is lower</li>
+        <li>Medical Allowance: 10% of basic salary is tax-exempt</li>
+        <li>Conveyance Allowance: Up to BDT 30,000 per year</li>
+        <li>Leave Travel Allowance: Actual travel expenses are tax-exempt</li>
+        <li>Festival Bonus: Two festival bonuses per year are tax-exempt</li>
+        <li>Children's Education Allowance: Within specified limits</li>
+      </ul>
     </div>
 
     <div class="tip-section">
       <div class="tip-header">
         <i class="bi bi-heart tip-icon"></i>
-        <h3>3. Zakat Deduction</h3>
+        <h3>3. Zakat and Charitable Donations</h3>
       </div>
-      <p>Zakat paid during the income year is fully tax-deductible if properly documented.</p>
+      <p>
+        Zakat paid during the income year is fully tax-deductible if properly documented. Additionally, donations to
+        government-approved charitable organizations and specified welfare funds can provide tax benefits. Make sure to
+        maintain proper documentation of all charitable contributions.
+      </p>
     </div>
 
     <div class="tip-section">
@@ -41,19 +62,35 @@
         <h3>4. Strategic Salary Structure</h3>
       </div>
       <p>
-        Structure your salary wisely by optimizing the mix between basic salary and allowances. Consider splitting your
-        income appropriately and take advantage of meal vouchers and other tax-free benefits to minimize your tax burden.
+        Structure your salary package wisely by optimizing the mix between basic salary and allowances:
       </p>
+      <ul class="mt-3">
+        <li>Utilize tax-free allowances to their maximum limits</li>
+        <li>Consider meal vouchers and other tax-free benefits</li>
+        <li>Participate in your employer's provident fund scheme</li>
+        <li>Take advantage of group insurance benefits</li>
+      </ul>
     </div>
 
     <div class="tip-section">
       <div class="tip-header">
         <i class="bi bi-file-earmark-text tip-icon"></i>
-        <h3>5. Documentation</h3>
+        <h3>5. Documentation and Compliance</h3>
       </div>
       <p>
-        Maintain thorough documentation of all tax-related items. This includes investment proofs, receipts, house rent
-        payment records, and any other tax-deductible expenses. Proper documentation is crucial for claiming tax benefits.
+        Maintain thorough documentation of all tax-related items:
+      </p>
+      <ul class="mt-3">
+        <li>Investment proofs and certificates</li>
+        <li>House rent receipts and agreements</li>
+        <li>Bank statements showing investment deposits</li>
+        <li>Insurance premium payment receipts</li>
+        <li>Zakat payment receipts</li>
+        <li>Charitable donation receipts</li>
+      </ul>
+      <p class="mt-3">
+        Submit your tax returns on time to avoid penalties and ensure you receive maximum benefits. Late submission
+        can result in reduced rebates and additional charges.
       </p>
     </div>
   </div>
@@ -129,5 +166,15 @@ p {
   line-height: 1.8;
   margin-bottom: 0;
   text-align: justify;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 </style>
