@@ -9,21 +9,27 @@
     <div class="card-body p-4">
       <div class="row">
         <div class="col-md-6 mb-4">
-          <label class="form-label font-weight-bold">
+          <label class="form-label font-weight-bold mb-2">
             <i class="fas fa-birthday-cake mr-2"></i>
             {{ $t('personalInfo.age') }}
           </label>
-          <input
-            type="number"
-            class="form-control form-control-lg shadow-sm"
-            v-model="age"
-            @input="updatePersonalInfo"
-            min="0"
-            max="150"
-          />
+          <div class="input-group">
+            <input
+              type="number"
+              class="form-control form-control-lg shadow-sm"
+              v-model="age"
+              min="0"
+              max="150"
+              placeholder="Enter your age"
+            />
+            <div class="input-group-append">
+              <span class="input-group-text">years</span>
+            </div>
+          </div>
+          <small class="text-muted mt-1 d-block">Default: 30 years</small>
         </div>
         <div class="col-md-6 mb-4">
-          <label class="form-label font-weight-bold d-block">
+          <label class="form-label font-weight-bold d-block mb-2">
             <i class="fas fa-venus-mars mr-2"></i>
             {{ $t('personalInfo.gender.label') }}
           </label>
@@ -35,7 +41,6 @@
               class="custom-control-input"
               value="male"
               v-model="gender"
-              @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderMale">
               {{ $t('personalInfo.gender.male') }}
@@ -49,7 +54,6 @@
               class="custom-control-input"
               value="female"
               v-model="gender"
-              @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderFemale">
               {{ $t('personalInfo.gender.female') }}
@@ -63,7 +67,6 @@
               class="custom-control-input"
               value="third"
               v-model="gender"
-              @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderThird">
               {{ $t('personalInfo.gender.third') }}
@@ -79,7 +82,6 @@
                     type="checkbox"
                     class="custom-control-input"
                     v-model="isDisabled"
-                    @change="updatePersonalInfo"
                     id="disabilityCheck"
                   />
                   <label class="custom-control-label" for="disabilityCheck">
@@ -94,7 +96,6 @@
                     type="checkbox"
                     class="custom-control-input"
                     v-model="isFreedomFighter"
-                    @change="updatePersonalInfo"
                     id="freedomFighterCheck"
                   />
                   <label class="custom-control-label" for="freedomFighterCheck">
@@ -113,36 +114,46 @@
 
 <script>
 import { useStore } from 'vuex';
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 
 export default {
   name: 'PersonalInfo',
   setup() {
     const store = useStore();
-    const age = ref(30);
-    const gender = ref('male');
-    const isDisabled = ref(false);
-    const isFreedomFighter = ref(false);
 
-    const updatePersonalInfo = () => {
-      store.commit('setPersonalInfo', {
-        age: age.value,
-        gender: gender.value,
-        isDisabled: isDisabled.value,
-        isFreedomFighter: isFreedomFighter.value
-      });
-    };
+    const age = computed({
+      get: () => store.state.personalInfo.age,
+      set: (value) => {
+        store.commit('personalInfo/setAge', value);
+      }
+    });
 
-    onMounted(() => {
-      updatePersonalInfo();
+    const gender = computed({
+      get: () => store.state.personalInfo.gender,
+      set: (value) => {
+        store.commit('personalInfo/setGender', value);
+      }
+    });
+
+    const isDisabled = computed({
+      get: () => store.state.personalInfo.isDisabled,
+      set: (value) => {
+        store.commit('personalInfo/setDisabled', value);
+      }
+    });
+
+    const isFreedomFighter = computed({
+      get: () => store.state.personalInfo.isFreedomFighter,
+      set: (value) => {
+        store.commit('personalInfo/setFreedomFighter', value);
+      }
     });
 
     return {
       age,
       gender,
       isDisabled,
-      isFreedomFighter,
-      updatePersonalInfo
+      isFreedomFighter
     };
   }
 };

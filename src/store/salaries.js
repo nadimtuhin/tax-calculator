@@ -71,7 +71,7 @@ const salaries = {
         ...investment,
         amount: 0,
       }));
-    },  
+    },
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
     },
