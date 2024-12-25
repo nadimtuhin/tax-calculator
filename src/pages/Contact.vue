@@ -213,10 +213,12 @@ export default {
   border-bottom: 1px solid #e2e8f0;
 }
 
-.contact-method:last-child {
+
+.contact-method .details {
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
+  width: 100%;
 }
 
 .icon {
