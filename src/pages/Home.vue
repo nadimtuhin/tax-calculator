@@ -2,6 +2,14 @@
   <div class="home py-4">
     <div class="container">
       <section class="mb-5">
+        <div class="row g-4">
+          <div class="col-md-12">
+            <personal-info />
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-5">
         <Salaries />
       </section>
 
@@ -30,10 +38,10 @@
 <script>
 /* eslint-disable */
 import Current from "../components/Calculation-2024";
-import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
+import PersonalInfo from "../components/PersonalInfo";
 
 export default {
   name: "Home",
@@ -42,6 +50,7 @@ export default {
     Salaries,
     TaxableIncome,
     Investment,
+    PersonalInfo,
   }
 };
 </script>
