@@ -134,11 +134,15 @@ export default {
 
 .navbar {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 0;
 }
 
 .nav-link {
   color: rgba(255, 255, 255, 0.8) !important;
   transition: all 0.3s ease;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem !important;
+  margin: 0 0.25rem;
 }
 
 .nav-link:hover {
@@ -153,7 +157,7 @@ export default {
 
 .btn {
   font-weight: 500;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.25rem;
   transition: all 0.2s ease;
 }
 
@@ -162,13 +166,14 @@ export default {
 }
 
 .btn-group {
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   overflow: hidden;
 }
 
 .btn-group .btn {
   border: none;
   position: relative;
+  font-size: 0.95rem;
 }
 
 .btn-group .btn:not(:last-child)::after {
@@ -179,5 +184,33 @@ export default {
   height: 50%;
   width: 1px;
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Global styles */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+}
+
+.form-control, .form-select {
+  border: 1px solid #e2e8f0;
+  padding: 0.625rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.15);
 }
 </style>
