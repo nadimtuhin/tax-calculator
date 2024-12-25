@@ -3,7 +3,7 @@ export default function calculateTaxBreakdown(taxableSalary, slabs) {
     return (num / 100) * per;
   }
 
-  const breakdown = slabs.map(slab => {
+  const breakdown = slabs.map((slab, index) => {
     const slabTitle = slab[0];
     const slabUpper = slab[2];
     const slabLower = slab[1];
@@ -18,8 +18,10 @@ export default function calculateTaxBreakdown(taxableSalary, slabs) {
     }
 
     slabCut = Math.round(getPercentage(slabAmount, slabPercentage));
+    const id = `slab-${index}-${slabLower}-${slabUpper}-${slabPercentage}`;
 
     return {
+      id,
       slabTitle,
       slabUpper,
       slabLower,
