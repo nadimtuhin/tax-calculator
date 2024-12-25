@@ -8,56 +8,72 @@
             class="nav-link px-3 mx-1 rounded-pill"
           >
             <i class="bi bi-house-door me-1"></i>
-            Home
+            {{ $t('nav.home') }}
           </router-link>
           <router-link
             to="/tax-2023"
             class="nav-link px-3 mx-1 rounded-pill"
           >
             <i class="bi bi-calculator me-1"></i>
-            2023 Tax Calculator
+            {{ $t('nav.calculator2023') }}
           </router-link>
           <router-link
             to="/tax-saving-tips"
             class="nav-link px-3 mx-1 rounded-pill"
           >
             <i class="bi bi-piggy-bank me-1"></i>
-            Tax Saving Tips
+            {{ $t('nav.taxSavingTips') }}
           </router-link>
           <router-link
             to="/contact"
             class="nav-link px-3 mx-1 rounded-pill"
           >
             <i class="bi bi-envelope me-1"></i>
-            Contact
+            {{ $t('nav.contact') }}
           </router-link>
         </div>
-        <div class="btn-group shadow-sm">
-          <button
-            @click="exportData"
-            class="btn btn-outline-light"
-            title="Export your data to a JSON file"
-          >
-            <i class="bi bi-download me-1"></i>
-            Export
-          </button>
-          <button
-            @click="triggerFileInput"
-            class="btn btn-outline-light"
-            title="Import data from a JSON file"
-          >
-            <i class="bi bi-upload me-1"></i>
-            Import
-          </button>
-          <button
-            @click="resetData"
-            class="btn btn-outline-danger"
-            title="Clear all data"
-          >
-            <i class="bi bi-trash me-1"></i>
-            Reset
-          </button>
-          <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
+        <div class="d-flex align-items-center">
+          <div class="btn-group shadow-sm me-3">
+            <button
+              @click="exportData"
+              class="btn btn-outline-light"
+              title="Export your data to a JSON file"
+            >
+              <i class="bi bi-download me-1"></i>
+              {{ $t('actions.export') }}
+            </button>
+            <button
+              @click="triggerFileInput"
+              class="btn btn-outline-light"
+              title="Import data from a JSON file"
+            >
+              <i class="bi bi-upload me-1"></i>
+              {{ $t('actions.import') }}
+            </button>
+            <button
+              @click="resetData"
+              class="btn btn-outline-danger"
+              title="Clear all data"
+            >
+              <i class="bi bi-trash me-1"></i>
+              {{ $t('actions.reset') }}
+            </button>
+            <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
+          </div>
+          <div class="language-switcher">
+            <select
+              v-model="$i18n.locale"
+              class="form-select form-select-sm bg-dark text-light"
+            >
+              <option
+                v-for="locale in availableLocales"
+                :key="locale.code"
+                :value="locale.code"
+              >
+                {{ locale.name }}
+              </option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -65,8 +81,15 @@
 </template>
 
 <script>
+import { availableLocales } from '../i18n';
+
 export default {
   name: "NavigationBar",
+  data() {
+    return {
+      availableLocales
+    };
+  },
   methods: {
     triggerFileInput() {
       this.$refs.fileInput.click();
@@ -93,7 +116,7 @@ export default {
       this.$store.commit('resetInvestments');
       this.$store.commit('changeBonus', 0);
       this.$store.commit('changeOthers', 0);
-      alert('All data has been reset!');
+      alert(this.$t('messages.dataReset'));
     },
     importData(event) {
       const file = event.target.files[0];
@@ -115,7 +138,7 @@ export default {
         if (data.others) {
           this.$store.commit('changeOthers', data.others);
         }
-        alert('Data imported successfully!');
+        alert(this.$t('messages.importSuccess'));
       };
       reader.readAsText(file);
     }
@@ -191,5 +214,48 @@ export default {
   background-color: #dc3545;
   border-color: #dc3545;
   color: white;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-select option {
+  background-color: #343a40;
+  color: white;
+}
+
+.language-switcher {
+  position: relative;
+}
+
+.language-switcher .form-select {
+  min-width: 120px;
+  padding: 0.4rem 2rem 0.4rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+}
+
+.language-switcher .form-select:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+}
+
+.language-switcher .form-select:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.2);
+}
+
+.language-switcher .form-select option {
+  padding: 8px;
 }
 </style>

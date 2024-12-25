@@ -3,7 +3,7 @@
     <div class="card-header bg-primary text-white py-3">
       <h5 class="mb-0">
         <i class="fas fa-user mr-2"></i>
-        ব্যক্তিগত তথ্য / Personal Information
+        {{ $t('personalInfo.title') }}
       </h5>
     </div>
     <div class="card-body p-4">
@@ -11,7 +11,7 @@
         <div class="col-md-6 mb-4">
           <label class="form-label font-weight-bold">
             <i class="fas fa-birthday-cake mr-2"></i>
-            বয়স / Age
+            {{ $t('personalInfo.age') }}
           </label>
           <input
             type="number"
@@ -25,7 +25,7 @@
         <div class="col-md-6 mb-4">
           <label class="form-label font-weight-bold d-block">
             <i class="fas fa-venus-mars mr-2"></i>
-            লিঙ্গ / Gender
+            {{ $t('personalInfo.gender.label') }}
           </label>
           <div class="custom-control custom-radio custom-control-inline">
             <input
@@ -38,7 +38,7 @@
               @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderMale">
-              পুরুষ / Male
+              {{ $t('personalInfo.gender.male') }}
             </label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
@@ -52,7 +52,7 @@
               @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderFemale">
-              মহিলা / Female
+              {{ $t('personalInfo.gender.female') }}
             </label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
@@ -66,7 +66,7 @@
               @change="updatePersonalInfo"
             />
             <label class="custom-control-label" for="genderThird">
-              তৃতীয় লিঙ্গ / Third Gender
+              {{ $t('personalInfo.gender.third') }}
             </label>
           </div>
         </div>
@@ -84,7 +84,7 @@
                   />
                   <label class="custom-control-label" for="disabilityCheck">
                     <i class="fas fa-wheelchair mr-2"></i>
-                    প্রতিবন্ধী / Person with Disability
+                    {{ $t('personalInfo.disability') }}
                   </label>
                 </div>
               </div>
@@ -99,7 +99,7 @@
                   />
                   <label class="custom-control-label" for="freedomFighterCheck">
                     <i class="fas fa-medal mr-2"></i>
-                    গেজেটভুক্ত যুদ্ধাহত মুক্তিযোদ্ধা / Gazetted Freedom Fighter
+                    {{ $t('personalInfo.freedomFighter') }}
                   </label>
                 </div>
               </div>

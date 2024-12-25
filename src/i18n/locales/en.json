@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "home": "Home",
+    "calculator2023": "2023 Tax Calculator",
+    "taxSavingTips": "Tax Saving Tips",
+    "contact": "Contact"
+  },
+  "actions": {
+    "export": "Export",
+    "import": "Import",
+    "reset": "Reset"
+  },
+  "messages": {
+    "dataReset": "All data has been reset!",
+    "importSuccess": "Data imported successfully!"
+  },
+  "personalInfo": {
+    "title": "Personal Information",
+    "age": "Age",
+    "gender": {
+      "label": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "third": "Third Gender"
+    },
+    "disability": "Person with Disability",
+    "freedomFighter": "Gazetted Freedom Fighter"
+  }
+}
