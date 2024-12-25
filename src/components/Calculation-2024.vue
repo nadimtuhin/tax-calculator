@@ -86,3 +86,54 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.table {
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: #f8f9fa;
+}
+
+h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.table tr:nth-last-child(-n+4) {
+  background-color: #f8f9fa;
+}
+
+.table tr:last-child {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.table tr:last-child td {
+  padding-top: 1.5rem;
+}
+
+span {
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+}
+</style>
