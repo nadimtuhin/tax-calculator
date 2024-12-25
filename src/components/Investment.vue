@@ -7,6 +7,7 @@
     <th></th>
     <th>Amount</th>
     <th>Maximum allowed</th>
+    <th></th>
   </tr>
 
   <tr v-for="(investment, index) in investments" v-bind:key="investment.name">
@@ -22,17 +23,35 @@
       />
     </td>
     <td>{{investment.maximum > 9999999999 ? '': investment.maximum.toLocaleString()}}</td>
+    <td>
+      <button
+        v-if="investment.isCustom"
+        @click="removeInvestment(index)"
+        class="remove-btn"
+      >
+        Remove
+      </button>
+      <button
+        v-if="investment.name === 'Others'"
+        @click="showAddDialog = true"
+        class="add-btn circle"
+      >
+        +
+      </button>
+    </td>
   </tr>
 
   <tr>
     <td><strong>Total Investment</strong></td>
     <td>{{totalInvestment.toLocaleString()}}</td>
     <td>{{maxRebateableInvestment.toLocaleString()}}</td>
+    <td></td>
   </tr>
 
   <tr>
     <td><strong>Total rebateable investment</strong></td>
     <td>{{totalRebateableInvestment.toLocaleString()}}</td>
+    <td></td>
     <td></td>
   </tr>
 
@@ -40,15 +59,33 @@
     <td><strong>Tax rebate percentage</strong></td>
     <td>15%</td>
     <td></td>
+    <td></td>
   </tr>
 
   <tr>
     <td><strong>Totat rebate on investment</strong></td>
     <td>{{ investmentRebate.toLocaleString() }}</td>
     <td></td>
+    <td></td>
   </tr>
 </table>
 
+<div v-if="showAddDialog" class="modal">
+  <div class="modal-content">
+    <h3>Add New Investment</h3>
+    <input
+      type="text"
+      v-model="newInvestmentName"
+      placeholder="Enter investment name"
+      class="investment-input"
+      @keyup.enter="addNewInvestment"
+    />
+    <div class="modal-actions">
+      <button @click="showAddDialog = false" class="cancel-btn">Cancel</button>
+      <button @click="addNewInvestment" class="add-btn">Add</button>
+    </div>
+  </div>
+</div>
 
 </div>
 </template>
@@ -58,10 +95,26 @@ import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "investment",
+  data() {
+    return {
+      newInvestmentName: '',
+      showAddDialog: false
+    }
+  },
   methods: {
     changeInvestment($event, index) {
       this.$store.commit('changeInvestment', { index, value: $event.target.value });
     },
+    addNewInvestment() {
+      if (this.newInvestmentName.trim()) {
+        this.$store.commit('addInvestment', this.newInvestmentName.trim());
+        this.newInvestmentName = '';
+        this.showAddDialog = false;
+      }
+    },
+    removeInvestment(index) {
+      this.$store.commit('removeInvestment', index);
+    }
   },
   computed: {
     ...mapState({
@@ -151,5 +204,112 @@ h2 {
 .table tr:nth-last-child(-n+4) {
   font-weight: 600;
   background-color: #f8f9fa;
+}
+
+.add-investment-row td {
+  padding: 0.5rem 1rem;
+  background-color: #f8f9fa;
+}
+
+.investment-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.add-btn {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.add-btn:hover {
+  background-color: #45a049;
+}
+
+.remove-btn {
+  padding: 0.25rem 0.5rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+.add-btn.circle {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  padding: 0.5rem 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.investment-input {
+  margin-bottom: 1rem;
 }
 </style>

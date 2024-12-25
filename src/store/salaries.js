@@ -24,6 +24,7 @@ const salaries = {
       { name: 'DPS', amount: 0,  maximum: 120000 },
       { name: 'Life insurance premium', amount: 0,  maximum: infinity },
       { name: 'Stocks', amount: 0,  maximum: infinity },
+      { name: 'Mutual fund', amount: 0,  maximum: 500000 },
       { name: 'Savings certificate', amount: 0,  maximum: infinity },
       { name: 'Others', amount: 0,  maximum: infinity },
     ],
@@ -74,6 +75,17 @@ const salaries = {
     },
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
+    },
+    addInvestment(state, name) {
+      state.investments.push({
+        name,
+        amount: 0,
+        maximum: infinity,
+        isCustom: true
+      });
+    },
+    removeInvestment(state, index) {
+      state.investments.splice(index, 1);
     },
 
     changeSubsequentSalaries(state, { index, value }) {
@@ -150,7 +162,7 @@ const salaries = {
     medicalExempt(state, getters) {
       const { totalBasic, totalMedical } = getters;
       const maxExempt = 120000;
-      // মূল ববতদনর ১০% অথবা বাতষকড ১,২০,০০০/- টাকা (প্রততবন্ধী ব্যতির বেদত্র ১০ লে টাকা), এ দ্য’টির মদে বেটি কম বস পতরমাণ অাংক করমুি।
+      // মূল ববতদনর ১০% অথবা বাতষকড ১,২০,০০০/- টাকা (প্রততবন্ধী ব্যতির বেদত্র ১০ লে টাকা), এ দ্য’টির মদে বেটি কম বস পতরমাণ অা��ক করমুি।
       return Math.min(maxExempt, totalBasic/10, totalMedical)
     },
     transportExempt(state, getters) {
