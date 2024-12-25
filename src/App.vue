@@ -20,6 +20,22 @@
               <i class="bi bi-calculator me-1"></i>
               2023 Tax Calculator
             </router-link>
+            <router-link
+              to="/tax-saving-tips"
+              class="nav-link px-3 mx-1 rounded-pill"
+              :class="{ 'router-link-active': $route.path === '/tax-saving-tips' }"
+            >
+              <i class="bi bi-piggy-bank me-1"></i>
+              Tax Saving Tips
+            </router-link>
+            <router-link
+              to="/contact"
+              class="nav-link px-3 mx-1 rounded-pill"
+              :class="{ 'router-link-active': $route.path === '/contact' }"
+            >
+              <i class="bi bi-envelope me-1"></i>
+              Contact
+            </router-link>
           </div>
           <div class="btn-group shadow-sm">
             <button
