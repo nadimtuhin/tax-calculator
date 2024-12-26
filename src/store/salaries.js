@@ -194,13 +194,31 @@ const salaries = {
       return Math.min(getters.maxRebatableInvestment, rebatable);
     },
     maxRebatableInvestment(state, getters) {
-      return Math.round(getters.taxableSalary/5);
+      const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
+      const fixedAmount = 1000000; // 10 lakh BDT
+      return Math.min(threePercentOfTaxableIncome, fixedAmount);
     },
     rebatePercentage(state, getters) {
       return 15;
     },
     investmentRebate(state, getters) {
-      return Math.round(getters.totalRebatableInvestment * getters.rebatePercentage/100);
+      // Calculate 3% of taxable income
+      const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
+
+      // Calculate 15% of total investments
+      const fifteenPercentOfInvestments = getters.totalInvestment * 0.15;
+
+      // Fixed amount of 10 lakh BDT
+      const fixedAmount = 1000000;
+
+      // Choose the lowest amount from the three
+      const rebateAmount = Math.min(
+        threePercentOfTaxableIncome,
+        fifteenPercentOfInvestments,
+        fixedAmount
+      );
+
+      return Math.round(rebateAmount);
     },
   }
 };

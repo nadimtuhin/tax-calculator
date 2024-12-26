@@ -49,15 +49,22 @@
   </tr>
 
   <tr>
-    <td><strong>{{ $t('investment.totalRebatableInvestment') }}</strong></td>
-    <td>{{totalRebatableInvestment.toLocaleString()}}</td>
+    <td><strong>{{ $t('investment.threePercentIncome') }}</strong></td>
+    <td>{{(taxableSalary * 0.03).toLocaleString()}}</td>
     <td></td>
     <td></td>
   </tr>
 
   <tr>
-    <td><strong>{{ $t('investment.taxRebatePercentage') }}</strong></td>
-    <td>15%</td>
+    <td><strong>{{ $t('investment.fifteenPercentInvestment') }}</strong></td>
+    <td>{{(totalInvestment * 0.15).toLocaleString()}}</td>
+    <td></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td><strong>{{ $t('investment.fixedMaximum') }}</strong></td>
+    <td>1,000,000</td>
     <td></td>
     <td></td>
   </tr>

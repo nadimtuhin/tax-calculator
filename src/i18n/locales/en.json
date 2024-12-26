@@ -67,9 +67,10 @@
     "remove": "Remove",
     "others": "Others",
     "totalInvestment": "Total Investment",
-    "totalRebatableInvestment": "Total Rebatable Investment",
-    "taxRebatePercentage": "Tax Rebate Percentage",
-    "totalRebate": "Total Rebate on Investment",
+    "threePercentIncome": "3% of Taxable Income",
+    "fifteenPercentInvestment": "15% of Total Investment",
+    "fixedMaximum": "Fixed Maximum (10 Lakh)",
+    "totalRebate": "Total Rebate (Minimum of Above)",
     "addNew": {
       "title": "Add New Investment",
       "placeholder": "Enter investment name",

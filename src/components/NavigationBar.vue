@@ -18,13 +18,6 @@
             Tax Guide
           </router-link>
           <router-link
-            to="/tax-2023"
-            class="nav-link px-3 mx-1 rounded-pill"
-          >
-            <i class="bi bi-calculator me-1"></i>
-            {{ $t('nav.calculator2023') }}
-          </router-link>
-          <router-link
             to="/tax-saving-tips"
             class="nav-link px-3 mx-1 rounded-pill"
           >

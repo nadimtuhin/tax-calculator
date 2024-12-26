@@ -67,9 +67,10 @@
     "remove": "মুছুন",
     "others": "অন্যান্য",
     "totalInvestment": "মোট বিনিয়োগ",
-    "totalRebatableInvestment": "মোট রেয়াতযোগ্য বিনিয়োগ",
-    "taxRebatePercentage": "কর রেয়াতের শতকরা হার",
-    "totalRebate": "মোট বিনিয়োগ রেয়াত",
+    "threePercentIncome": "করযোগ্য আয়ের ৩%",
+    "fifteenPercentInvestment": "মোট বিনিয়োগের ১৫%",
+    "fixedMaximum": "সর্বোচ্চ সীমা (১০ লক্ষ)",
+    "totalRebate": "মোট রেয়াত (উপরের মধ্যে সর্বনিম্ন)",
     "addNew": {
       "title": "নতুন বিনিয়োগ যোগ করুন",
       "placeholder": "বিনিয়োগের নাম লিখুন",
@@ -86,7 +87,7 @@
     "taxAmount": "কর (টাকা)",
     "totalTax": "মোট কর",
     "tds": "উৎসে কর্তিত কর",
-    "investmentRebate": "বিনিয়োগে কর রেয���াত",
+    "investmentRebate": "বিনিয়োগে কর রেয়াত",
     "payable": "প্রদেয়",
     "refundMessage": "(আপনি সরকারের কাছ থেকে এই পরিমাণ দাবি করতে পারেন)"
   }
