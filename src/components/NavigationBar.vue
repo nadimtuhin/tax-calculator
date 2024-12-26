@@ -33,43 +33,18 @@
           </router-link>
         </div>
         <div class="d-flex align-items-center">
-          <div class="dropdown me-3">
-            <button
-              class="btn btn-outline-light dropdown-toggle"
-              type="button"
-              @click="toggleDropdown"
-              :aria-expanded="isDropdownOpen"
-            >
-              <i class="bi bi-gear me-1"></i>
-              {{ $t('nav.dataManagement') }}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" v-show="isDropdownOpen" @click.stop>
-              <li>
-                <button class="dropdown-item" @click="exportData">
-                  <i class="bi bi-download me-2"></i>
-                  {{ $t('actions.export') }}
-                </button>
-              </li>
-              <li>
-                <button class="dropdown-item" @click="triggerFileInput">
-                  <i class="bi bi-upload me-2"></i>
-                  {{ $t('actions.import') }}
-                </button>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button class="dropdown-item text-danger" @click="resetData">
-                  <i class="bi bi-trash me-2"></i>
-                  {{ $t('actions.reset') }}
-                </button>
-              </li>
-            </ul>
-          </div>
-          <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
+          <button
+            class="btn nav-action-btn me-3"
+            type="button"
+            @click="showModal = true"
+          >
+            <i class="bi bi-gear me-1"></i>
+            {{ $t('nav.dataManagement') }}
+          </button>
           <div class="language-switcher">
             <select
               v-model="$i18n.locale"
-              class="form-select form-select-sm bg-dark text-light"
+              class="nav-action-btn form-select"
             >
               <option
                 v-for="locale in availableLocales"
@@ -83,6 +58,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Data Management Modal -->
+    <div class="modal fade" :class="{ 'show': showModal }" tabindex="-1" :style="{ display: showModal ? 'block' : 'none' }">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-dark">{{ $t('nav.dataManagement') }}</h5>
+            <button type="button" class="btn-close" @click="showModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-grid gap-3">
+              <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center" @click="exportData">
+                <i class="bi bi-download me-2"></i>
+                {{ $t('actions.export') }}
+              </button>
+              <button class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center" @click="triggerFileInput">
+                <i class="bi bi-upload me-2"></i>
+                {{ $t('actions.import') }}
+              </button>
+              <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center" @click="confirmReset">
+                <i class="bi bi-trash me-2"></i>
+                {{ $t('actions.reset') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ 'show': showModal }" v-if="showModal"></div>
+    <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
   </nav>
 </template>
 
@@ -94,25 +99,24 @@ export default {
   data() {
     return {
       availableLocales,
-      isDropdownOpen: false
+      showModal: false
     };
   },
   mounted() {
-    document.addEventListener('click', this.closeDropdown);
+    document.addEventListener('keydown', this.handleEscape);
   },
   beforeDestroy() {
-    document.removeEventListener('click', this.closeDropdown);
+    document.removeEventListener('keydown', this.handleEscape);
   },
   methods: {
-    toggleDropdown(event) {
-      event.stopPropagation();
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    closeDropdown() {
-      this.isDropdownOpen = false;
+    handleEscape(event) {
+      if (event.key === 'Escape' && this.showModal) {
+        this.showModal = false;
+      }
     },
     triggerFileInput() {
       this.$refs.fileInput.click();
+      this.showModal = false;
     },
     exportData() {
       const data = {
@@ -130,6 +134,12 @@ export default {
       link.download = fileName;
       link.click();
       URL.revokeObjectURL(url);
+      this.showModal = false;
+    },
+    confirmReset() {
+      if (confirm(this.$t('messages.confirmReset'))) {
+        this.resetData();
+      }
     },
     resetData() {
       this.$store.commit('resetSalaries');
@@ -137,6 +147,7 @@ export default {
       this.$store.commit('changeBonus', 0);
       this.$store.commit('changeOthers', 0);
       alert(this.$t('messages.dataReset'));
+      this.showModal = false;
     },
     importData(event) {
       const file = event.target.files[0];
@@ -342,5 +353,174 @@ export default {
 .dropdown-menu-end {
   right: 0;
   left: auto;
+}
+
+/* Modal Styles */
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4a90e2 0%, #2c3e94 100%);
+  border: none;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #0f6674 100%);
+  border: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #b21f2d 100%);
+  border: none;
+}
+
+.modal.fade .modal-dialog {
+  transform: scale(0.95);
+  transition: transform 0.2s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1);
+}
+
+.modal-backdrop.fade {
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+/* Navigation Action Buttons */
+.nav-action-btn {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.nav-action-btn:hover, .nav-action-btn:focus {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.language-switcher {
+  position: relative;
+}
+
+.language-switcher .nav-action-btn {
+  padding-right: 2.5rem;
+  min-width: 80px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.9)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.language-switcher .nav-action-btn option {
+  color: #333;
+  background-color: white;
+  padding: 8px;
+}
+
+/* Modal Content Styles */
+.modal-content {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-header .modal-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.btn-close {
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Modal Action Buttons */
+.modal-body .btn {
+  padding: 1rem 1.5rem;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+}
+
+.modal-body .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.modal-body .btn-primary {
+  background: linear-gradient(135deg, #4a90e2 0%, #2c3e94 100%);
+  border: none;
+}
+
+.modal-body .btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #0f6674 100%);
+  border: none;
+}
+
+.modal-body .btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #b21f2d 100%);
+  border: none;
 }
 </style>
