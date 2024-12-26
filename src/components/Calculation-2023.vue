@@ -46,7 +46,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex';
-import calculateTaxBreakdown from '../calculateTaxBreakdown';
+import { calculateTaxBreakdown } from '../utils/calculateTaxBreakdown';
 
 const LAKH = 100000;
 

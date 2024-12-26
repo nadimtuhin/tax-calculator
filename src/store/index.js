@@ -7,13 +7,12 @@ import personalInfo from "./personalInfo";
 
 Vue.use(Vuex);
 
-const appVersion = '0.9';
+const appVersion = '0.10';
 
 const store = new Vuex.Store({
   plugins: [
     createPersistedState({
-      key: appVersion,
-      paths: ['personalInfo', 'salaries']
+      key: appVersion
     })
   ],
   modules: {

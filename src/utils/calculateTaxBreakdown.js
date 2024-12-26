@@ -1,4 +1,4 @@
-export default function calculateTaxBreakdown(taxableSalary, slabs) {
+export function calculateTaxBreakdown(taxableSalary, slabs) {
   // Ensure taxableSalary is a positive number
   taxableSalary = Math.max(0, Number(taxableSalary) || 0);
 

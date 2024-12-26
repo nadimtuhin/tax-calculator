@@ -113,48 +113,57 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
-import { computed, onMounted } from 'vue';
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   name: 'PersonalInfo',
-  setup() {
-    const store = useStore();
-
-    const age = computed({
-      get: () => store.state.personalInfo.age,
-      set: (value) => {
-        store.commit('personalInfo/setAge', value);
+  computed: {
+    ...mapGetters('personalInfo', {
+      storeAge: 'age',
+      storeGender: 'gender',
+      storeIsDisabled: 'isDisabled',
+      storeIsFreedomFighter: 'isFreedomFighter'
+    }),
+    age: {
+      get() {
+        return this.storeAge;
+      },
+      set(value) {
+        this.setAge(value);
       }
-    });
-
-    const gender = computed({
-      get: () => store.state.personalInfo.gender,
-      set: (value) => {
-        store.commit('personalInfo/setGender', value);
+    },
+    gender: {
+      get() {
+        return this.storeGender;
+      },
+      set(value) {
+        this.setGender(value);
       }
-    });
-
-    const isDisabled = computed({
-      get: () => store.state.personalInfo.isDisabled,
-      set: (value) => {
-        store.commit('personalInfo/setDisabled', value);
+    },
+    isDisabled: {
+      get() {
+        return this.storeIsDisabled;
+      },
+      set(value) {
+        this.setDisabled(value);
       }
-    });
-
-    const isFreedomFighter = computed({
-      get: () => store.state.personalInfo.isFreedomFighter,
-      set: (value) => {
-        store.commit('personalInfo/setFreedomFighter', value);
+    },
+    isFreedomFighter: {
+      get() {
+        return this.storeIsFreedomFighter;
+      },
+      set(value) {
+        this.setFreedomFighter(value);
       }
-    });
-
-    return {
-      age,
-      gender,
-      isDisabled,
-      isFreedomFighter
-    };
+    }
+  },
+  methods: {
+    ...mapMutations('personalInfo', [
+      'setAge',
+      'setGender',
+      'setDisabled',
+      'setFreedomFighter'
+    ])
   }
 };
 </script>
