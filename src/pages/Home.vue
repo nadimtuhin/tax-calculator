@@ -10,7 +10,11 @@
       </section>
 
       <section class="mb-5">
-        <Salaries />
+        <div class="row g-4">
+          <div class="col-md-12">
+            <Salaries />
+          </div>
+        </div>
       </section>
 
       <section class="mb-5">

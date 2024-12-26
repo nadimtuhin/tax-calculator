@@ -1,6 +1,6 @@
 <style scoped>
   table input {
-    width: 150px;
+    width: 145px;
   }
   .button-container {
     display: flex; /* Ensures inline display of buttons */
