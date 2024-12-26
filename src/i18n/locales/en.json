@@ -82,6 +82,7 @@
     "fifteenPercentInvestment": "15% of Total Investment",
     "fixedMaximum": "Fixed Maximum (10 Lakh)",
     "totalRebate": "Total Rebate (Minimum of Above)",
+    "reset": "Reset",
     "addNew": {
       "title": "Add New Investment",
       "placeholder": "Enter investment name",

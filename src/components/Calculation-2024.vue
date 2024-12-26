@@ -64,9 +64,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      taxableSalary: 'taxableSalary',
-      totalTds: 'totalTds',
-      investmentRebate: 'investmentRebate',
+      taxableSalary: 'salaries/taxableSalary',
+      totalTds: 'salaries/totalTds',
+      investmentRebate: 'investments/investmentRebate',
       taxFreeSlab: 'personalInfo/taxFreeSlab'
     }),
     totalTax() {

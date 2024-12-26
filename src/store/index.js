@@ -4,10 +4,11 @@ import createPersistedState from "vuex-persistedstate";
 
 import salaries from "./salaries";
 import personalInfo from "./personalInfo";
+import investments from "./investments";
 
 Vue.use(Vuex);
 
-const appVersion = '0.11';
+const appVersion = '0.13';
 
 const store = new Vuex.Store({
   plugins: [
@@ -17,7 +18,8 @@ const store = new Vuex.Store({
   ],
   modules: {
     salaries,
-    personalInfo
+    personalInfo,
+    investments
   }
 });
 

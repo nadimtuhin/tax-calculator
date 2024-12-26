@@ -16,18 +16,8 @@ function arraySum(arr) {
   return arr.reduceRight((c, i) => (c + +i), 0);
 }
 
-const infinity = 99999999999999999999999999; // Infinity has persist issues in localStorage
-
 const salaries = {
   state: () => ({
-    investments: [
-      { name: 'DPS', amount: 0,  maximum: 120000 },
-      { name: 'Life insurance premium', amount: 0,  maximum: infinity },
-      { name: 'Stocks', amount: 0,  maximum: infinity },
-      { name: 'Mutual fund', amount: 0,  maximum: 500000 },
-      { name: 'Savings certificate', amount: 0,  maximum: infinity },
-      { name: 'Others', amount: 0,  maximum: infinity },
-    ],
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
     months: [
       { id: "July",  ...monthlyDefault() },
@@ -44,17 +34,15 @@ const salaries = {
       { id: "June",  ...monthlyDefault() },
     ],
     bonuses: [
-      { name: 'eidBonus1', amount: 0 },
-      { name: 'eidBonus2', amount: 0 }
+      { name: 'Eid Bonus 1', amount: 0, isDefault: true },
+      { name: 'Eid Bonus 2', amount: 0, isDefault: true },
+      { name: 'New Year Bonus', amount: 0, isDefault: true },
     ],
     otherIncomes: [],
   }),
   mutations: {
     loadSalaries(state, salaries) {
       state.months = salaries;
-    },
-    loadInvestments(state, investments) {
-      state.investments = investments;
     },
     resetSalaries(state) {
       state.months = [
@@ -72,36 +60,16 @@ const salaries = {
         { id: "June",  ...monthlyDefault() },
       ];
     },
-    resetInvestments(state) {
-      state.investments = state.investments.map(investment => ({
-        ...investment,
-        amount: 0,
-      }));
-    },
     resetBonuses(state) {
       state.bonuses = [
-        { name: 'eidBonus1', amount: 0 },
-        { name: 'eidBonus2', amount: 0 }
+        { name: 'Eid Bonus 1', amount: 0, isDefault: true },
+        { name: 'Eid Bonus 2', amount: 0, isDefault: true },
+        { name: 'New Year Bonus', amount: 0, isDefault: true },
       ];
     },
     resetOtherIncomes(state) {
       state.otherIncomes = [];
     },
-    changeInvestment(state, { index, value }) {
-      state.investments[index].amount = +value;
-    },
-    addInvestment(state, name) {
-      state.investments.push({
-        name,
-        amount: 0,
-        maximum: infinity,
-        isCustom: true
-      });
-    },
-    removeInvestment(state, index) {
-      state.investments.splice(index, 1);
-    },
-
     changeSubsequentSalaries(state, { index, value }) {
       // window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
       const { months, parts } = state;
@@ -216,44 +184,10 @@ const salaries = {
     taxableSalary(state, getters) {
       return getters.totalSalary - getters.totalExempt;
     },
-    totalInvestment(state, getters) {
-      return state.investments.map(i => i.amount).reduce((c, n) => c+n, 0);
-    },
-    totalRebatableInvestment(state, getters) {
-      const rebatable = state.investments
-        .map(i => [i.amount, i.maximum])
-        .reduceRight((c, arr) => {
-          return c+(Math.min(...arr))
-        }, 0);
-
-      return Math.min(getters.maxRebatableInvestment, rebatable);
-    },
     maxRebatableInvestment(state, getters) {
       const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
       const fixedAmount = 1000000; // 10 lakh BDT
       return Math.min(threePercentOfTaxableIncome, fixedAmount);
-    },
-    rebatePercentage(state, getters) {
-      return 15;
-    },
-    investmentRebate(state, getters) {
-      // Calculate 3% of taxable income
-      const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
-
-      // Calculate 15% of total investments
-      const fifteenPercentOfInvestments = getters.totalInvestment * 0.15;
-
-      // Fixed amount of 10 lakh BDT
-      const fixedAmount = 1000000;
-
-      // Choose the lowest amount from the three
-      const rebateAmount = Math.min(
-        threePercentOfTaxableIncome,
-        fifteenPercentOfInvestments,
-        fixedAmount
-      );
-
-      return Math.round(rebateAmount);
     },
   }
 };
