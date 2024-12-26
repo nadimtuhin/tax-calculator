@@ -60,6 +60,13 @@
     </div>
     <div v-for="(bonus, index) in bonuses" :key="'bonus-'+index" class="income-row">
       <input
+        v-if="!bonus.isDefault"
+        :placeholder="$t('salaries.bonus') + ' ' + (index+1)"
+        type="text"
+        :value="bonus.name"
+      >
+      <input
+        v-else
         type="text"
         :value="bonus.name"
         disabled
