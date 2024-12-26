@@ -17,6 +17,7 @@ function arraySum(arr) {
 }
 
 const salaries = {
+  namespaced: true,
   state: () => ({
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
     months: [

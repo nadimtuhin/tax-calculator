@@ -1,120 +1,109 @@
 <template>
-<div>
-<h2>{{ $t('investment.title') }}</h2>
+  <div>
+    <h2>
+      {{ $t("investment.title") }}
 
-<button @click="resetInvestments" class="reset-btn" :aria-label="$t('investment.reset')">
-  {{ $t('investment.reset') }}
-</button>
-
-<table class="table" role="grid">
-  <thead>
-    <tr>
-      <th scope="col">{{ $t('investment.name') }}</th>
-      <th scope="col">{{ $t('investment.amount') }}</th>
-      <th scope="col">{{ $t('investment.maximumAllowed') }}</th>
-      <th scope="col" aria-label="Actions"></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr v-for="(investment, index) in investments" :key="investment.name">
-      <th scope="row"><strong>{{investment.name}}</strong></th>
-      <td>
-        <input
-          type="number"
-          :value="formatNumber(investments[index].amount)"
-          @input="changeInvestment($event, index)"
-          step="1000"
-          min="0"
-          :max="investment.maximum"
-          :aria-label="investment.name + ' ' + $t('investment.amount')"
-          class="investment-input"
-        />
-      </td>
-      <td>{{formatNumber(investment.maximum > 9999999999 ? '' : investment.maximum)}}</td>
-      <td>
-        <button
-          v-if="investment.isCustom"
-          @click="removeInvestment(index)"
-          class="remove-btn"
-          :aria-label="$t('investment.remove') + ' ' + investment.name"
-        >
-          {{ $t('investment.remove') }}
-        </button>
-        <button
-          v-if="investment.name === $t('investment.others')"
-          @click="showAddDialog = true"
-          class="add-btn circle"
-          aria-label="Add new investment"
-        >
-          +
-        </button>
-      </td>
-    </tr>
-
-    <tr class="summary-row">
-      <th scope="row"><strong>{{ $t('investment.totalInvestment') }}</strong></th>
-      <td>{{formatNumber(totalInvestment)}}</td>
-      <td>{{formatNumber(maxRebatableInvestment)}}</td>
-      <td></td>
-    </tr>
-
-    <tr class="summary-row">
-      <th scope="row"><strong>{{ $t('investment.threePercentIncome') }}</strong></th>
-      <td>{{formatNumber(taxableSalary * 0.03)}}</td>
-      <td></td>
-      <td></td>
-    </tr>
-
-    <tr class="summary-row">
-      <th scope="row"><strong>{{ $t('investment.fifteenPercentInvestment') }}</strong></th>
-      <td>{{formatNumber(totalInvestment * 0.15)}}</td>
-      <td></td>
-      <td></td>
-    </tr>
-
-    <tr class="summary-row">
-      <th scope="row"><strong class="small">{{ $t('investment.fixedMaximum') }}</strong></th>
-      <td>1,000,000</td>
-      <td></td>
-      <td></td>
-    </tr>
-
-    <tr class="summary-row highlight">
-      <th scope="row"><strong class="small">{{ $t('investment.totalRebate') }}</strong></th>
-      <td>{{ formatNumber(investmentRebate) }}</td>
-      <td></td>
-      <td></td>
-    </tr>
-  </tbody>
-</table>
-
-<div v-if="showAddDialog" class="modal" @click.self="closeModal" role="dialog" aria-labelledby="modal-title">
-  <div class="modal-content">
-    <h3 id="modal-title">{{ $t('investment.addNew.title') }}</h3>
-    <input
-      type="text"
-      v-model.trim="newInvestmentName"
-      :placeholder="$t('investment.addNew.placeholder')"
-      class="investment-input"
-      @keyup.enter="addNewInvestment"
-      @keyup.esc="closeModal"
-      ref="newInvestmentInput"
-      maxlength="50"
-    />
-    <div class="modal-actions">
-      <button @click="closeModal" class="cancel-btn">{{ $t('investment.addNew.cancel') }}</button>
       <button
-        @click="addNewInvestment"
-        class="add-btn"
-        :disabled="!newInvestmentName.trim()"
+        @click="resetInvestments"
+        class="reset-btn"
+        :aria-label="$t('investment.reset')"
       >
-        {{ $t('investment.addNew.add') }}
+        {{ $t("investment.reset") }}
       </button>
-    </div>
-  </div>
-</div>
+    </h2>
 
-</div>
+    <table class="table" role="grid">
+      <thead>
+        <tr>
+          <th scope="col">{{ $t("investment.name") }}</th>
+          <th scope="col">{{ $t("investment.amount") }}</th>
+          <th scope="col">{{ $t("investment.maximumAllowed") }}</th>
+          <th scope="col" aria-label="Actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(investment, index) in investments" :key="investment.name">
+          <th scope="row">
+            <strong>{{ investment.name }}</strong>
+          </th>
+          <td>
+            <input
+              type="number"
+              :value="formatNumber(investments[index].amount)"
+              @input="changeInvestment($event, index)"
+              step="1000"
+              min="0"
+              :max="investment.maximum"
+              :aria-label="investment.name + ' ' + $t('investment.amount')"
+              class="investment-input"
+            />
+          </td>
+          <td>
+            {{
+              formatNumber(
+                investment.maximum > 9999999999 ? "" : investment.maximum
+              )
+            }}
+          </td>
+          <td>
+            <button
+              v-if="investment.isCustom"
+              @click="removeInvestment(index)"
+              class="remove-btn"
+              :aria-label="$t('investment.remove') + ' ' + investment.name"
+            >
+              {{ $t("investment.remove") }}
+            </button>
+          </td>
+        </tr>
+
+        <tr class="summary-row">
+          <th scope="row">
+            <strong>{{ $t("investment.totalInvestment") }}</strong>
+          </th>
+          <td>{{ formatNumber(totalInvestment) }}</td>
+          <td>{{ formatNumber(maxRebatableInvestment) }}</td>
+          <td></td>
+        </tr>
+
+        <tr class="summary-row">
+          <th scope="row">
+            <strong>{{ $t("investment.threePercentIncome") }}</strong>
+          </th>
+          <td>{{ formatNumber(taxableSalary * 0.03) }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        <tr class="summary-row">
+          <th scope="row">
+            <strong>{{ $t("investment.fifteenPercentInvestment") }}</strong>
+          </th>
+          <td>{{ formatNumber(totalInvestment * 0.15) }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        <tr class="summary-row">
+          <th scope="row">
+            <strong class="small">{{ $t("investment.fixedMaximum") }}</strong>
+          </th>
+          <td>1,000,000</td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        <tr class="summary-row highlight">
+          <th scope="row">
+            <strong class="small">{{ $t("investment.totalRebate") }}</strong>
+          </th>
+          <td>{{ formatNumber(investmentRebate) }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script>
@@ -123,18 +112,15 @@ import { mapState, mapGetters } from "vuex";
 export default {
   name: "investment",
   data() {
-    return {
-      newInvestmentName: '',
-      showAddDialog: false
-    }
+    return {};
   },
   methods: {
     formatNumber(value) {
-      if (!value && value !== 0) return '';
+      if (!value && value !== 0) return "";
       return Number(value).toLocaleString();
     },
     changeInvestment($event, index) {
-      const value = $event.target.value.replace(/,/g, '');
+      const value = $event.target.value.replace(/,/g, "");
       if (isNaN(value)) return;
 
       const numValue = Number(value);
@@ -143,64 +129,46 @@ export default {
       if (numValue < 0) return;
       if (max !== Infinity && numValue > max) {
         $event.target.value = max;
-        this.$store.commit('investments/changeInvestment', { index, value: max });
+        this.$store.commit("investments/changeInvestment", {
+          index,
+          value: max
+        });
         return;
       }
 
-      this.$store.commit('investments/changeInvestment', { index, value: numValue });
-    },
-    addNewInvestment() {
-      const name = this.newInvestmentName.trim();
-      if (name) {
-        if (this.investments.some(function(inv) { return inv.name.toLowerCase() === name.toLowerCase(); })) {
-          alert(this.$t('investment.addNew.duplicate'));
-          return;
-        }
-        this.$store.commit('investments/addInvestment', name);
-        this.closeModal();
-      }
+      this.$store.commit("investments/changeInvestment", {
+        index,
+        value: numValue
+      });
     },
     removeInvestment(index) {
-      if (confirm(this.$t('investment.confirmRemove'))) {
-        this.$store.commit('investments/removeInvestment', index);
+      if (confirm(this.$t("investment.confirmRemove"))) {
+        this.$store.commit("investments/removeInvestment", index);
       }
     },
     resetInvestments() {
-      if (confirm(this.$t('investment.confirmReset'))) {
-        this.$store.commit('investments/resetInvestments');
-      }
-    },
-    closeModal() {
-      this.showAddDialog = false;
-      this.newInvestmentName = '';
-    },
-    focusInput() {
-      if (this.$refs.newInvestmentInput) {
-        this.$refs.newInvestmentInput.focus();
-      }
-    }
-  },
-  watch: {
-    showAddDialog: function(newVal) {
-      if (newVal) {
-        this.$nextTick(this.focusInput);
+      if (confirm(this.$t("investment.confirmReset"))) {
+        this.$store.commit("investments/resetInvestments");
       }
     }
   },
   computed: {
-    ...mapState({
-      investments: function(state) { return state.investments.investments; }
+    ...mapState("investments", {
+      investments: "investments"
     }),
-    ...mapGetters({
-      totalInvestment: 'investments/totalInvestment',
-      totalRebatableInvestment: 'investments/totalRebatableInvestment',
-      maxRebatableInvestment: 'salaries/maxRebatableInvestment',
-      rebatePercentage: 'investments/rebatePercentage',
-      investmentRebate: 'investments/investmentRebate',
-      taxableSalary: 'salaries/taxableSalary'
+    ...mapGetters("investments", {
+      totalInvestment: "totalInvestment",
+      totalRebatableInvestment: "totalRebatableInvestment",
+      maxRebatableInvestment: "maxRebatableInvestment",
+      rebatePercentage: "rebatePercentage",
+      investmentRebate: "investmentRebate",
+    }),
+    ...mapGetters('salaries', {
+      maxRebatableInvestment: "maxRebatableInvestment",
+      taxableSalary: "taxableSalary"
     })
   }
-}
+};
 </script>
 
 <style scoped>
@@ -210,7 +178,7 @@ export default {
   border-collapse: separate;
   border-spacing: 0;
   background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -251,7 +219,7 @@ export default {
 .investment-input:focus {
   outline: none;
   border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .investment-input:invalid {
@@ -324,7 +292,7 @@ h2 {
 
 .add-btn {
   padding: 0.5rem 1rem;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;

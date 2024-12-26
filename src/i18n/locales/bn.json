@@ -60,6 +60,7 @@
   "taxableIncome": {
     "title": "করযোগ্য আয়ের বিভাজন",
     "total": "মোট",
+    "name": "নাম",
     "taxExempted": "কর মুক্ত",
     "taxable": "করযোগ্য",
     "basic": "মূল বেতন",

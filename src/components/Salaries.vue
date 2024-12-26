@@ -112,44 +112,44 @@ export default {
 
   methods: {
     changeSubsequentTds($event, index) {
-      this.$store.commit('changeSubsequentTds', { index, value: $event.target.value });
+      this.$store.commit('salaries/changeSubsequentTds', { index, value: $event.target.value });
     },
     changeBreakdown($event, index, part) {
-      this.$store.commit('changeParts', { index, part, value: $event.target.value } );
+      this.$store.commit('salaries/changeParts', { index, part, value: $event.target.value } );
     },
     addBonus() {
-      this.$store.commit('addBonus', { name: '', amount: 0 });
+      this.$store.commit('salaries/addBonus', { name: '', amount: 0 });
     },
     removeBonus(index) {
-      this.$store.commit('removeBonus', index);
+      this.$store.commit('salaries/removeBonus', index);
     },
     updateBonus(index, name, amount) {
-      this.$store.commit('updateBonus', { index, name, amount });
+      this.$store.commit('salaries/updateBonus', { index, name, amount });
     },
     resetBonuses() {
-      this.$store.commit('resetBonuses');
+      this.$store.commit('salaries/resetBonuses');
     },
     addOtherIncome() {
-      this.$store.commit('addOtherIncome', { name: '', amount: 0 });
+      this.$store.commit('salaries/addOtherIncome', { name: '', amount: 0 });
     },
     removeOtherIncome(index) {
-      this.$store.commit('removeOtherIncome', index);
+      this.$store.commit('salaries/removeOtherIncome', index);
     },
     updateOtherIncome(index, name, amount) {
-      this.$store.commit('updateOtherIncome', { index, name, amount });
+      this.$store.commit('salaries/updateOtherIncome', { index, name, amount });
     },
     resetOtherIncomes() {
-      this.$store.commit('resetOtherIncomes');
+      this.$store.commit('salaries/resetOtherIncomes');
     }
   },
   computed: {
-    ...mapState({
-      parts: state => state.salaries.parts,
-      months: state => state.salaries.months,
-      bonuses: state => state.salaries.bonuses,
-      otherIncomes: state => state.salaries.otherIncomes,
+    ...mapState('salaries', {
+      parts: 'parts',
+      months: 'months',
+      bonuses: 'bonuses',
+      otherIncomes: 'otherIncomes'
     }),
-    ...mapGetters({
+    ...mapGetters('salaries', {
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',

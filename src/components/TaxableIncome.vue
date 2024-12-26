@@ -66,14 +66,14 @@ import { mapState, mapGetters } from "vuex";
 export default {
   name: "taxable-income",
   computed: {
-    ...mapState({
-      parts: state => state.salaries.parts,
-      months: state => state.salaries.months,
-      salaryBreakdown: state => state.breakdown.salaryBreakdown,
-      bonus: state => state.salaries.bonus,
-      others: state => state.salaries.others,
+    ...mapState('salaries', {
+      parts: 'parts',
+      months: 'months',
+      salaryBreakdown: 'salaryBreakdown',
+      bonus: 'bonus',
+      others: 'others',
     }),
-    ...mapGetters({
+    ...mapGetters('salaries', {
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',

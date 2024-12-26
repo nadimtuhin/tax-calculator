@@ -73,6 +73,7 @@
   },
   "investment": {
     "title": "Tax Rebate on Investment",
+    "name": "Name",
     "amount": "Amount",
     "maximumAllowed": "Maximum Allowed",
     "remove": "Remove",

@@ -1,6 +1,7 @@
 const infinity = 99999999999999999999999999; // Infinity has persist issues in localStorage
 
 const investments = {
+  namespaced: true,
   state: () => ({
     investments: [
       { name: 'DPS', amount: 0,  maximum: 120000 },
