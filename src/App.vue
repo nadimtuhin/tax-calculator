@@ -51,7 +51,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
@@ -72,6 +71,5 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn:hover {
-  transform: translateY(-1px);
 }
 </style>

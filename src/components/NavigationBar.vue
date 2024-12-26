@@ -34,24 +34,26 @@
         </div>
         <div class="d-flex align-items-center">
           <button
-            class="btn nav-action-btn me-3"
+            class="btn nav-action-btn me-5"
             type="button"
             @click="showModal = true"
+            style="margin-right: 5px;"
           >
             <i class="bi bi-gear me-1"></i>
             {{ $t('nav.dataManagement') }}
           </button>
-          <div class="language-switcher">
+          <div class="language-switcher ms-3">
             <select
               v-model="$i18n.locale"
-              class="nav-action-btn form-select"
+              class="form-select"
+              aria-label="Language selector"
             >
               <option
                 v-for="locale in availableLocales"
                 :key="locale.code"
                 :value="locale.code"
               >
-                {{ locale.code }}
+                {{ locale.code.toUpperCase() }}
               </option>
             </select>
           </div>
@@ -65,19 +67,21 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title text-dark">{{ $t('nav.dataManagement') }}</h5>
-            <button type="button" class="btn-close" @click="showModal = false"></button>
+            <button type="button" class="btn-close" @click="showModal = false">
+              <i class="bi bi-x"></i>
+            </button>
           </div>
           <div class="modal-body">
             <div class="d-grid gap-3">
-              <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center" @click="exportData">
+              <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center" @click="exportData" style="margin-bottom: 5px;">
                 <i class="bi bi-download me-2"></i>
                 {{ $t('actions.export') }}
               </button>
-              <button class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center" @click="triggerFileInput">
+              <button class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center" @click="triggerFileInput" style="margin-bottom: 5px;">
                 <i class="bi bi-upload me-2"></i>
                 {{ $t('actions.import') }}
               </button>
-              <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center" @click="confirmReset">
+              <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center" @click="confirmReset" style="margin-bottom: 5px;">
                 <i class="bi bi-trash me-2"></i>
                 {{ $t('actions.reset') }}
               </button>
@@ -190,17 +194,23 @@ export default {
   font-weight: 500;
   padding: 0.5rem 1.25rem !important;
   margin: 0 0.25rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
 }
 
 .nav-link:hover {
   color: white !important;
-  background-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .router-link-exact-active {
   color: white !important;
-  background-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-group {
@@ -251,42 +261,46 @@ export default {
   cursor: pointer;
 }
 
-.form-select option {
-  background-color: #343a40;
-  color: white;
-}
-
 .language-switcher {
   position: relative;
 }
 
 .language-switcher .form-select {
-  padding: 0.4rem 2rem 0.4rem 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 2.5rem 0.5rem 1.25rem;
+  font-weight: 500;
   border-radius: 20px;
-  font-size: 0.9rem;
+  min-width: 90px;
+  font-size: 0.95rem;
+  cursor: pointer;
   transition: all 0.3s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  text-transform: uppercase;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.9)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 12px;
 }
 
-.language-switcher .form-select:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
-}
-
+.language-switcher .form-select:hover,
 .language-switcher .form-select:focus {
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.2);
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
 }
 
 .language-switcher .form-select option {
-  padding: 8px;
+  color: #333;
+  background-color: white;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
 }
 
 .dropdown {
@@ -308,14 +322,12 @@ export default {
   padding: 0.5rem;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
   transition: all 0.2s ease;
 }
 
 .dropdown-menu[style*="display: block"] {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
 }
 
 .dropdown-item {
@@ -383,7 +395,6 @@ export default {
 }
 
 .btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -431,19 +442,16 @@ export default {
   transition: all 0.3s ease;
 }
 
-.nav-action-btn:hover, .nav-action-btn:focus {
+.nav-action-btn:hover,
+.nav-action-btn:focus {
   color: white;
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.language-switcher {
-  position: relative;
-}
-
 .language-switcher .nav-action-btn {
-  padding-right: 2.5rem;
+  padding: 0.5rem 2.5rem 0.5rem 1.25rem;
   min-width: 80px;
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.9)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
@@ -453,6 +461,14 @@ export default {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+.language-switcher .nav-action-btn:hover,
+.language-switcher .nav-action-btn:focus {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .language-switcher .nav-action-btn option {
@@ -505,7 +521,6 @@ export default {
 }
 
 .modal-body .btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 

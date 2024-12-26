@@ -329,16 +329,13 @@ button {
 
 button:hover {
   background-color: #3aa876;
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(66, 185, 131, 0.2);
 }
 
 button:hover .button-icon {
-  transform: translateX(4px);
 }
 
 button:active {
-  transform: scale(0.98) translateY(0);
 }
 
 @media (max-width: 640px) {

@@ -118,7 +118,6 @@ export default {
 }
 
 .tip-section:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -147,7 +146,6 @@ h2::after {
   position: absolute;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
   width: 100px;
   height: 3px;
   background: linear-gradient(90deg, #4a90e2, #2c3e94);
