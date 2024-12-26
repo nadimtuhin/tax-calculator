@@ -58,29 +58,40 @@
       <h3>{{ $t('salaries.bonuses') }}</h3>
       <button class="reset-button" @click="resetBonuses">{{ $t('actions.reset') }}</button>
     </div>
-    <div v-for="(bonus, index) in bonuses" :key="'bonus-'+index" class="income-row">
-      <input
-        v-if="!bonus.isDefault"
-        :placeholder="$t('salaries.bonus') + ' ' + (index+1)"
-        type="text"
-        :value="bonus.name"
-      >
-      <input
-        v-else
-        type="text"
-        :value="bonus.name"
-        disabled
-      >
-      <input
-        type="number"
-        min="0"
-        max="999999"
-        step="1000"
-        :value="bonus.amount"
-        @input="updateBonus(index, bonus.name, $event.target.value)"
-      >
-      <button class="remove-button" @click="removeBonus(index)">{{ $t('common.remove') }}</button>
-    </div>
+    <table class="income-table">
+      <tr v-for="(bonus, index) in bonuses" :key="'bonus-'+index">
+        <td>
+          <input
+            v-if="!bonus.isDefault"
+            :placeholder="$t('salaries.bonus') + ' ' + (index+1)"
+            type="text"
+            :value="bonus.name"
+            class="name-input"
+          >
+          <input
+            v-else
+            type="text"
+            :value="bonus.name"
+            disabled
+            class="name-input"
+          >
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="bonus.amount"
+            @input="updateBonus(index, bonus.name, $event.target.value)"
+            class="amount-input"
+          >
+        </td>
+        <td>
+          <button class="remove-button" @click="removeBonus(index)">{{ $t('common.remove') }}</button>
+        </td>
+      </tr>
+    </table>
     <button class="add-button" @click="addBonus">{{ $t('common.add') }} {{ $t('salaries.bonus') }}</button>
   </div>
 
@@ -89,23 +100,33 @@
       <h3>{{ $t('salaries.otherIncomes') }}</h3>
       <button class="reset-button" @click="resetOtherIncomes">{{ $t('actions.reset') }}</button>
     </div>
-    <div v-for="(income, index) in otherIncomes" :key="'other-'+index" class="income-row">
-      <input
-        type="text"
-        :placeholder="$t('salaries.incomeName')"
-        :value="income.name"
-        @input="updateOtherIncome(index, $event.target.value, income.amount)"
-      >
-      <input
-        type="number"
-        min="0"
-        max="999999"
-        step="1000"
-        :value="income.amount"
-        @input="updateOtherIncome(index, income.name, $event.target.value)"
-      >
-      <button class="remove-button" @click="removeOtherIncome(index)">{{ $t('common.remove') }}</button>
-    </div>
+    <table class="income-table">
+      <tr v-for="(income, index) in otherIncomes" :key="'other-'+index">
+        <td>
+          <input
+            type="text"
+            :placeholder="$t('salaries.incomeName')"
+            :value="income.name"
+            @input="updateOtherIncome(index, $event.target.value, income.amount)"
+            class="name-input"
+          >
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="income.amount"
+            @input="updateOtherIncome(index, income.name, $event.target.value)"
+            class="amount-input"
+          >
+        </td>
+        <td>
+          <button class="remove-button" @click="removeOtherIncome(index)">{{ $t('common.remove') }}</button>
+        </td>
+      </tr>
+    </table>
     <button class="add-button" @click="addOtherIncome">{{ $t('common.add') }} {{ $t('salaries.otherIncome') }}</button>
   </div>
 </div>
@@ -173,6 +194,9 @@ export default {
 <style scoped>
   table input {
     width: 145px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
   }
   .button-container {
     display: flex; /* Ensures inline display of buttons */
@@ -196,46 +220,71 @@ export default {
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 8px 16px;
     cursor: pointer;
-    margin-left: 8px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+  }
+  .add-button:hover {
+    background-color: #45a049;
   }
   .remove-button {
-    background-color: #f44336;
+    background-color: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 6px 12px;
     cursor: pointer;
-    margin-left: 8px;
+    font-size: 14px;
+    transition: background-color 0.3s;
   }
-  .income-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .income-row input {
-    margin-right: 8px;
-  }
-  .income-section {
-    margin-top: 16px;
-  }
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+  .remove-button:hover {
+    background-color: #c82333;
   }
   .reset-button {
     background-color: #ff9800;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 6px 12px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 14px;
+    transition: background-color 0.3s;
   }
   .reset-button:hover {
     background-color: #f57c00;
+  }
+  .income-section {
+    margin-top: 24px;
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+  }
+  .section-header h3 {
+    margin: 0;
+    color: #2c3e50;
+  }
+  .income-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .income-table td {
+    padding: 8px;
+  }
+  .name-input {
+    width: 200px !important;
+  }
+  .amount-input {
+    width: 145px !important;
   }
 </style>
