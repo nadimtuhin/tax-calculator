@@ -60,28 +60,39 @@ const LAKH = 100000;
 
 export default {
   name: "calculation-2024",
-  data: () => ({
-    slabs: [
-      ['First Tk3.5 lakh', 0, 3.5*LAKH, 0],
-      ['Next Tk1 lakh', 3.5*LAKH, (3.5+1)*LAKH, 5],
-      ['Next Tk4 lakh', (3.5+1)*LAKH, (3.5+1+4)*LAKH, 10],
-      ['Next Tk5 lakh', (3.5+1+4)*LAKH, (3.5+1+4+5)*LAKH, 15],
-      ['Next Tk5 lakh', (3.5+1+4+5)*LAKH, (3.5+1+4+5+5)*LAKH, 20],
-      ['Next Tk20 lakh', (3.5+1+4+5+5)*LAKH, (3.5+1+4+5+5+20)*LAKH, 25],
-      ['Above', (3.5+1+4+5+5+20)*LAKH, Infinity, 30],
-    ],
-  }),
+  data() {
+    return {
+      slabs: []
+    }
+  },
   computed: {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
       investmentRebate: 'investmentRebate',
+      taxFreeSlab: 'personalInfo/taxFreeSlab'
     }),
     totalTax() {
       return Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
     },
     taxBreakdown() {
       return calculateTaxBreakdown(this.taxableSalary, this.slabs);
+    }
+  },
+  watch: {
+    taxFreeSlab: {
+      immediate: true,
+      handler(newSlab) {
+        this.slabs = [
+          ['First ' + (newSlab/LAKH).toFixed(2) + ' lakh', 0, newSlab, 0],
+          ['Next Tk1 lakh', newSlab, newSlab + LAKH, 5],
+          ['Next Tk4 lakh', newSlab + LAKH, newSlab + 5*LAKH, 10],
+          ['Next Tk5 lakh', newSlab + 5*LAKH, newSlab + 10*LAKH, 15],
+          ['Next Tk5 lakh', newSlab + 10*LAKH, newSlab + 15*LAKH, 20],
+          ['Next Tk20 lakh', newSlab + 15*LAKH, newSlab + 35*LAKH, 25],
+          ['Above', newSlab + 35*LAKH, Infinity, 30],
+        ];
+      }
     }
   }
 };
