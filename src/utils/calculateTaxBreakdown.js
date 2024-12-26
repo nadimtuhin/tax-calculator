@@ -1,3 +1,17 @@
+const LAKH = 100000;
+
+export function calculateTaxSlabs(taxFreeSlab) {
+  return [
+    ['First ' + (taxFreeSlab/LAKH).toFixed(2) + ' lakh', 0, taxFreeSlab, 0],
+    ['Next Tk1 lakh', taxFreeSlab, taxFreeSlab + LAKH, 5],
+    ['Next Tk4 lakh', taxFreeSlab + LAKH, taxFreeSlab + 5*LAKH, 10],
+    ['Next Tk5 lakh', taxFreeSlab + 5*LAKH, taxFreeSlab + 10*LAKH, 15],
+    ['Next Tk5 lakh', taxFreeSlab + 10*LAKH, taxFreeSlab + 15*LAKH, 20],
+    ['Next Tk20 lakh', taxFreeSlab + 15*LAKH, taxFreeSlab + 35*LAKH, 25],
+    ['Above', taxFreeSlab + 35*LAKH, Infinity, 30],
+  ];
+}
+
 export function calculateTaxBreakdown(taxableSalary, slabs) {
   // Ensure taxableSalary is a positive number
   taxableSalary = Math.max(0, Number(taxableSalary) || 0);

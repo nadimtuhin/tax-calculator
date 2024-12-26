@@ -46,9 +46,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { calculateTaxBreakdown } from '../utils/calculateTaxBreakdown';
-
-const LAKH = 100000;
+import { calculateTaxBreakdown, calculateTaxSlabs } from '../utils/calculateTaxBreakdown';
 
 export default {
   name: "calculation-2023",
@@ -75,14 +73,7 @@ export default {
     taxFreeSlab: {
       immediate: true,
       handler(newSlab) {
-        this.slabs = [
-          ['First ' + (newSlab/LAKH).toFixed(2) + ' lakh', 0, newSlab, 0],
-          ['Next Tk1 lakh', newSlab, newSlab + LAKH, 5],
-          ['Next Tk3 lakh', newSlab + LAKH, newSlab + 4*LAKH, 10],
-          ['Next Tk4 lakh', newSlab + 4*LAKH, newSlab + 8*LAKH, 15],
-          ['Next Tk5 lakh', newSlab + 8*LAKH, newSlab + 13*LAKH, 20],
-          ['Above', newSlab + 13*LAKH, Infinity, 25],
-        ];
+        this.slabs = calculateTaxSlabs(newSlab);
       }
     }
   }
