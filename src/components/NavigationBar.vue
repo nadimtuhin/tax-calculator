@@ -11,6 +11,13 @@
             {{ $t('nav.home') }}
           </router-link>
           <router-link
+            to="/tax-calculation-guide"
+            class="nav-link px-3 mx-1 rounded-pill"
+          >
+            <i class="bi bi-book me-1"></i>
+            Tax Guide
+          </router-link>
+          <router-link
             to="/tax-2023"
             class="nav-link px-3 mx-1 rounded-pill"
           >
@@ -33,33 +40,39 @@
           </router-link>
         </div>
         <div class="d-flex align-items-center">
-          <div class="btn-group shadow-sm me-3">
+          <div class="dropdown me-3">
             <button
-              @click="exportData"
-              class="btn btn-outline-light"
-              title="Export your data to a JSON file"
+              class="btn btn-outline-light dropdown-toggle"
+              type="button"
+              @click="toggleDropdown"
+              :aria-expanded="isDropdownOpen"
             >
-              <i class="bi bi-download me-1"></i>
-              {{ $t('actions.export') }}
+              <i class="bi bi-gear me-1"></i>
+              {{ $t('nav.dataManagement') }}
             </button>
-            <button
-              @click="triggerFileInput"
-              class="btn btn-outline-light"
-              title="Import data from a JSON file"
-            >
-              <i class="bi bi-upload me-1"></i>
-              {{ $t('actions.import') }}
-            </button>
-            <button
-              @click="resetData"
-              class="btn btn-outline-danger"
-              title="Clear all data"
-            >
-              <i class="bi bi-trash me-1"></i>
-              {{ $t('actions.reset') }}
-            </button>
-            <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
+            <ul class="dropdown-menu dropdown-menu-end" v-show="isDropdownOpen" @click.stop>
+              <li>
+                <button class="dropdown-item" @click="exportData">
+                  <i class="bi bi-download me-2"></i>
+                  {{ $t('actions.export') }}
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" @click="triggerFileInput">
+                  <i class="bi bi-upload me-2"></i>
+                  {{ $t('actions.import') }}
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item text-danger" @click="resetData">
+                  <i class="bi bi-trash me-2"></i>
+                  {{ $t('actions.reset') }}
+                </button>
+              </li>
+            </ul>
           </div>
+          <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
           <div class="language-switcher">
             <select
               v-model="$i18n.locale"
@@ -70,7 +83,7 @@
                 :key="locale.code"
                 :value="locale.code"
               >
-                {{ locale.name }}
+                {{ locale.code }}
               </option>
             </select>
           </div>
@@ -87,10 +100,24 @@ export default {
   name: "NavigationBar",
   data() {
     return {
-      availableLocales
+      availableLocales,
+      isDropdownOpen: false
     };
   },
+  mounted() {
+    document.addEventListener('click', this.closeDropdown);
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.closeDropdown);
+  },
   methods: {
+    toggleDropdown(event) {
+      event.stopPropagation();
+      this.isDropdownOpen = !this.isDropdownOpen;
+    },
+    closeDropdown() {
+      this.isDropdownOpen = false;
+    },
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
@@ -230,7 +257,6 @@ export default {
 }
 
 .language-switcher .form-select {
-  min-width: 120px;
   padding: 0.4rem 2rem 0.4rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
@@ -257,5 +283,71 @@ export default {
 
 .language-switcher .form-select option {
   padding: 8px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 0.5rem;
+  display: block;
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+.dropdown-menu[style*="display: block"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #dc3545;
+  color: white !important;
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border-color: #eee;
+}
+
+.btn-outline-light.dropdown-toggle {
+  border-color: rgba(255, 255, 255, 0.5);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.btn-outline-light.dropdown-toggle:hover,
+.btn-outline-light.dropdown-toggle:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
 }
 </style>

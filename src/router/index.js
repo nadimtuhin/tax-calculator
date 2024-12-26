@@ -4,6 +4,7 @@ import Historical2023 from '../pages/Historical-2023.vue'
 import Home from '../pages/Home.vue'
 import TaxSavingTips from '../pages/TaxSavingTips.vue'
 import Contact from '../pages/Contact.vue'
+import TaxCalculationGuide from '../pages/TaxCalculationGuide.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes = [
     path: '/contact',
     name: 'Contact',
     component: Contact
+  },
+  {
+    path: '/tax-calculation-guide',
+    name: 'TaxCalculationGuide',
+    component: TaxCalculationGuide
   }
 ]
 

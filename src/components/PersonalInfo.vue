@@ -9,24 +9,18 @@
     <div class="card-body p-4">
       <div class="row">
         <div class="col-md-6 mb-4">
-          <label class="form-label font-weight-bold mb-2">
-            <i class="fas fa-birthday-cake mr-2"></i>
-            {{ $t('personalInfo.age') }}
+          <label class="form-label font-weight-bold d-block mb-2">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            {{ $t('personalInfo.location.label') }}
           </label>
-          <div class="input-group">
-            <input
-              type="number"
-              class="form-control form-control-lg shadow-sm"
-              v-model="age"
-              min="0"
-              max="150"
-              placeholder="Enter your age"
-            />
-            <div class="input-group-append">
-              <span class="input-group-text">years</span>
-            </div>
-          </div>
-          <small class="text-muted mt-1 d-block">Default: 30 years</small>
+          <select
+            class="form-control form-control-lg shadow-sm"
+            v-model="location"
+          >
+            <option value="dhaka_chittagong">{{ $t('personalInfo.location.dhaka_chittagong') }}</option>
+            <option value="other_city">{{ $t('personalInfo.location.other_city') }}</option>
+            <option value="other_areas">{{ $t('personalInfo.location.other_areas') }}</option>
+          </select>
         </div>
         <div class="col-md-6 mb-4">
           <label class="form-label font-weight-bold d-block mb-2">
@@ -104,6 +98,20 @@
                   </label>
                 </div>
               </div>
+              <div class="col-md-6 mb-3">
+                <div class="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    v-model="isSeniorCitizen"
+                    id="seniorCitizenCheck"
+                  />
+                  <label class="custom-control-label" for="seniorCitizenCheck">
+                    <i class="fas fa-user-clock mr-2"></i>
+                    {{ $t('personalInfo.seniorCitizen') }}
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -119,19 +127,12 @@ export default {
   name: 'PersonalInfo',
   computed: {
     ...mapGetters('personalInfo', {
-      storeAge: 'age',
       storeGender: 'gender',
       storeIsDisabled: 'isDisabled',
-      storeIsFreedomFighter: 'isFreedomFighter'
+      storeIsFreedomFighter: 'isFreedomFighter',
+      storeIsSeniorCitizen: 'isSeniorCitizen',
+      storeLocation: 'location'
     }),
-    age: {
-      get() {
-        return this.storeAge;
-      },
-      set(value) {
-        this.setAge(value);
-      }
-    },
     gender: {
       get() {
         return this.storeGender;
@@ -155,14 +156,31 @@ export default {
       set(value) {
         this.setFreedomFighter(value);
       }
+    },
+    isSeniorCitizen: {
+      get() {
+        return this.storeIsSeniorCitizen;
+      },
+      set(value) {
+        this.setSeniorCitizen(value);
+      }
+    },
+    location: {
+      get() {
+        return this.storeLocation;
+      },
+      set(value) {
+        this.setLocation(value);
+      }
     }
   },
   methods: {
     ...mapMutations('personalInfo', [
-      'setAge',
       'setGender',
       'setDisabled',
-      'setFreedomFighter'
+      'setFreedomFighter',
+      'setSeniorCitizen',
+      'setLocation'
     ])
   }
 };

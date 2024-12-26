@@ -3,7 +3,8 @@
     "home": "Home",
     "calculator2023": "2023 Tax Calculator",
     "taxSavingTips": "Tax Saving Tips",
-    "contact": "Contact"
+    "contact": "Contact",
+    "dataManagement": "Data Management"
   },
   "actions": {
     "export": "Export",
@@ -16,7 +17,12 @@
   },
   "personalInfo": {
     "title": "Personal Information",
-    "age": "Age",
+    "location": {
+      "label": "Location",
+      "dhaka_chittagong": "Dhaka and Chattogram City Corporations",
+      "other_city": "Other City Corporations",
+      "other_areas": "Other Areas"
+    },
     "gender": {
       "label": "Gender",
       "male": "Male",
@@ -24,7 +30,8 @@
       "third": "Third Gender"
     },
     "disability": "Person with Disability",
-    "freedomFighter": "Gazetted Freedom Fighter"
+    "freedomFighter": "Gazetted Freedom Fighter",
+    "seniorCitizen": "Senior Citizen 65+"
   },
   "salaries": {
     "title": "Enter Salary Information",

@@ -3,7 +3,8 @@
     "home": "হোম",
     "calculator2023": "২০২৩ ট্যাক্স ক্যালকুলেটর",
     "taxSavingTips": "ট্যাক্স সেভিং টিপস",
-    "contact": "যোগাযোগ"
+    "contact": "যোগাযোগ",
+    "dataManagement": "ডাটা ম্যানেজমেন্ট"
   },
   "actions": {
     "export": "এক্সপোর্ট",
@@ -16,7 +17,12 @@
   },
   "personalInfo": {
     "title": "ব্যক্তিগত তথ্য",
-    "age": "বয়স",
+    "location": {
+      "label": "অবস্থান",
+      "dhaka_chittagong": "ঢাকা এবং চট্টগ্রাম সিটি কর্পোরেশন",
+      "other_city": "অন্যান্য সিটি কর্পোরেশন",
+      "other_areas": "অন্যান্য এলাকা"
+    },
     "gender": {
       "label": "লিঙ্গ",
       "male": "পুরুষ",
@@ -24,7 +30,8 @@
       "third": "তৃতীয় লিঙ্গ"
     },
     "disability": "প্রতিবন্ধী",
-    "freedomFighter": "গেজেটভুক্ত যুদ্ধাহত মুক্তিযোদ্ধা"
+    "freedomFighter": "গেজেটভুক্ত যুদ্ধাহত মুক্তিযোদ্ধা",
+    "seniorCitizen": "প্রবীণ নাগরিক 65+"
   },
   "salaries": {
     "title": "বেতনের তথ্য দিন",
@@ -79,7 +86,7 @@
     "taxAmount": "কর (টাকা)",
     "totalTax": "মোট কর",
     "tds": "উৎসে কর্তিত কর",
-    "investmentRebate": "বিনিয়োগে কর রেয়াত",
+    "investmentRebate": "বিনিয়োগে কর রেয���াত",
     "payable": "প্রদেয়",
     "refundMessage": "(আপনি সরকারের কাছ থেকে এই পরিমাণ দাবি করতে পারেন)"
   }
