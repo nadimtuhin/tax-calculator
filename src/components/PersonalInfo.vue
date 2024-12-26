@@ -8,21 +8,8 @@
     </div>
     <div class="card-body p-4">
       <div class="row">
-        <div class="col-md-6 mb-4">
-          <label class="form-label font-weight-bold d-block mb-2">
-            <i class="fas fa-map-marker-alt mr-2"></i>
-            {{ $t('personalInfo.location.label') }}
-          </label>
-          <select
-            class="form-control form-control-lg shadow-sm"
-            v-model="location"
-          >
-            <option value="dhaka_chittagong">{{ $t('personalInfo.location.dhaka_chittagong') }}</option>
-            <option value="other_city">{{ $t('personalInfo.location.other_city') }}</option>
-            <option value="other_areas">{{ $t('personalInfo.location.other_areas') }}</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-4">
+
+        <div class="col-12 mb-4">
           <label class="form-label font-weight-bold d-block mb-2">
             <i class="fas fa-venus-mars mr-2"></i>
             {{ $t('personalInfo.gender.label') }}
@@ -66,6 +53,34 @@
               {{ $t('personalInfo.gender.third') }}
             </label>
           </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <label class="form-label font-weight-bold d-block mb-2">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            {{ $t('personalInfo.location.label') }}
+          </label>
+          <select
+            class="form-control form-control-lg shadow-sm"
+            v-model="location"
+          >
+            <option value="dhaka_chittagong">{{ $t('personalInfo.location.dhaka_chittagong') }}</option>
+            <option value="other_city">{{ $t('personalInfo.location.other_city') }}</option>
+            <option value="other_areas">{{ $t('personalInfo.location.other_areas') }}</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-4">
+          <label class="form-label font-weight-bold d-block mb-2">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            {{ $t('personalInfo.fiscalYear.label') }}
+          </label>
+          <select
+            class="form-control form-control-lg shadow-sm"
+            v-model="fiscalYear"
+          >
+            <option value="2023-2024" selected>2023-2024</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2025-2026">2025-2026</option>
+          </select>
         </div>
         <div class="col-12">
           <div class="border rounded p-4 bg-light">
@@ -131,7 +146,8 @@ export default {
       storeIsDisabled: 'isDisabled',
       storeIsFreedomFighter: 'isFreedomFighter',
       storeIsSeniorCitizen: 'isSeniorCitizen',
-      storeLocation: 'location'
+      storeLocation: 'location',
+      storeFiscalYear: 'fiscalYear'
     }),
     gender: {
       get() {
@@ -172,6 +188,14 @@ export default {
       set(value) {
         this.setLocation(value);
       }
+    },
+    fiscalYear: {
+      get() {
+        return this.storeFiscalYear;
+      },
+      set(value) {
+        this.setFiscalYear(value);
+      }
     }
   },
   methods: {
@@ -180,7 +204,8 @@ export default {
       'setDisabled',
       'setFreedomFighter',
       'setSeniorCitizen',
-      'setLocation'
+      'setLocation',
+      'setFiscalYear'
     ])
   }
 };

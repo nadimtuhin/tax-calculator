@@ -4,7 +4,8 @@ const state = {
   isDisabled: false,
   isFreedomFighter: false,
   isThirdGender: false,
-  isSeniorCitizen: false
+  isSeniorCitizen: false,
+  fiscalYear: '2023-2024'
 };
 
 const mutations = {
@@ -25,6 +26,26 @@ const mutations = {
   },
   setSeniorCitizen(state, isSeniorCitizen) {
     state.isSeniorCitizen = isSeniorCitizen;
+  },
+  setFiscalYear(state, year) {
+    state.fiscalYear = year;
+    // Update the months array in salaries store
+    const [startYear, endYear] = year.split('-');
+    const months = [
+      { id: `July '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Aug '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Sep '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Oct '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Nov '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Dec '${startYear.slice(2)}`,  ...monthlyDefault() },
+      { id: `Jan '${endYear}`,  ...monthlyDefault() },
+      { id: `Feb '${endYear}`,  ...monthlyDefault() },
+      { id: `Mar '${endYear}`,  ...monthlyDefault() },
+      { id: `Apr '${endYear}`,  ...monthlyDefault() },
+      { id: `May '${endYear}`,  ...monthlyDefault() },
+      { id: `June '${endYear}`,  ...monthlyDefault() },
+    ];
+    this.commit('loadSalaries', months);
   }
 };
 
@@ -36,6 +57,7 @@ const getters = {
   isFreedomFighter: state => state.isFreedomFighter,
   isSeniorCitizen: state => state.isSeniorCitizen,
   isThirdGender: state => state.gender === 'third',
+  fiscalYear: state => state.fiscalYear,
   taxFreeSlab: (state) => {
     if (state.isFreedomFighter) return 500000; // 5 lakh
     if (state.isDisabled || state.isThirdGender) return 475000; // 4.75 lakh

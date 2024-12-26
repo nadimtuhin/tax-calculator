@@ -19,8 +19,53 @@
   .button-container button:hover {
     background-color: #45a049;
   }
-
-
+  .add-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .remove-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .income-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .income-row input {
+    margin-right: 8px;
+  }
+  .income-section {
+    margin-top: 16px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .reset-button {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  .reset-button:hover {
+    background-color: #f57c00;
+  }
 </style>
 
 <template>
@@ -76,35 +121,57 @@
         >
       </td>
     </tr>
-
-    <tr>
-      <td>{{ $t('salaries.bonus') }}</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="bonus"
-          @input="changeBonus"
-        >
-      </td>
-    </tr>
-
-    <tr>
-      <td>{{ $t('salaries.others') }}</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="others"
-          @input="changeOthers"
-        >
-      </td>
-    </tr>
   </table>
+
+  <div class="income-section">
+    <div class="section-header">
+      <h3>{{ $t('salaries.bonuses') }}</h3>
+      <button class="reset-button" @click="resetBonuses">{{ $t('actions.reset') }}</button>
+    </div>
+    <div v-for="(bonus, index) in bonuses" :key="'bonus-'+index" class="income-row">
+      <input
+        type="text"
+        :placeholder="$t('salaries.bonusName')"
+        :value="$t('salaries.' + bonus.name.toLowerCase().replace(' ', ''))"
+        disabled
+      >
+      <input
+        type="number"
+        min="0"
+        max="999999"
+        step="1000"
+        :value="bonus.amount"
+        @input="updateBonus(index, bonus.name, $event.target.value)"
+      >
+      <button class="remove-button" @click="removeBonus(index)">{{ $t('common.remove') }}</button>
+    </div>
+    <button class="add-button" @click="addBonus">{{ $t('common.add') }} {{ $t('salaries.bonus') }}</button>
+  </div>
+
+  <div class="income-section">
+    <div class="section-header">
+      <h3>{{ $t('salaries.otherIncomes') }}</h3>
+      <button class="reset-button" @click="resetOtherIncomes">{{ $t('actions.reset') }}</button>
+    </div>
+    <div v-for="(income, index) in otherIncomes" :key="'other-'+index" class="income-row">
+      <input
+        type="text"
+        :placeholder="$t('salaries.incomeName')"
+        :value="income.name"
+        @input="updateOtherIncome(index, $event.target.value, income.amount)"
+      >
+      <input
+        type="number"
+        min="0"
+        max="999999"
+        step="1000"
+        :value="income.amount"
+        @input="updateOtherIncome(index, income.name, $event.target.value)"
+      >
+      <button class="remove-button" @click="removeOtherIncome(index)">{{ $t('common.remove') }}</button>
+    </div>
+    <button class="add-button" @click="addOtherIncome">{{ $t('common.add') }} {{ $t('salaries.otherIncome') }}</button>
+  </div>
 </div>
 </template>
 
@@ -128,23 +195,40 @@ export default {
     changeSubsequentTds($event, index) {
       this.$store.commit('changeSubsequentTds', { index, value: $event.target.value });
     },
-    changeBonus($event) {
-      this.$store.commit('changeBonus', $event.target.value );
-    },
-    changeOthers($event) {
-      this.$store.commit('changeOthers', $event.target.value );
-    },
     changeBreakdown($event, index, part) {
       this.$store.commit('changeParts', { index, part, value: $event.target.value } );
+    },
+    addBonus() {
+      this.$store.commit('addBonus', { name: '', amount: 0 });
+    },
+    removeBonus(index) {
+      this.$store.commit('removeBonus', index);
+    },
+    updateBonus(index, name, amount) {
+      this.$store.commit('updateBonus', { index, name, amount });
+    },
+    resetBonuses() {
+      this.$store.commit('resetBonuses');
+    },
+    addOtherIncome() {
+      this.$store.commit('addOtherIncome', { name: '', amount: 0 });
+    },
+    removeOtherIncome(index) {
+      this.$store.commit('removeOtherIncome', index);
+    },
+    updateOtherIncome(index, name, amount) {
+      this.$store.commit('updateOtherIncome', { index, name, amount });
+    },
+    resetOtherIncomes() {
+      this.$store.commit('resetOtherIncomes');
     }
   },
   computed: {
     ...mapState({
       parts: state => state.salaries.parts,
       months: state => state.salaries.months,
-      salaryBreakdown: state => state.breakdown.salaryBreakdown,
-      bonus: state => state.salaries.bonus,
-      others: state => state.salaries.others,
+      bonuses: state => state.salaries.bonuses,
+      otherIncomes: state => state.salaries.otherIncomes,
     }),
     ...mapGetters({
       totalSalary: 'totalSalary',

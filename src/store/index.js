@@ -7,7 +7,7 @@ import personalInfo from "./personalInfo";
 
 Vue.use(Vuex);
 
-const appVersion = '0.10';
+const appVersion = '0.11';
 
 const store = new Vuex.Store({
   plugins: [

@@ -29,22 +29,33 @@
       "female": "Female",
       "third": "Third Gender"
     },
+    "fiscalYear": {
+      "label": "Fiscal Year",
+      "placeholder": "Select fiscal year"
+    },
     "disability": "Person with Disability",
     "freedomFighter": "Gazetted Freedom Fighter",
     "seniorCitizen": "Senior Citizen 65+"
   },
   "salaries": {
-    "title": "Enter Salary Information",
+    "title": "Monthly Salary",
     "salary": "Salary",
     "tds": "TDS",
-    "tdsTooltip": "Tax Deduction at Source",
+    "tdsTooltip": "Tax Deducted at Source",
     "basic": "Basic",
-    "house": "House",
+    "house": "House Rent",
     "medical": "Medical",
     "transportation": "Transportation",
     "lfa": "LFA",
     "bonus": "Bonus",
-    "others": "Others"
+    "bonuses": "Bonuses",
+    "bonusName": "Bonus Name",
+    "eidBonus1": "Eid-ul-Fitr Bonus",
+    "eidBonus2": "Eid-ul-Adha Bonus",
+    "others": "Others",
+    "otherIncomes": "Other Incomes",
+    "otherIncome": "Other Income",
+    "incomeName": "Income Name"
   },
   "taxableIncome": {
     "title": "Taxable Income Breakdown",
@@ -110,5 +121,9 @@
       "subtitle": "Send us a message",
       "description": "Fill out the form below and we'll get back to you within 24 hours"
     }
+  },
+  "common": {
+    "add": "Add",
+    "remove": "Remove"
   }
 }

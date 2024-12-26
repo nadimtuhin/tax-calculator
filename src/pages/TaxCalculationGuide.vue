@@ -7,7 +7,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">calculate</i>
+              <i class="fas fa-calculator align-middle mr-2"></i>
               Basic Steps of Tax Calculation
             </h2>
             <ol class="pl-3">
@@ -25,7 +25,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">table_chart</i>
+              <i class="fas fa-table align-middle mr-2"></i>
               Income Tax Slabs (2023-2024)
             </h2>
             <div class="table-responsive">
@@ -72,7 +72,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">savings</i>
+              <i class="fas fa-piggy-bank align-middle mr-2"></i>
               Tax-Free Income Threshold
             </h2>
             <div class="row">
@@ -117,7 +117,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">info</i>
+              <i class="fas fa-info-circle align-middle mr-2"></i>
               Important Notes
             </h2>
             <div class="mb-4">
@@ -126,26 +126,26 @@
                   <h3 class="h5 mb-3">Minimum Tax by Location</h3>
                   <ul class="list-unstyled">
                     <li class="mb-2">
-                      <i class="material-icons align-middle text-primary mr-2">location_city</i>
+                      <i class="fas fa-city align-middle text-primary mr-2"></i>
                       Dhaka and Chattogram City Corporations: BDT 5,000
                     </li>
                     <li class="mb-2">
-                      <i class="material-icons align-middle text-primary mr-2">location_city</i>
+                      <i class="fas fa-city align-middle text-primary mr-2"></i>
                       Other City Corporations: BDT 4,000
                     </li>
                     <li class="mb-2">
-                      <i class="material-icons align-middle text-primary mr-2">location_on</i>
+                      <i class="fas fa-map-marker-alt align-middle text-primary mr-2"></i>
                       Other areas: BDT 3,000
                     </li>
                   </ul>
                 </div>
               </div>
               <div class="alert alert-warning">
-                <i class="material-icons align-middle mr-2">warning</i>
+                <i class="fas fa-exclamation-triangle align-middle mr-2"></i>
                 Tax returns must be submitted within the specified deadline to avoid penalties
               </div>
               <div class="alert alert-success">
-                <i class="material-icons align-middle mr-2">check_circle</i>
+                <i class="fas fa-check-circle align-middle mr-2"></i>
                 Various tax rebates are available for investments in approved sectors
               </div>
             </div>
@@ -157,7 +157,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">calculate</i>
+              <i class="fas fa-calculator align-middle mr-2"></i>
               Tax Calculation Example
             </h2>
             <div class="card bg-light">
@@ -195,7 +195,7 @@
         <div class="card shadow">
           <div class="card-body">
             <h2 class="card-title h3 text-primary mb-4">
-              <i class="material-icons align-middle mr-2">savings</i>
+              <i class="fas fa-piggy-bank align-middle mr-2"></i>
               Tax Rebate Calculation Guide
             </h2>
             <div class="card bg-light mb-4">
@@ -281,7 +281,7 @@ export default {
   max-width: 1200px;
 }
 
-.material-icons {
+.fas {
   vertical-align: middle;
   font-size: 1.2rem;
 }

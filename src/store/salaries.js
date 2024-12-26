@@ -43,8 +43,11 @@ const salaries = {
       { id: "May",  ...monthlyDefault() },
       { id: "June",  ...monthlyDefault() },
     ],
-    bonus: 0,
-    others: 0,
+    bonuses: [
+      { name: 'eidBonus1', amount: 0 },
+      { name: 'eidBonus2', amount: 0 }
+    ],
+    otherIncomes: [],
   }),
   mutations: {
     loadSalaries(state, salaries) {
@@ -54,24 +57,35 @@ const salaries = {
       state.investments = investments;
     },
     resetSalaries(state) {
-      state.months = state.months.map((month) => ({
-        id: month.id,
-        salary: 0,
-        tds: 0,
-        breakdown: {
-          basic: 0,
-          house: 0,
-          medical: 0,
-          transport: 0,
-          lfa: 0,
-        },
-      }));
+      state.months = [
+        { id: "July",  ...monthlyDefault() },
+        { id: "August",  ...monthlyDefault() },
+        { id: "September",  ...monthlyDefault() },
+        { id: "October",  ...monthlyDefault() },
+        { id: "November",  ...monthlyDefault() },
+        { id: "December",  ...monthlyDefault() },
+        { id: "January",  ...monthlyDefault() },
+        { id: "February",  ...monthlyDefault() },
+        { id: "March",  ...monthlyDefault() },
+        { id: "April",  ...monthlyDefault() },
+        { id: "May",  ...monthlyDefault() },
+        { id: "June",  ...monthlyDefault() },
+      ];
     },
     resetInvestments(state) {
       state.investments = state.investments.map(investment => ({
         ...investment,
         amount: 0,
       }));
+    },
+    resetBonuses(state) {
+      state.bonuses = [
+        { name: 'eidBonus1', amount: 0 },
+        { name: 'eidBonus2', amount: 0 }
+      ];
+    },
+    resetOtherIncomes(state) {
+      state.otherIncomes = [];
     },
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
@@ -129,10 +143,31 @@ const salaries = {
     changeBonus(state, value) {
       state.bonus = +value;
     },
+    addBonus(state, { name, amount }) {
+      state.bonuses.push({ name, amount: +amount });
+    },
+    removeBonus(state, index) {
+      state.bonuses.splice(index, 1);
+    },
+    updateBonus(state, { index, name, amount }) {
+      state.bonuses[index] = { name, amount: +amount };
+    },
+    addOtherIncome(state, { name, amount }) {
+      state.otherIncomes.push({ name, amount: +amount });
+    },
+    removeOtherIncome(state, index) {
+      state.otherIncomes.splice(index, 1);
+    },
+    updateOtherIncome(state, { index, name, amount }) {
+      state.otherIncomes[index] = { name, amount: +amount };
+    },
   },
   getters: {
     totalSalary(state) {
-      return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus;
+      const salarySum = state.months.reduceRight((carry, item) => carry + +item.salary, 0);
+      const bonusSum = state.bonuses.reduce((sum, bonus) => sum + +bonus.amount, 0);
+      const othersSum = state.otherIncomes.reduce((sum, income) => sum + +income.amount, 0);
+      return salarySum + bonusSum + othersSum;
     },
     totalTds(state) {
       return state.months.reduceRight((carry, item) => carry + +item.tds, 0);
