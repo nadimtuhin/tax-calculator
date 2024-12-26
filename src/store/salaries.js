@@ -159,11 +159,11 @@ const salaries = {
 
       return Math.min(maxExempt, houseExempt)
     },
-    medicalExempt(state, getters) {
+    medicalExempt(state, getters, rootState) {
       const { totalBasic, totalMedical } = getters;
-      const maxExempt = 120000;
-      // মূল ববতদনর ১০% অথবা বাতষকড ১,২০,০০০/- টাকা (প্রততবন্ধী ব্যতির বেদত্র ১০ লে টাকা), এ দ্য’টির মদে বেটি কম বস পতরমাণ অা��ক করমুি।
-      return Math.min(maxExempt, totalBasic/10, totalMedical)
+      const isDisabled = rootState.personalInfo.isDisabled;
+      const maxExempt = isDisabled ? 1000000 : 120000; // 10 lakh if disabled, otherwise 1.2 lakh
+      return Math.min(maxExempt, Math.round(totalBasic/10), totalMedical)
     },
     transportExempt(state, getters) {
       const { totalTransport } = getters;
