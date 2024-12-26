@@ -1,37 +1,37 @@
 <template>
   <div class="contact-page">
     <div class="page-header">
-      <span class="pre-title">Get in Touch</span>
-      <h1>Contact Us for Tax Savings</h1>
-      <p class="subtitle">We're here to help you optimize your tax strategy and maximize your savings</p>
+      <span class="pre-title">{{ $t('contact.preTitle') }}</span>
+      <h1>{{ $t('contact.title') }}</h1>
+      <p class="subtitle">{{ $t('contact.subtitle') }}</p>
     </div>
 
     <div class="contact-container">
       <div class="contact-info">
         <div class="info-card">
-          <span class="section-label">Contact Information</span>
-          <h2>Let's Talk About Your Taxes</h2>
-          <p class="info-subtitle">Reach out to us through any of these channels</p>
+          <span class="section-label">{{ $t('contact.info.title') }}</span>
+          <h2>{{ $t('contact.info.subtitle') }}</h2>
+          <p class="info-subtitle">{{ $t('contact.info.description') }}</p>
 
           <div class="contact-methods">
             <div class="contact-method">
               <div class="icon">📧</div>
               <div class="details">
-                <h3>Email Us</h3>
+                <h3>{{ $t('contact.info.email') }}</h3>
                 <a :href="`mailto:${contactInfo.email}`">{{ contactInfo.email }}</a>
               </div>
             </div>
             <div class="contact-method">
               <div class="icon">📞</div>
               <div class="details">
-                <h3>Call Us</h3>
+                <h3>{{ $t('contact.info.phone') }}</h3>
                 <a :href="`tel:${contactInfo.phone}`">{{ contactInfo.phone }}</a>
               </div>
             </div>
             <div class="contact-method">
               <div class="icon">⏰</div>
               <div class="details">
-                <h3>Business Hours</h3>
+                <h3>{{ $t('contact.info.hours.title') }}</h3>
                 <p>{{ contactInfo.businessHours.days }}: {{ contactInfo.businessHours.time }}</p>
                 <span class="timezone">{{ contactInfo.businessHours.timezone }}</span>
               </div>
@@ -42,9 +42,9 @@
 
       <div class="contact-form">
         <div class="form-card">
-          <span class="section-label">Contact Form</span>
-          <h2>Send us a message</h2>
-          <p class="form-subtitle">Fill out the form below and we'll get back to you within 24 hours</p>
+          <span class="section-label">{{ $t('contact.form.title') }}</span>
+          <h2>{{ $t('contact.form.subtitle') }}</h2>
+          <p class="form-subtitle">{{ $t('contact.form.description') }}</p>
 
           <form @submit.prevent="submitForm">
             <div v-for="(field, key) in formFields" :key="key" class="form-group">

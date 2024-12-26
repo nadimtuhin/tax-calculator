@@ -25,5 +25,25 @@
     },
     "disability": "Person with Disability",
     "freedomFighter": "Gazetted Freedom Fighter"
+  },
+  "contact": {
+    "preTitle": "Get in Touch",
+    "title": "Contact Us for Tax Savings",
+    "subtitle": "We're here to help you optimize your tax strategy and maximize your savings",
+    "info": {
+      "title": "Contact Information",
+      "subtitle": "Let's Talk About Your Taxes",
+      "description": "Reach out to us through any of these channels",
+      "email": "Email Us",
+      "phone": "Call Us",
+      "hours": {
+        "title": "Business Hours"
+      }
+    },
+    "form": {
+      "title": "Contact Form",
+      "subtitle": "Send us a message",
+      "description": "Fill out the form below and we'll get back to you within 24 hours"
+    }
   }
 }
