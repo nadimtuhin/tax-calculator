@@ -26,6 +26,63 @@
     "disability": "Person with Disability",
     "freedomFighter": "Gazetted Freedom Fighter"
   },
+  "salaries": {
+    "title": "Enter Salary Information",
+    "salary": "Salary",
+    "tds": "TDS",
+    "tdsTooltip": "Tax Deduction at Source",
+    "basic": "Basic",
+    "house": "House",
+    "medical": "Medical",
+    "transportation": "Transportation",
+    "lfa": "LFA",
+    "bonus": "Bonus",
+    "others": "Others"
+  },
+  "taxableIncome": {
+    "title": "Taxable Income Breakdown",
+    "total": "Total",
+    "taxExempted": "Tax Exempted",
+    "taxable": "Taxable",
+    "basic": "Basic",
+    "house": "House",
+    "medical": "Medical",
+    "transport": "Transport",
+    "lfa": "LFA",
+    "others": "Others",
+    "bonus": "Bonus",
+    "grossSalary": "Gross Salary"
+  },
+  "investment": {
+    "title": "Tax Rebate on Investment",
+    "amount": "Amount",
+    "maximumAllowed": "Maximum Allowed",
+    "remove": "Remove",
+    "others": "Others",
+    "totalInvestment": "Total Investment",
+    "totalRebatableInvestment": "Total Rebatable Investment",
+    "taxRebatePercentage": "Tax Rebate Percentage",
+    "totalRebate": "Total Rebate on Investment",
+    "addNew": {
+      "title": "Add New Investment",
+      "placeholder": "Enter investment name",
+      "cancel": "Cancel",
+      "add": "Add"
+    }
+  },
+  "calculation": {
+    "title": "Tax Calculation",
+    "noTaxMessage": "You are not liable to pay any tax",
+    "tax2024": "Tax (2024): {amount} BDT",
+    "incomeSlab": "Income slab (per year)",
+    "taxRate": "Tax rate [%]",
+    "taxAmount": "Tax (BDT)",
+    "totalTax": "Total tax",
+    "tds": "Tax deducted at source",
+    "investmentRebate": "Tax rebate on investment",
+    "payable": "Payable",
+    "refundMessage": "(You can claim this amount from the government)"
+  },
   "contact": {
     "preTitle": "Get in Touch",
     "title": "Contact Us for Tax Savings",

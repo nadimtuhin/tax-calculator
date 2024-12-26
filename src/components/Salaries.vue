@@ -25,19 +25,19 @@
 
 <template>
 <div>
-  <h2>Enter salary information</h2>
+  <h2>{{ $t('salaries.title') }}</h2>
   <table>
     <tr>
       <th></th>
-      <th>salary</th>
+      <th>{{ $t('salaries.salary') }}</th>
       <th>
-        <span title="tax deduction at source">tds*</span>
+        <span :title="$t('salaries.tdsTooltip')">{{ $t('salaries.tds') }}*</span>
       </th>
-      <th>Basic</th>
-      <th>House</th>
-      <th>Medical</th>
-      <th>Transportation</th>
-      <th>LFA</th>
+      <th>{{ $t('salaries.basic') }}</th>
+      <th>{{ $t('salaries.house') }}</th>
+      <th>{{ $t('salaries.medical') }}</th>
+      <th>{{ $t('salaries.transportation') }}</th>
+      <th>{{ $t('salaries.lfa') }}</th>
     </tr>
 
     <tr v-for="(month, index) in months" v-bind:key="month.id">
@@ -65,22 +65,20 @@
         >
       </td>
 
-      <template v-for="part in parts">
-        <td :key="part">
-          <input
-            max="999999"
-            min="0"
-            step="500"
-            type="number"
-            :value="months[index].breakdown[part]"
-            @input="changeBreakdown($event, index, part)"
-          >
-        </td>
-      </template>
+      <td v-for="part in parts" :key="part">
+        <input
+          max="999999"
+          min="0"
+          step="500"
+          type="number"
+          :value="months[index].breakdown[part]"
+          @input="changeBreakdown($event, index, part)"
+        >
+      </td>
     </tr>
 
     <tr>
-      <td>Bonus</td>
+      <td>{{ $t('salaries.bonus') }}</td>
       <td>
         <input
           type="number"
@@ -94,7 +92,7 @@
     </tr>
 
     <tr>
-      <td>Others</td>
+      <td>{{ $t('salaries.others') }}</td>
       <td>
         <input
           type="number"

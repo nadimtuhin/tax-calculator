@@ -1,57 +1,57 @@
 <template>
 <div>
-<h2>Taxable income breakdown</h2>
+<h2>{{ $t('taxableIncome.title') }}</h2>
 <table class="table">
   <tr>
     <th></th>
-    <th>Total</th>
-    <th>Tax exempted</th>
-    <th>Taxable</th>
+    <th>{{ $t('taxableIncome.total') }}</th>
+    <th>{{ $t('taxableIncome.taxExempted') }}</th>
+    <th>{{ $t('taxableIncome.taxable') }}</th>
   </tr>
   <tr>
-    <td><strong>Basic</strong></td>
+    <td><strong>{{ $t('taxableIncome.basic') }}</strong></td>
     <td>{{totalBasic}}</td>
     <td>0</td>
     <td>{{totalBasic}}</td>
   </tr>
   <tr>
-    <td><strong>House</strong></td>
+    <td><strong>{{ $t('taxableIncome.house') }}</strong></td>
     <td>{{totalHouse}}</td>
     <td>{{houseExempt}}</td>
     <td>{{totalHouse - houseExempt}}</td>
   </tr>
   <tr>
-    <td><strong>Medical</strong></td>
+    <td><strong>{{ $t('taxableIncome.medical') }}</strong></td>
     <td>{{totalMedical}}</td>
     <td>{{medicalExempt}}</td>
     <td>{{totalMedical - medicalExempt}}</td>
   </tr>
   <tr>
-    <td><strong>Transport</strong></td>
+    <td><strong>{{ $t('taxableIncome.transport') }}</strong></td>
     <td>{{totalTransport}}</td>
     <td>{{transportExempt}}</td>
     <td>{{totalTransport - transportExempt}}</td>
   </tr>
   <tr>
-    <td><strong>LFA</strong></td>
+    <td><strong>{{ $t('taxableIncome.lfa') }}</strong></td>
     <td>{{totalLfa}}</td>
     <td>{{lfaExempt}}</td>
     <td>{{totalLfa - lfaExempt}}</td>
   </tr>
   <tr>
-    <td><strong>Others</strong></td>
+    <td><strong>{{ $t('taxableIncome.others') }}</strong></td>
     <td>{{others}}</td>
     <td>0</td>
     <td>{{others}}</td>
   </tr>
   <tr>
-    <td><strong>Bonus</strong></td>
+    <td><strong>{{ $t('taxableIncome.bonus') }}</strong></td>
     <td>{{bonus}}</td>
     <td>0</td>
     <td>{{bonus}}</td>
   </tr>
   <tr>
-    <td><strong>Gross Salary</strong></td>
+    <td><strong>{{ $t('taxableIncome.grossSalary') }}</strong></td>
     <td><strong>{{totalSalary}}</strong></td>
     <td><strong>{{totalExempt}}</strong></td>
     <td><strong>{{taxableSalary}}</strong></td>

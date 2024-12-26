@@ -1,18 +1,18 @@
 <template>
 <div>
-  <h2 v-if="totalTax">Tax (2024): {{totalTax.toLocaleString()}} BDT</h2>
-  <h2 v-else>You are not liable to pay any tax</h2>
+  <h2 v-if="totalTax">{{ $t('calculation.tax2024', { amount: totalTax.toLocaleString() }) }}</h2>
+  <h2 v-else>{{ $t('calculation.noTaxMessage') }}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
         <td>
-          <strong>Income slab (per year)</strong>
+          <strong>{{ $t('calculation.incomeSlab') }}</strong>
         </td>
         <td>
-          <strong>Tax rate [%]</strong>
+          <strong>{{ $t('calculation.taxRate') }}</strong>
         </td>
         <td>
-          <strong>Tax (BDT)</strong>
+          <strong>{{ $t('calculation.taxAmount') }}</strong>
         </td>
       </tr>
       <tr v-for="slab in taxBreakdown" v-bind:key="slab.id">
@@ -21,29 +21,28 @@
         <td>{{slab.slabCut.toLocaleString()}}</td>
       </tr>
       <tr>
-        <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> <strong>{{totalTax.toLocaleString()}}</strong> </td>
+        <td><strong>{{ $t('calculation.totalTax') }}</strong></td>
+        <td></td>
+        <td><strong>{{totalTax.toLocaleString()}}</strong></td>
       </tr>
       <tr>
-        <td> <strong>Tax deducted at source</strong> </td>
-        <td> </td>
-        <td> <strong v-if="totalTds">-{{totalTds.toLocaleString()}}</strong> </td>
+        <td><strong>{{ $t('calculation.tds') }}</strong></td>
+        <td></td>
+        <td><strong v-if="totalTds">-{{totalTds.toLocaleString()}}</strong></td>
       </tr>
       <tr>
-        <td> <strong>Tax rebate on investment</strong> </td>
-        <td> </td>
-        <td> <strong v-if="investmentRebate">-{{investmentRebate.toLocaleString()}}</strong> </td>
+        <td><strong>{{ $t('calculation.investmentRebate') }}</strong></td>
+        <td></td>
+        <td><strong v-if="investmentRebate">-{{investmentRebate.toLocaleString()}}</strong></td>
       </tr>
       <tr>
-        <td> <strong>Payable</strong> </td>
-        <td> </td>
+        <td><strong>{{ $t('calculation.payable') }}</strong></td>
+        <td></td>
         <td>
-          <strong>
-            {{totalTax - totalTds - investmentRebate}}
-          </strong> <br/>
+          <strong>{{totalTax - totalTds - investmentRebate}}</strong><br/>
           <span v-if="totalTax - totalTds - investmentRebate < 0">
-              (You can claim this amount from the government)
-            </span>
+            {{ $t('calculation.refundMessage') }}
+          </span>
         </td>
       </tr>
     </tbody>

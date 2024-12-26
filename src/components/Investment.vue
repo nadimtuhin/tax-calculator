@@ -1,12 +1,12 @@
 <template>
 <div>
-<h2>Tax rebate on investment</h2>
+<h2>{{ $t('investment.title') }}</h2>
 
 <table class="table">
   <tr>
     <th></th>
-    <th>Amount</th>
-    <th>Maximum allowed</th>
+    <th>{{ $t('investment.amount') }}</th>
+    <th>{{ $t('investment.maximumAllowed') }}</th>
     <th></th>
   </tr>
 
@@ -29,10 +29,10 @@
         @click="removeInvestment(index)"
         class="remove-btn"
       >
-        Remove
+        {{ $t('investment.remove') }}
       </button>
       <button
-        v-if="investment.name === 'Others'"
+        v-if="investment.name === $t('investment.others')"
         @click="showAddDialog = true"
         class="add-btn circle"
       >
@@ -42,28 +42,28 @@
   </tr>
 
   <tr>
-    <td><strong>Total Investment</strong></td>
+    <td><strong>{{ $t('investment.totalInvestment') }}</strong></td>
     <td>{{totalInvestment.toLocaleString()}}</td>
     <td>{{maxRebatableInvestment.toLocaleString()}}</td>
     <td></td>
   </tr>
 
   <tr>
-    <td><strong>Total rebatable investment</strong></td>
+    <td><strong>{{ $t('investment.totalRebatableInvestment') }}</strong></td>
     <td>{{totalRebatableInvestment.toLocaleString()}}</td>
     <td></td>
     <td></td>
   </tr>
 
   <tr>
-    <td><strong>Tax rebate percentage</strong></td>
+    <td><strong>{{ $t('investment.taxRebatePercentage') }}</strong></td>
     <td>15%</td>
     <td></td>
     <td></td>
   </tr>
 
   <tr>
-    <td><strong>Total rebate on investment</strong></td>
+    <td><strong>{{ $t('investment.totalRebate') }}</strong></td>
     <td>{{ investmentRebate.toLocaleString() }}</td>
     <td></td>
     <td></td>
@@ -72,17 +72,17 @@
 
 <div v-if="showAddDialog" class="modal">
   <div class="modal-content">
-    <h3>Add New Investment</h3>
+    <h3>{{ $t('investment.addNew.title') }}</h3>
     <input
       type="text"
       v-model="newInvestmentName"
-      placeholder="Enter investment name"
+      :placeholder="$t('investment.addNew.placeholder')"
       class="investment-input"
       @keyup.enter="addNewInvestment"
     />
     <div class="modal-actions">
-      <button @click="showAddDialog = false" class="cancel-btn">Cancel</button>
-      <button @click="addNewInvestment" class="add-btn">Add</button>
+      <button @click="showAddDialog = false" class="cancel-btn">{{ $t('investment.addNew.cancel') }}</button>
+      <button @click="addNewInvestment" class="add-btn">{{ $t('investment.addNew.add') }}</button>
     </div>
   </div>
 </div>
