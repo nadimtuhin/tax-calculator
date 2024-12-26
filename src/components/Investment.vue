@@ -44,13 +44,13 @@
   <tr>
     <td><strong>Total Investment</strong></td>
     <td>{{totalInvestment.toLocaleString()}}</td>
-    <td>{{maxRebateableInvestment.toLocaleString()}}</td>
+    <td>{{maxRebatableInvestment.toLocaleString()}}</td>
     <td></td>
   </tr>
 
   <tr>
-    <td><strong>Total rebateable investment</strong></td>
-    <td>{{totalRebateableInvestment.toLocaleString()}}</td>
+    <td><strong>Total rebatable investment</strong></td>
+    <td>{{totalRebatableInvestment.toLocaleString()}}</td>
     <td></td>
     <td></td>
   </tr>
@@ -63,7 +63,7 @@
   </tr>
 
   <tr>
-    <td><strong>Totat rebate on investment</strong></td>
+    <td><strong>Total rebate on investment</strong></td>
     <td>{{ investmentRebate.toLocaleString() }}</td>
     <td></td>
     <td></td>
@@ -127,8 +127,8 @@ export default {
     }),
     ...mapGetters({
       totalInvestment: 'totalInvestment',
-      totalRebateableInvestment: 'totalRebateableInvestment',
-      maxRebateableInvestment: 'maxRebateableInvestment',
+      totalRebatableInvestment: 'totalRebatableInvestment',
+      maxRebatableInvestment: 'maxRebatableInvestment',
       rebatePercentage: 'rebatePercentage',
       investmentRebate: 'investmentRebate',
 

@@ -16,7 +16,7 @@ function arraySum(arr) {
   return arr.reduceRight((c, i) => (c + +i), 0);
 }
 
-const infinity = 99999999999999999999999999; // Inifiny has persist issues in localStorage
+const infinity = 99999999999999999999999999; // Infinity has persist issues in localStorage
 
 const salaries = {
   state: () => ({
@@ -184,23 +184,23 @@ const salaries = {
     totalInvestment(state, getters) {
       return state.investments.map(i => i.amount).reduce((c, n) => c+n, 0);
     },
-    totalRebateableInvestment(state, getters) {
-      const rebateable = state.investments
+    totalRebatableInvestment(state, getters) {
+      const rebatable = state.investments
         .map(i => [i.amount, i.maximum])
         .reduceRight((c, arr) => {
           return c+(Math.min(...arr))
         }, 0);
 
-      return Math.min(getters.maxRebateableInvestment, rebateable);
+      return Math.min(getters.maxRebatableInvestment, rebatable);
     },
-    maxRebateableInvestment(state, getters) {
+    maxRebatableInvestment(state, getters) {
       return Math.round(getters.taxableSalary/5);
     },
     rebatePercentage(state, getters) {
       return 15;
     },
     investmentRebate(state, getters) {
-      return Math.round(getters.totalRebateableInvestment * getters.rebatePercentage/100);
+      return Math.round(getters.totalRebatableInvestment * getters.rebatePercentage/100);
     },
   }
 };
