@@ -36,7 +36,7 @@
           <button
             class="btn nav-action-btn me-5"
             type="button"
-            @click="showModal = true"
+            @click="showDataManagement = true"
             style="margin-right: 5px;"
           >
             <i class="bi bi-gear me-1"></i>
@@ -61,127 +61,24 @@
       </div>
     </div>
 
-    <!-- Data Management Modal -->
-    <div class="modal fade" :class="{ 'show': showModal }" tabindex="-1" :style="{ display: showModal ? 'block' : 'none' }">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title text-dark">{{ $t('nav.dataManagement') }}</h5>
-            <button type="button" class="btn-close" @click="showModal = false">
-              <i class="bi bi-x"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="d-grid gap-3">
-              <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center" @click="exportData" style="margin-bottom: 5px;">
-                <i class="bi bi-download me-2"></i>
-                {{ $t('actions.export') }}
-              </button>
-              <button class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center" @click="triggerFileInput" style="margin-bottom: 5px;">
-                <i class="bi bi-upload me-2"></i>
-                {{ $t('actions.import') }}
-              </button>
-              <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center" @click="confirmReset" style="margin-bottom: 5px;">
-                <i class="bi bi-trash me-2"></i>
-                {{ $t('actions.reset') }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-backdrop fade" :class="{ 'show': showModal }" v-if="showModal"></div>
-    <input type="file" ref="fileInput" @change="importData" accept=".json" style="display: none;">
+    <DataManagement :show="showDataManagement" @update:show="showDataManagement = $event" />
   </nav>
 </template>
 
 <script>
 import { availableLocales } from '../i18n';
+import DataManagement from './DataManagement.vue';
 
 export default {
   name: "NavigationBar",
+  components: {
+    DataManagement
+  },
   data() {
     return {
       availableLocales,
-      showModal: false
+      showDataManagement: false
     };
-  },
-  mounted() {
-    document.addEventListener('keydown', this.handleEscape);
-  },
-  beforeDestroy() {
-    document.removeEventListener('keydown', this.handleEscape);
-  },
-  methods: {
-    handleEscape(event) {
-      if (event.key === 'Escape' && this.showModal) {
-        this.showModal = false;
-      }
-    },
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-      this.showModal = false;
-    },
-    exportData() {
-      const data = {
-        salaries: this.$store.state.salaries.months,
-        investments: this.$store.state.investments,
-        bonuses: this.$store.state.salaries.bonuses,
-        otherIncomes: this.$store.state.salaries.otherIncomes,
-        personalInfo: this.$store.state.personalInfo,
-      };
-      const fileName = 'salary-investment-data-'+this.$store.state.personalInfo.fiscalYear+'-'+new Date().getTime()+'.json';
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.click();
-      URL.revokeObjectURL(url);
-      this.showModal = false;
-    },
-    confirmReset() {
-      if (confirm(this.$t('messages.confirmReset'))) {
-        this.resetData();
-      }
-    },
-    resetData() {
-      this.$store.commit('salaries/resetSalaries');
-      this.$store.commit('salaries/resetBonuses');
-      this.$store.commit('salaries/resetOtherIncomes');
-      this.$store.commit('investments/resetInvestments');
-      this.$store.commit('personalInfo/resetPersonalInfo');
-      alert(this.$t('messages.dataReset'));
-      this.showModal = false;
-    },
-    importData(event) {
-      const file = event.target.files[0];
-      if (!file) {
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        if (data.salaries) {
-          this.$store.commit('salaries/loadSalaries', data.salaries);
-        }
-        if (data.investments) {
-          this.$store.commit('investments/loadInvestments', data.investments);
-        }
-        if (data.bonuses) {
-          this.$store.commit('salaries/loadBonuses', data.bonuses);
-        }
-        if (data.otherIncomes) {
-          this.$store.commit('salaries/loadOtherIncomes', data.otherIncomes);
-        }
-        if (data.personalInfo) {
-          this.$store.commit('personalInfo/setPersonalInfo', data.personalInfo);
-        }
-        alert(this.$t('messages.importSuccess'));
-      };
-      reader.readAsText(file);
-    }
   }
 };
 </script>
@@ -216,54 +113,6 @@ export default {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn-group {
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.btn-group .btn {
-  border: none;
-  position: relative;
-  font-size: 0.95rem;
-}
-
-.btn-group .btn:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 25%;
-  height: 50%;
-  width: 1px;
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.btn-outline-light {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.btn-outline-light:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: white;
-  color: white;
-}
-
-.btn-outline-danger {
-  background-color: rgba(220, 53, 69, 0.1);
-  border-color: rgba(220, 53, 69, 0.5);
-  color: #dc3545;
-}
-
-.btn-outline-danger:hover {
-  background-color: #dc3545;
-  border-color: #dc3545;
-  color: white;
-}
-
-.form-select {
-  cursor: pointer;
 }
 
 .language-switcher {
@@ -308,134 +157,6 @@ export default {
   text-transform: uppercase;
 }
 
-.dropdown {
-  position: relative;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 1000;
-  min-width: 200px;
-  margin-top: 0.5rem;
-  display: block;
-  background-color: #fff;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease;
-}
-
-.dropdown-menu[style*="display: block"] {
-  opacity: 1;
-  visibility: visible;
-}
-
-.dropdown-item {
-  padding: 0.6rem 1rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.dropdown-item:hover {
-  background-color: #f8f9fa;
-}
-
-.dropdown-item.text-danger:hover {
-  background-color: #dc3545;
-  color: white !important;
-}
-
-.dropdown-divider {
-  margin: 0.5rem 0;
-  border-color: #eee;
-}
-
-.btn-outline-light.dropdown-toggle {
-  border-color: rgba(255, 255, 255, 0.5);
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-}
-
-.btn-outline-light.dropdown-toggle:hover,
-.btn-outline-light.dropdown-toggle:focus {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: white;
-}
-
-.dropdown-menu-end {
-  right: 0;
-  left: auto;
-}
-
-/* Modal Styles */
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  border-bottom: 1px solid #eee;
-  padding: 1rem 1.5rem;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #4a90e2 0%, #2c3e94 100%);
-  border: none;
-}
-
-.btn-info {
-  background: linear-gradient(135deg, #17a2b8 0%, #0f6674 100%);
-  border: none;
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #dc3545 0%, #b21f2d 100%);
-  border: none;
-}
-
-.modal.fade .modal-dialog {
-  transform: scale(0.95);
-  transition: transform 0.2s ease-out;
-}
-
-.modal.show .modal-dialog {
-  transform: scale(1);
-}
-
-.modal-backdrop.fade {
-  opacity: 0;
-  transition: opacity 0.2s linear;
-}
-
-.modal-backdrop.show {
-  opacity: 0.5;
-}
-
 /* Navigation Action Buttons */
 .nav-action-btn {
   color: rgba(255, 255, 255, 0.9);
@@ -453,94 +174,5 @@ export default {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.language-switcher .nav-action-btn {
-  padding: 0.5rem 2.5rem 0.5rem 1.25rem;
-  min-width: 80px;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.9)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 12px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-.language-switcher .nav-action-btn:hover,
-.language-switcher .nav-action-btn:focus {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.language-switcher .nav-action-btn option {
-  color: #333;
-  background-color: white;
-  padding: 8px;
-}
-
-/* Modal Content Styles */
-.modal-content {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
-  background: transparent;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-header .modal-title {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.btn-close {
-  opacity: 0.5;
-  transition: all 0.2s ease;
-}
-
-.btn-close:hover {
-  opacity: 1;
-}
-
-/* Modal Action Buttons */
-.modal-body .btn {
-  padding: 1rem 1.5rem;
-  font-weight: 500;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.9rem;
-}
-
-.modal-body .btn:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.modal-body .btn-primary {
-  background: linear-gradient(135deg, #4a90e2 0%, #2c3e94 100%);
-  border: none;
-}
-
-.modal-body .btn-info {
-  background: linear-gradient(135deg, #17a2b8 0%, #0f6674 100%);
-  border: none;
-}
-
-.modal-body .btn-danger {
-  background: linear-gradient(135deg, #dc3545 0%, #b21f2d 100%);
-  border: none;
 }
 </style>
