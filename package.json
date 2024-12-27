@@ -1,27 +1,28 @@
 {
-  "name": "vue",
+  "name": "tax-calculator-bd",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
-    "@vue/cli-plugin-babel": "4.1.1",
-    "vue": "^2.6.11",
+    "vue": "^2.7.16",
     "vue-i18n": "8",
     "vue-router": "^3.6.5",
     "vuex": "3.4.0",
     "vuex-persistedstate": "^3.0.1"
   },
   "devDependencies": {
-    "@vue/cli-plugin-eslint": "4.1.1",
-    "@vue/cli-service": "4.1.1",
-    "babel-eslint": "^10.0.3",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.0.1",
-    "vue-template-compiler": "^2.6.11"
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "eslint": "8",
+    "eslint-plugin-vue": "8",
+    "vite": "^4.5.2",
+    "vite-plugin-vue2": "^2.0.3",
+    "vue-template-compiler": "^2.7.16"
   },
   "eslintConfig": {
     "root": true,
@@ -31,10 +32,7 @@
     "extends": [
       "plugin:vue/essential"
     ],
-    "rules": {},
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
+    "rules": {}
   },
   "postcss": {
     "plugins": {
