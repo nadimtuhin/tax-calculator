@@ -16,31 +16,33 @@ function arraySum(arr) {
   return arr.reduceRight((c, i) => (c + +i), 0);
 }
 
-const salaries = {
+export default {
   namespaced: true,
-  state: () => ({
-    parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
-    months: [
-      { id: "July",  ...monthlyDefault() },
-      { id: "August",  ...monthlyDefault() },
-      { id: "September",  ...monthlyDefault() },
-      { id: "October",  ...monthlyDefault() },
-      { id: "November",  ...monthlyDefault() },
-      { id: "December",  ...monthlyDefault() },
-      { id: "January",  ...monthlyDefault() },
-      { id: "February",  ...monthlyDefault() },
-      { id: "March",  ...monthlyDefault() },
-      { id: "April",  ...monthlyDefault() },
-      { id: "May",  ...monthlyDefault() },
-      { id: "June",  ...monthlyDefault() },
-    ],
+  state: {
+    months: Array(12).fill().map((_, i) => ({
+      id: i + 1,
+      salary: 0,
+      tds: 0,
+      breakdown: {
+        basic: 0,
+        house: 0,
+        medical: 0,
+        transportation: 0,
+        lfa: 0
+      }
+    })),
+    parts: ['basic', 'house', 'medical', 'transportation', 'lfa'],
     bonuses: [
-      { name: 'Eid Bonus 1', amount: 0, isDefault: true },
-      { name: 'Eid Bonus 2', amount: 0, isDefault: true },
-      { name: 'New Year Bonus', amount: 0, isDefault: true },
+      { name: 'Eid-ul-Fitr', amount: 0, tds: 0, isDefault: true },
+      { name: 'Eid-ul-Adha', amount: 0, tds: 0, isDefault: true },
+      { name: 'New Year', amount: 0, tds: 0, isDefault: true },
     ],
-    otherIncomes: [],
-  }),
+    otherIncomes: [
+      { name: 'FDR interest', amount: 0, tds: 0, isDefault: true },
+      { name: 'DPS Interest', amount: 0, tds: 0, isDefault: true },
+      { name: 'Stock Dividend', amount: 0, tds: 0, isDefault: true },
+    ]
+  },
   mutations: {
     loadSalaries(state, salaries) {
       state.months = salaries;
@@ -63,16 +65,19 @@ const salaries = {
     },
     resetBonuses(state) {
       state.bonuses = [
-        { name: 'Eid Bonus 1', amount: 0, isDefault: true },
-        { name: 'Eid Bonus 2', amount: 0, isDefault: true },
-        { name: 'New Year Bonus', amount: 0, isDefault: true },
+        { name: 'Eid-ul-Fitr', amount: 0, tds: 0, isDefault: true },
+        { name: 'Eid-ul-Adha', amount: 0, tds: 0, isDefault: true },
+        { name: 'New Year', amount: 0, tds: 0, isDefault: true },
       ];
     },
     resetOtherIncomes(state) {
-      state.otherIncomes = [];
+      state.otherIncomes = [
+        { name: 'FDR interest', amount: 0, tds: 0, isDefault: true },
+        { name: 'DPS Interest', amount: 0, tds: 0, isDefault: true },
+        { name: 'Stock Dividend', amount: 0, tds: 0, isDefault: true },
+      ];
     },
     changeSubsequentSalaries(state, { index, value }) {
-      // window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
       const { months, parts } = state;
 
       months[index].salary = +value;
@@ -112,24 +117,34 @@ const salaries = {
     changeBonus(state, value) {
       state.bonus = +value;
     },
-    addBonus(state, { name, amount }) {
-      state.bonuses.push({ name, amount: +amount });
+    addBonus(state, { name, amount, tds }) {
+      state.bonuses.push({ name, amount, tds, isDefault: false });
     },
     removeBonus(state, index) {
       state.bonuses.splice(index, 1);
     },
-    updateBonus(state, { index, name, amount }) {
-      state.bonuses[index] = { name, amount: +amount };
+    updateBonus(state, { index, name, amount, tds }) {
+      state.bonuses[index] = {
+        ...state.bonuses[index],
+        name,
+        amount: Number(amount),
+        tds: Number(tds)
+      };
     },
-    addOtherIncome(state, { name, amount }) {
-      state.otherIncomes.push({ name, amount: +amount });
+    addOtherIncome(state, { name, amount, tds }) {
+      state.otherIncomes.push({ name, amount, tds });
     },
     removeOtherIncome(state, index) {
       state.otherIncomes.splice(index, 1);
     },
-    updateOtherIncome(state, { index, name, amount }) {
-      state.otherIncomes[index] = { name, amount: +amount };
-    },
+    updateOtherIncome(state, { index, name, amount, tds }) {
+      state.otherIncomes[index] = {
+        ...state.otherIncomes[index],
+        name,
+        amount: Number(amount),
+        tds: Number(tds)
+      };
+    }
   },
   getters: {
     totalSalary(state) {
@@ -190,7 +205,15 @@ const salaries = {
       const fixedAmount = 1000000; // 10 lakh BDT
       return Math.min(threePercentOfTaxableIncome, fixedAmount);
     },
+    totalBonusTds: state => {
+      return state.bonuses.reduce((sum, bonus) => sum + Number(bonus.tds), 0);
+    },
+    totalOtherIncomeTds: state => {
+      return state.otherIncomes.reduce((sum, income) => sum + Number(income.tds), 0);
+    },
+    totalTds: (state, getters) => {
+      const monthlyTds = state.months.reduce((sum, month) => sum + Number(month.tds), 0);
+      return monthlyTds + getters.totalBonusTds + getters.totalOtherIncomeTds;
+    }
   }
 };
-
-export default salaries;

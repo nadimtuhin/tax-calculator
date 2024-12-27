@@ -21,7 +21,7 @@
       "label": "অবস্থান",
       "dhaka_chittagong": "ঢাকা এবং চট্টগ্রাম সিটি কর্পোরেশন",
       "other_city": "অন্যান্য সিটি কর্পোরেশন",
-      "other_areas": "অন্যান্য এ��াকা"
+      "other_areas": "অন্যান্য এাকা"
     },
     "gender": {
       "label": "লিঙ্গ",
@@ -51,13 +51,14 @@
     "bonuses": "বোনাস সমূহ",
     "bonusName": "বোনাসের নাম",
     "eidBonus1": "ঈদ-উল-ফিতর বোনাস",
-    "eidBonus2": "ঈদ-উল-আযহা বোনাস",
+    "eidBonus2": "ঈদ-উল-আযহ�� বোনাস",
     "others": "অন্যান্য",
     "otherIncomes": "অন্যান্য আয়",
     "otherIncome": "অন্যান্য আয়",
     "incomeName": "আয়ের নাম",
     "noBonus": "কোন বোনাস যোগ করা হয়নি",
-    "noOtherIncome": "কোন অতিরিক্ত আয় যোগ করা হয়নি"
+    "noOtherIncome": "কোন অতিরিক্ত আয় যোগ করা হয়নি",
+    "amount": "পরিমাণ"
   },
   "taxableIncome": {
     "title": "করযোগ্য আয়ের বিভাজন",
@@ -84,7 +85,7 @@
     "threePercentIncome": "করযোগ্য আয়ের ৩%",
     "fifteenPercentInvestment": "মোট বিনিয়োগের ১৫%",
     "fixedMaximum": "সর্বোচ্চ সীমা (১০ লক্ষ)",
-    "totalRebate": "মোট রেয়াত (উপরের মধ্যে স্বনিম্ন)",
+    "totalRebate": "মোট রেয়াত (উপরের মধ্যে স্ব��িম্ন)",
     "reset": "রিসেট",
     "addNew": {
       "title": "নতুন বিনিয়োগ যোগ করুন",

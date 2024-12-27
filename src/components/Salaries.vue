@@ -66,8 +66,18 @@
     </div>
     <div class="income-tables-container">
       <table class="income-table">
+        <thead>
+          <tr>
+            <th>{{ $t('salaries.bonusName') }}</th>
+            <th>{{ $t('salaries.amount') }}</th>
+            <th>
+              <span :title="$t('salaries.tdsTooltip')">{{ $t('salaries.tds') }}*</span>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
         <tr v-if="bonuses.length === 0">
-          <td colspan="3" class="empty-message">
+          <td colspan="4" class="empty-message">
             {{ $t('salaries.noBonus') }}
           </td>
         </tr>
@@ -95,24 +105,46 @@
               max="999999"
               step="1000"
               :value="bonus.amount"
-              @input="updateBonus(index, bonus.name, $event.target.value)"
+              @input="updateBonus(index, bonus.name, $event.target.value, bonus.tds)"
               class="amount-input"
             >
           </td>
           <td>
-            <button class="remove-button" @click="removeBonus(index)">{{ $t('common.remove') }}</button>
+            <input
+              type="number"
+              min="0"
+              max="99999"
+              step="500"
+              :value="bonus.tds"
+              @input="updateBonus(index, bonus.name, bonus.amount, $event.target.value)"
+              class="tds-input"
+              :placeholder="$t('salaries.tds')"
+            >
+          </td>
+          <td>
+            <button class="remove-button" @click="removeBonus(index)">-</button>
           </td>
         </tr>
         <tr class="add-row">
-          <td colspan="3">
+          <td colspan="4">
             <button class="add-button" @click="addBonus">{{ $t('common.add') }} {{ $t('salaries.bonus') }}</button>
           </td>
         </tr>
       </table>
 
       <table class="income-table">
+        <thead>
+          <tr>
+            <th>{{ $t('salaries.incomeName') }}</th>
+            <th>{{ $t('salaries.amount') }}</th>
+            <th>
+              <span :title="$t('salaries.tdsTooltip')">{{ $t('salaries.tds') }}*</span>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
         <tr v-if="otherIncomes.length === 0">
-          <td colspan="3" class="empty-message">
+          <td colspan="4" class="empty-message">
             {{ $t('salaries.noOtherIncome') }}
           </td>
         </tr>
@@ -122,7 +154,7 @@
               type="text"
               :placeholder="$t('salaries.incomeName')"
               :value="income.name"
-              @input="updateOtherIncome(index, $event.target.value, income.amount)"
+              @input="updateOtherIncome(index, $event.target.value, income.amount, income.tds)"
               class="name-input"
             >
           </td>
@@ -133,16 +165,28 @@
               max="999999"
               step="1000"
               :value="income.amount"
-              @input="updateOtherIncome(index, income.name, $event.target.value)"
+              @input="updateOtherIncome(index, income.name, $event.target.value, income.tds)"
               class="amount-input"
             >
           </td>
           <td>
-            <button class="remove-button" @click="removeOtherIncome(index)">{{ $t('common.remove') }}</button>
+            <input
+              type="number"
+              min="0"
+              max="99999"
+              step="500"
+              :value="income.tds"
+              @input="updateOtherIncome(index, income.name, income.amount, $event.target.value)"
+              class="tds-input"
+              :placeholder="$t('salaries.tds')"
+            >
+          </td>
+          <td>
+            <button class="remove-button" @click="removeOtherIncome(index)">-</button>
           </td>
         </tr>
         <tr class="add-row">
-          <td colspan="3">
+          <td colspan="4">
             <button class="add-button" @click="addOtherIncome">{{ $t('common.add') }} {{ $t('salaries.otherIncome') }}</button>
           </td>
         </tr>
@@ -166,25 +210,25 @@ export default {
       this.$store.commit('salaries/changeParts', { index, part, value: $event.target.value } );
     },
     addBonus() {
-      this.$store.commit('salaries/addBonus', { name: '', amount: 0 });
+      this.$store.commit('salaries/addBonus', { name: '', amount: 0, tds: 0 });
     },
     removeBonus(index) {
       this.$store.commit('salaries/removeBonus', index);
     },
-    updateBonus(index, name, amount) {
-      this.$store.commit('salaries/updateBonus', { index, name, amount });
+    updateBonus(index, name, amount, tds) {
+      this.$store.commit('salaries/updateBonus', { index, name, amount, tds });
     },
     resetBonuses() {
       this.$store.commit('salaries/resetBonuses');
     },
     addOtherIncome() {
-      this.$store.commit('salaries/addOtherIncome', { name: '', amount: 0 });
+      this.$store.commit('salaries/addOtherIncome', { name: '', amount: 0, tds: 0 });
     },
     removeOtherIncome(index) {
       this.$store.commit('salaries/removeOtherIncome', index);
     },
-    updateOtherIncome(index, name, amount) {
-      this.$store.commit('salaries/updateOtherIncome', { index, name, amount });
+    updateOtherIncome(index, name, amount, tds) {
+      this.$store.commit('salaries/updateOtherIncome', { index, name, amount, tds });
     },
     resetOtherIncomes() {
       this.$store.commit('salaries/resetOtherIncomes');
@@ -256,9 +300,14 @@ export default {
     color: #dc3545;
     border: 1px solid #dc3545;
     border-radius: 4px;
-    padding: 6px 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 18px;
     transition: all 0.2s ease;
   }
   .remove-button:hover {
@@ -293,7 +342,7 @@ export default {
   .income-section {
     margin-top: 24px;
     background: #fff;
-    padding: 16px;
+    padding: 24px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
@@ -301,8 +350,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
     border-bottom: 2px solid #eee;
   }
   .header-group {
@@ -313,37 +362,59 @@ export default {
   .section-header h3 {
     margin: 0;
     color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
   }
   .income-tables-container {
     display: flex;
-    gap: 24px;
+    gap: 32px;
     justify-content: space-between;
   }
   .income-table {
     flex: 1;
     border-collapse: collapse;
     margin-bottom: 16px;
+    background: #fff;
+    border-radius: 6px;
+  }
+  .income-table th {
+    text-align: left;
+    padding: 12px 8px;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 14px;
+    border-bottom: 2px solid #edf2f7;
+    white-space: nowrap;
   }
   .income-table td {
     padding: 8px;
+    vertical-align: middle;
+  }
+  .income-table tr:not(.add-row):hover {
+    background-color: #f8fafc;
   }
   .add-row {
     border-top: 1px solid #eee;
   }
   .add-row td {
-    padding-top: 16px;
+    padding-top: 20px;
+    padding-bottom: 8px;
   }
   .name-input {
-    width: 200px !important;
+    /* width: 200px !important; */
   }
   .amount-input {
     width: 145px !important;
+  }
+  .tds-input {
+    width: 100px !important;
+    background-color: #f8f9fa;
   }
   .empty-message {
     text-align: center;
     color: #666;
     font-style: italic;
-    padding: 16px !important;
+    padding: 24px !important;
     background: #f9f9f9;
     border-radius: 4px;
   }
