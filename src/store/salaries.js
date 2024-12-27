@@ -77,6 +77,12 @@ export default {
         { name: 'Stock Dividend', amount: 0, tds: 0, isDefault: true },
       ];
     },
+    loadOtherIncomes(state, otherIncomes) {
+      state.otherIncomes = otherIncomes;
+    },
+    loadBonuses(state, bonuses) {
+      state.bonuses = bonuses;
+    },
     changeSubsequentSalaries(state, { index, value }) {
       const { months, parts } = state;
 
@@ -214,6 +220,10 @@ export default {
     totalTds: (state, getters) => {
       const monthlyTds = state.months.reduce((sum, month) => sum + Number(month.tds), 0);
       return monthlyTds + getters.totalBonusTds + getters.totalOtherIncomeTds;
+    },
+    totalInvestmentRebate: (state, getters) => {
+      const { totalTax, totalTds } = getters;
+      return totalTax - totalTds;
     }
   }
 };

@@ -8,7 +8,15 @@ const state = {
   fiscalYear: '2023-2024'
 };
 
+const stateDefault = JSON.parse(JSON.stringify(state));
+
 const mutations = {
+  resetPersonalInfo(state) {
+    Object.assign(state, stateDefault);
+  },
+  loadPersonalInfo(state, personalInfo) {
+    Object.assign(state, personalInfo);
+  },
   setPersonalInfo(state, personalInfo) {
     Object.assign(state, personalInfo);
   },

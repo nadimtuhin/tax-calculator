@@ -125,11 +125,12 @@ export default {
     exportData() {
       const data = {
         salaries: this.$store.state.salaries.months,
-        investments: this.$store.state.salaries.investments,
-        bonus: this.$store.state.salaries.bonus,
-        others: this.$store.state.salaries.others,
+        investments: this.$store.state.investments,
+        bonuses: this.$store.state.salaries.bonuses,
+        otherIncomes: this.$store.state.salaries.otherIncomes,
+        personalInfo: this.$store.state.personalInfo,
       };
-      const fileName = 'salary-investment-data.json';
+      const fileName = 'salary-investment-data-'+this.$store.state.personalInfo.fiscalYear+'-'+new Date().getTime()+'.json';
       const jsonStr = JSON.stringify(data, null, 2);
       const blob = new Blob([jsonStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -146,10 +147,11 @@ export default {
       }
     },
     resetData() {
-      this.$store.commit('resetSalaries');
-      this.$store.commit('resetInvestments');
-      this.$store.commit('changeBonus', 0);
-      this.$store.commit('changeOthers', 0);
+      this.$store.commit('salaries/resetSalaries');
+      this.$store.commit('salaries/resetBonuses');
+      this.$store.commit('salaries/resetOtherIncomes');
+      this.$store.commit('investments/resetInvestments');
+      this.$store.commit('personalInfo/resetPersonalInfo');
       alert(this.$t('messages.dataReset'));
       this.showModal = false;
     },
@@ -162,16 +164,19 @@ export default {
       reader.onload = (e) => {
         const data = JSON.parse(e.target.result);
         if (data.salaries) {
-          this.$store.commit('loadSalaries', data.salaries);
+          this.$store.commit('salaries/loadSalaries', data.salaries);
         }
         if (data.investments) {
-          this.$store.commit('loadInvestments', data.investments);
+          this.$store.commit('investments/loadInvestments', data.investments);
         }
-        if (data.bonus) {
-          this.$store.commit('changeBonus', data.bonus);
+        if (data.bonuses) {
+          this.$store.commit('salaries/loadBonuses', data.bonuses);
         }
-        if (data.others) {
-          this.$store.commit('changeOthers', data.others);
+        if (data.otherIncomes) {
+          this.$store.commit('salaries/loadOtherIncomes', data.otherIncomes);
+        }
+        if (data.personalInfo) {
+          this.$store.commit('personalInfo/setPersonalInfo', data.personalInfo);
         }
         alert(this.$t('messages.importSuccess'));
       };
