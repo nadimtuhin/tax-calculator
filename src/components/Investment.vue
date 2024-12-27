@@ -29,7 +29,7 @@
           <td>
             <input
               type="number"
-              :value="formatNumber(investments[index].amount)"
+              :value="(investments[index].amount)"
               @input="changeInvestment($event, index)"
               step="1000"
               min="0"
