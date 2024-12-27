@@ -55,7 +55,9 @@
     "others": "Others",
     "otherIncomes": "Other Incomes",
     "otherIncome": "Other Income",
-    "incomeName": "Income Name"
+    "incomeName": "Income Name",
+    "noBonus": "No bonuses added yet",
+    "noOtherIncome": "No other incomes added yet"
   },
   "taxableIncome": {
     "title": "Taxable Income Breakdown",
