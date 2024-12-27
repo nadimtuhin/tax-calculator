@@ -39,16 +39,16 @@
     <td>{{totalLfa - lfaExempt}}</td>
   </tr>
   <tr>
-    <td><strong>{{ $t('taxableIncome.others') }}</strong></td>
-    <td>{{others}}</td>
+    <td><strong>{{ $t('taxableIncome.bonus') }}</strong></td>
+    <td>{{totalBonus}}</td>
     <td>0</td>
-    <td>{{others}}</td>
+    <td>{{totalBonus}}</td>
   </tr>
   <tr>
-    <td><strong>{{ $t('taxableIncome.bonus') }}</strong></td>
-    <td>{{bonus}}</td>
+    <td><strong>{{ $t('taxableIncome.otherIncomes') }}</strong></td>
+    <td>{{totalOtherIncome}}</td>
     <td>0</td>
-    <td>{{bonus}}</td>
+    <td>{{totalOtherIncome}}</td>
   </tr>
   <tr>
     <td><strong>{{ $t('taxableIncome.grossSalary') }}</strong></td>
@@ -70,8 +70,6 @@ export default {
       parts: 'parts',
       months: 'months',
       salaryBreakdown: 'salaryBreakdown',
-      bonus: 'bonus',
-      others: 'others',
     }),
     ...mapGetters('salaries', {
       totalSalary: 'totalSalary',
@@ -87,6 +85,8 @@ export default {
       lfaExempt: 'lfaExempt',
       taxableSalary: 'taxableSalary',
       totalExempt: 'totalExempt',
+      totalBonus: 'totalBonus',
+      totalOtherIncome: 'totalOtherIncome',
     }),
   }
 }

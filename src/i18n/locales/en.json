@@ -52,7 +52,6 @@
     "bonusName": "Bonus Name",
     "eidBonus1": "Eid-ul-Fitr Bonus",
     "eidBonus2": "Eid-ul-Adha Bonus",
-    "others": "Others",
     "otherIncomes": "Other Incomes",
     "otherIncome": "Other Income",
     "incomeName": "Income Name",
@@ -70,9 +69,11 @@
     "medical": "Medical",
     "transport": "Transport",
     "lfa": "LFA",
-    "others": "Others",
     "bonus": "Bonus",
-    "grossSalary": "Gross Income"
+    "otherIncomes": "Other Incomes",
+    "grossSalary": "Gross Income",
+    "totalBonus": "Total Bonus",
+    "totalOtherIncome": "Total Other Income"
   },
   "investment": {
     "title": "Tax Rebate on Investment",

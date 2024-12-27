@@ -177,6 +177,12 @@ export default {
     totalLfa({ months }) {
       return arraySum(months.map(month => month.breakdown.lfa));
     },
+    totalBonus(state, getters) {
+      return state.bonuses.reduce((sum, bonus) => sum + +bonus.amount, 0);
+    },
+    totalOtherIncome(state, getters) {
+      return state.otherIncomes.reduce((sum, income) => sum + +income.amount, 0);
+    },
     houseExempt(state, getters) {
       const { totalBasic, totalHouse } = getters;
       const houseExempt = totalBasic/2 < totalHouse ? totalBasic/2 : totalHouse;
