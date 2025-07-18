@@ -1,7 +1,7 @@
 {
-  "name": "vue",
-  "version": "0.1.0",
-  "private": true,
+  "name": "bangladesh-tax-calculator",
+  "version": "1.0.0",
+  "private": false,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -48,8 +48,23 @@
   "keywords": [
     "vue",
     "vuejs",
-    "starter"
+    "tax-calculator",
+    "bangladesh",
+    "tax",
+    "salaried",
+    "income-tax",
+    "calculator"
   ],
-  "description": "Vue.js example starter project",
+  "description": "Bangladesh Tax Calculator - A Vue.js application for calculating income tax for salaried people in Bangladesh with support for 2023-2024 tax years",
+  "homepage": "http://tax.nadimtuhin.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nadimtuhin/tax-calculator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nadimtuhin/tax-calculator/issues"
+  },
+  "author": "Nadim Tuhin <nadimtuhin@gmail.com>",
+  "license": "MIT",
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
