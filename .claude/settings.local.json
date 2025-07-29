@@ -4,7 +4,10 @@
       "Bash(gh repo view:*)",
       "Bash(gh repo edit:*)",
       "Bash(mkdir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
