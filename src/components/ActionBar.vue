@@ -1,7 +1,14 @@
 <template>
   <div class="action-bar">
     <div class="action-bar-content">
-      <h1 class="app-title">Bangladesh Tax Calculator 2024-25</h1>
+      <div class="title-nav-group">
+        <h1 class="app-title">Bangladesh Tax Calculator 2024-25</h1>
+        <nav class="nav-links">
+          <router-link to="/" class="nav-link">Calculator</router-link>
+          <router-link to="/tax-guide" class="nav-link">Tax Guide</router-link>
+          <router-link to="/historical-2023" class="nav-link">2023 Calculator</router-link>
+        </nav>
+      </div>
       <div class="button-group">
         <a href="https://github.com/nadimtuhin/pathao-tax-calculator" target="_blank" class="action-btn fork-btn">
           <span class="btn-icon">⭐</span>
@@ -124,11 +131,42 @@ export default {
   max-width: none;
 }
 
+.title-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .app-title {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: #2c3e50;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: #6c757d;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.nav-link.router-link-active {
+  color: #007bff;
+  background-color: #e3f2fd;
 }
 
 .button-group {
@@ -191,8 +229,16 @@ export default {
     text-align: center;
   }
   
+  .title-nav-group {
+    align-items: center;
+  }
+  
   .app-title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+  
+  .nav-links {
+    justify-content: center;
   }
   
   .button-group {

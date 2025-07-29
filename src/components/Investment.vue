@@ -3,13 +3,15 @@
 <h2>Tax rebate on investment</h2>
 
 <table class="table">
-  <tr>
-    <th></th>
-    <th>Amount</th>
-    <th>Maximum allowed</th>
-  </tr>
-
-  <tr v-for="(investment, index) in investments" v-bind:key="investment.name">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Amount</th>
+      <th>Maximum allowed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="(investment, index) in investments" :key="investment.name">
     <td><strong>{{investment.name}}</strong></td>
     <td>
       <input
@@ -45,11 +47,12 @@
     <td></td>
   </tr>
 
-  <tr>
-    <td><strong>Totat rebate on investment</strong></td>
-    <td>{{ investmentRebate.toLocaleString() }}</td>
-    <td></td>
-  </tr>
+    <tr>
+      <td><strong>Totat rebate on investment</strong></td>
+      <td>{{ investmentRebate.toLocaleString() }}</td>
+      <td></td>
+    </tr>
+  </tbody>
 </table>
 
 </div>

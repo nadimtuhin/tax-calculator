@@ -1,43 +1,45 @@
 <template>
   <table>
-    <tr>
-      <td>Last months salary</td>
-      <td>
-        $ <input
-          step="1000"
-          type="number"
-          min="0"
-          max="999999"
-          :value="totalSalary"
-          @input="updateTotalSalary"
-          />
-      </td>
-      <td>{{totalPercentage}} %</td>
-    </tr>
+    <tbody>
+      <tr>
+        <td>Last months salary</td>
+        <td>
+          $ <input
+            step="1000"
+            type="number"
+            min="0"
+            max="999999"
+            :value="totalSalary"
+            @input="updateTotalSalary"
+            />
+        </td>
+        <td>{{totalPercentage}} %</td>
+      </tr>
 
-    <tr v-for="part in this.parts" v-bind:key="part">
-      <td>{{part}}</td>
-      <td>
-        $  <input
-          type="number"
-          max="999999"
-          min="0"
-          step="1000"
-          :value="salaryBreakdown[part].amount"
-          @input="changeBreakdownAmount($event, part)"
-        >
-      </td>
-      <td>
-        <input
-          max="100"
-          min="0"
-          step="5"
-          type="number"
-          :value="salaryBreakdown[part].percentage"
-          @input="changeBreakdownPercentage($event, part)"
-        > %
-      </td>
-    </tr>
+      <tr v-for="part in this.parts" :key="part">
+        <td>{{part}}</td>
+        <td>
+          $  <input
+            type="number"
+            max="999999"
+            min="0"
+            step="1000"
+            :value="salaryBreakdown[part].amount"
+            @input="changeBreakdownAmount($event, part)"
+          >
+        </td>
+        <td>
+          <input
+            max="100"
+            min="0"
+            step="5"
+            type="number"
+            :value="salaryBreakdown[part].percentage"
+            @input="changeBreakdownPercentage($event, part)"
+          > %
+        </td>
+      </tr>
+    </tbody>
   </table>
 </template>
 

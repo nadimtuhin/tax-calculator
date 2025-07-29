@@ -1,6 +1,5 @@
 <template>
   <div id="home-page">
-    <ActionBar />
     <div class="main-content">
       <div class="profile-container">
         <div class="content-section">
@@ -37,7 +36,6 @@ import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
 import TaxpayerProfile from "../components/TaxpayerProfile";
-import ActionBar from "../components/ActionBar";
 
 export default {
   name: "App",
@@ -48,7 +46,6 @@ export default {
     TaxableIncome,
     Investment,
     TaxpayerProfile,
-    ActionBar,
   }
 };
 </script>

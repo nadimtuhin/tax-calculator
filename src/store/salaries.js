@@ -5,9 +5,9 @@ function monthlyDefault() {
     breakdown: {
       basic: 0,
       house: 0,
-      lfa: 0,
       medical: 0,
       transport: 0,
+      others: 0,
     },
   }
 }
@@ -76,7 +76,7 @@ const salaries = {
       { name: 'Mutual fund', amount: 0,  maximum: 500000 },
       { name: 'Others', amount: 0,  maximum: infinity },
     ],
-    parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
+    parts: ['basic', 'house', 'medical', 'transport', 'others'],
     months: [
       { id: "July",  ...monthlyDefault() },
       { id: "August",  ...monthlyDefault() },
@@ -194,8 +194,8 @@ const salaries = {
     totalTransport({ months }) {
       return arraySum(months.map(month => month.breakdown.transport));
     },
-    totalLfa({ months }) {
-      return arraySum(months.map(month => month.breakdown.lfa));
+    totalOthersBreakdown({ months }) {
+      return arraySum(months.map(month => month.breakdown.others));
     },
     houseExempt(state, getters) {
       const { totalBasic, totalHouse } = getters;

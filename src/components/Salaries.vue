@@ -1,6 +1,21 @@
 <style scoped>
   table input {
-    width: 150px;
+    width: 120px;
+  }
+  
+  table {
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  th, td {
+    padding: 5px;
+    text-align: center;
+  }
+  
+  th {
+    font-size: 12px;
+    white-space: nowrap;
   }
 </style>
 
@@ -8,19 +23,22 @@
 <div>
   <h2>Enter salary information</h2>
   <table>
-    <tr>
-      <th></th>
-      <th>salary</th>
-      <th>
-        <span title="tax deduction at source">tds*</span>
-      </th>
-      <th>Basic</th>
-      <th>House</th>
-      <th>Medical</th>
-      <th>Transportation</th>
-    </tr>
-
-    <tr v-for="(month, index) in months" v-bind:key="month.id">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Salary</th>
+        <th>
+          <span title="tax deduction at source">TDS*</span>
+        </th>
+        <th>Basic</th>
+        <th>House</th>
+        <th>Medical</th>
+        <th>Transport</th>
+        <th>Others</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(month, index) in months" :key="month.id">
       <td><strong>{{month.id}}</strong></td>
       <td>
         <input
@@ -45,8 +63,8 @@
         >
       </td>
 
-      <template v-for="part in visibleParts">
-        <td v-bind:key="part">
+      <template v-for="part in visibleParts" :key="part">
+        <td>
           <input
             max="999999"
             min="0"
@@ -57,35 +75,22 @@
           >
         </td>
       </template>
-    </tr>
+      </tr>
 
-    <tr>
-      <td>Bonus</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="bonus"
-          @input="changeBonus"
-        >
-      </td>
-    </tr>
-
-    <tr>
-      <td>Others</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="others"
-          @input="changeOthers"
-        >
-      </td>
-    </tr>
+      <tr>
+        <td>Bonus</td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="bonus"
+            @input="changeBonus"
+          >
+        </td>
+      </tr>
+    </tbody>
   </table>
 </div>
 </template>
@@ -132,14 +137,14 @@ export default {
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',
-      totalLfa: 'totalLfa',
       totalMedical: 'totalMedical',
       totalTransport: 'totalTransport',
       totalBasic: 'totalBasic',
+      totalOthersBreakdown: 'totalOthersBreakdown',
     }),
     
     visibleParts() {
-      return this.parts.filter(part => part !== 'lfa');
+      return this.parts; // Show all parts including others
     },
   }
 };

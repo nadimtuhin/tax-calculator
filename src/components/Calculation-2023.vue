@@ -14,7 +14,7 @@
           <strong>Tax (BDT)</strong>
         </td>
       </tr>
-      <tr v-for="slab in taxBreakdown" v-bind:key="slab.id">
+      <tr v-for="slab in taxBreakdown" :key="slab.id">
         <td>{{slab.slabTitle}}</td>
         <td>{{slab.slabPercentage}}</td>
         <td>{{slab.slabCut}}</td>

@@ -1,17 +1,14 @@
-import { mount, createLocalVue } from '@vue/test-utils';
-import Vuex from 'vuex';
+import { mount } from '@vue/test-utils';
+import { createStore } from 'vuex';
 import TaxpayerProfile from '@/components/TaxpayerProfile.vue';
 import salariesStore from '@/store/salaries';
-
-const localVue = createLocalVue();
-localVue.use(Vuex);
 
 describe('TaxpayerProfile Component', () => {
   let wrapper;
   let store;
 
   beforeEach(() => {
-    store = new Vuex.Store({
+    store = createStore({
       modules: {
         salaries: {
           ...salariesStore,
@@ -21,13 +18,14 @@ describe('TaxpayerProfile Component', () => {
     });
     
     wrapper = mount(TaxpayerProfile, {
-      store,
-      localVue
+      global: {
+        plugins: [store]
+      }
     });
   });
 
   afterEach(() => {
-    wrapper.destroy();
+    wrapper.unmount();
   });
 
   describe('Component Rendering', () => {
@@ -37,7 +35,8 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should render all taxpayer categories', () => {
-      const categorySelect = wrapper.find('select[v-model="selectedCategory"]');
+      const categorySelects = wrapper.findAll('select');
+      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
       const options = categorySelect.findAll('option');
       
       expect(options).toHaveLength(7);
@@ -51,7 +50,8 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should render all location options', () => {
-      const locationSelect = wrapper.find('select[v-model="selectedLocation"]');
+      const locationSelects = wrapper.findAll('select');
+      const locationSelect = locationSelects.find(select => select.html().includes('Dhaka City Corporation'));
       const options = locationSelect.findAll('option');
       
       expect(options).toHaveLength(4);
@@ -82,69 +82,83 @@ describe('TaxpayerProfile Component', () => {
       expect(wrapper.vm.selectedLocation).toBe('dhaka');
     });
 
-    test('should calculate correct threshold for different categories', () => {
+    test('should calculate correct threshold for different categories', async () => {
       // Test general category
-      wrapper.setData({ selectedCategory: 'general' });
+      wrapper.vm.selectedCategory = 'general';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(350000);
       
       // Test female category
-      wrapper.setData({ selectedCategory: 'female' });
+      wrapper.vm.selectedCategory = 'female';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000);
       
       // Test senior category
-      wrapper.setData({ selectedCategory: 'senior' });
+      wrapper.vm.selectedCategory = 'senior';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000);
       
       // Test disabled category
-      wrapper.setData({ selectedCategory: 'disabled' });
+      wrapper.vm.selectedCategory = 'disabled';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(475000);
       
       // Test parent of disabled child
-      wrapper.setData({ selectedCategory: 'parent_disabled' });
+      wrapper.vm.selectedCategory = 'parent_disabled';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000); // 350000 + 50000
       
       // Test freedom fighter
-      wrapper.setData({ selectedCategory: 'freedom_fighter' });
+      wrapper.vm.selectedCategory = 'freedom_fighter';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(500000);
       
       // Test third gender
-      wrapper.setData({ selectedCategory: 'third_gender' });
+      wrapper.vm.selectedCategory = 'third_gender';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(475000);
     });
 
-    test('should calculate correct minimum tax for different locations', () => {
+    test('should calculate correct minimum tax for different locations', async () => {
       // Test Dhaka
-      wrapper.setData({ selectedLocation: 'dhaka' });
+      wrapper.vm.selectedLocation = 'dhaka';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(5000);
       
       // Test Chittagong
-      wrapper.setData({ selectedLocation: 'chittagong' });
+      wrapper.vm.selectedLocation = 'chittagong';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(5000);
       
       // Test other city corporations
-      wrapper.setData({ selectedLocation: 'other_city' });
+      wrapper.vm.selectedLocation = 'other_city';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(4000);
       
       // Test district towns
-      wrapper.setData({ selectedLocation: 'district' });
+      wrapper.vm.selectedLocation = 'district';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(3000);
     });
 
-    test('should display correct category name', () => {
-      wrapper.setData({ selectedCategory: 'female' });
+    test('should display correct category name', async () => {
+      wrapper.vm.selectedCategory = 'female';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.categoryName).toBe('Female');
       
-      wrapper.setData({ selectedCategory: 'parent_disabled' });
+      wrapper.vm.selectedCategory = 'parent_disabled';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.categoryName).toBe('Parent of Disabled Child');
     });
   });
 
   describe('User Interactions', () => {
     test('should update store when category changes', async () => {
-      const categorySelect = wrapper.find('select[v-model="selectedCategory"]');
+      const categorySelects = wrapper.findAll('select');
+      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
       await categorySelect.setValue('female');
       
-      const storeProfile = store.state.taxpayerProfile;
+      const storeProfile = store.state.salaries.taxpayerProfile;
       expect(storeProfile.category).toBe('female');
     });
 
@@ -152,23 +166,22 @@ describe('TaxpayerProfile Component', () => {
       const ageInput = wrapper.find('input[type="number"]');
       await ageInput.setValue('35');
       
-      const storeProfile = store.state.taxpayerProfile;
+      const storeProfile = store.state.salaries.taxpayerProfile;
       expect(storeProfile.age).toBe(35);
     });
 
     test('should update store when location changes', async () => {
-      const locationSelect = wrapper.find('select[v-model="selectedLocation"]');
+      const locationSelects = wrapper.findAll('select');
+      const locationSelect = locationSelects.find(select => select.html().includes('Dhaka City Corporation'));
       await locationSelect.setValue('chittagong');
       
-      const storeProfile = store.state.taxpayerProfile;
+      const storeProfile = store.state.salaries.taxpayerProfile;
       expect(storeProfile.location).toBe('chittagong');
     });
 
     test('should show senior citizen notice when age is 65 or above', async () => {
-      wrapper.setData({ 
-        age: 70, 
-        selectedCategory: 'general' 
-      });
+      wrapper.vm.age = 70;
+      wrapper.vm.selectedCategory = 'general';
       await wrapper.vm.$nextTick();
       
       const notice = wrapper.find('.age-notice');
@@ -177,21 +190,18 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should not show senior citizen notice when already senior category', async () => {
-      wrapper.setData({ 
-        age: 70, 
-        selectedCategory: 'senior' 
-      });
+      wrapper.vm.age = 70;
+      wrapper.vm.selectedCategory = 'senior';
       await wrapper.vm.$nextTick();
       
       const notice = wrapper.find('.age-notice');
       expect(notice.exists()).toBe(false);
     });
 
-    test('should auto-suggest senior citizen category for age 65+', () => {
-      wrapper.setData({ 
-        age: 65, 
-        selectedCategory: 'general' 
-      });
+    test('should auto-suggest senior citizen category for age 65+', async () => {
+      wrapper.vm.age = 65;
+      wrapper.vm.selectedCategory = 'general';
+      await wrapper.vm.$nextTick();
       
       wrapper.vm.updateProfile();
       expect(wrapper.vm.selectedCategory).toBe('senior');
@@ -200,7 +210,7 @@ describe('TaxpayerProfile Component', () => {
 
   describe('Threshold Display', () => {
     test('should display formatted threshold amount', async () => {
-      wrapper.setData({ selectedCategory: 'general' });
+      wrapper.vm.selectedCategory = 'general';
       await wrapper.vm.$nextTick();
       
       const thresholdAmount = wrapper.find('.threshold-amount');
@@ -208,7 +218,7 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should display formatted minimum tax amount', async () => {
-      wrapper.setData({ selectedLocation: 'dhaka' });
+      wrapper.vm.selectedLocation = 'dhaka';
       await wrapper.vm.$nextTick();
       
       const minimumTaxValue = wrapper.find('.readonly-value');
@@ -222,7 +232,7 @@ describe('TaxpayerProfile Component', () => {
       expect(thresholdAmount.text()).toBe('BDT 350,000');
       
       // Change to female category
-      wrapper.setData({ selectedCategory: 'female' });
+      wrapper.vm.selectedCategory = 'female';
       await wrapper.vm.$nextTick();
       
       expect(thresholdAmount.text()).toBe('BDT 400,000');
@@ -230,24 +240,28 @@ describe('TaxpayerProfile Component', () => {
   });
 
   describe('Edge Cases', () => {
-    test('should handle invalid category gracefully', () => {
-      wrapper.setData({ selectedCategory: 'invalid_category' });
+    test('should handle invalid category gracefully', async () => {
+      wrapper.vm.selectedCategory = 'invalid_category';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(350000); // Should default to general
       expect(wrapper.vm.categoryName).toBe('General');
     });
 
-    test('should handle invalid location gracefully', () => {
-      wrapper.setData({ selectedLocation: 'invalid_location' });
+    test('should handle invalid location gracefully', async () => {
+      wrapper.vm.selectedLocation = 'invalid_location';
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(5000); // Should default to dhaka
     });
 
-    test('should handle edge age values', () => {
+    test('should handle edge age values', async () => {
       // Test minimum age
-      wrapper.setData({ age: 18 });
+      wrapper.vm.age = 18;
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.age).toBe(18);
       
       // Test maximum age
-      wrapper.setData({ age: 120 });
+      wrapper.vm.age = 120;
+      await wrapper.vm.$nextTick();
       expect(wrapper.vm.age).toBe(120);
     });
   });

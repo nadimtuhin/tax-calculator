@@ -1,16 +1,12 @@
-import { createLocalVue } from '@vue/test-utils';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 import salariesStore from '@/store/salaries';
 import calculateTaxBreakdown from '@/calculateTaxBreakdown';
-
-const localVue = createLocalVue();
-localVue.use(Vuex);
 
 describe('Tax Calculation Tests', () => {
   let store;
   
   beforeEach(() => {
-    store = new Vuex.Store({
+    store = createStore({
       modules: {
         salaries: {
           ...salariesStore,

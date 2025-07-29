@@ -1,17 +1,14 @@
-import { mount, createLocalVue } from '@vue/test-utils';
-import Vuex from 'vuex';
+import { mount } from '@vue/test-utils';
+import { createStore } from 'vuex';
 import Calculation2024 from '@/components/Calculation-2024.vue';
 import salariesStore from '@/store/salaries';
-
-const localVue = createLocalVue();
-localVue.use(Vuex);
 
 describe('Calculation-2024 Component', () => {
   let wrapper;
   let store;
 
   beforeEach(() => {
-    store = new Vuex.Store({
+    store = createStore({
       modules: {
         salaries: {
           ...salariesStore,
@@ -23,15 +20,16 @@ describe('Calculation-2024 Component', () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
   });
 
   describe('Component Rendering', () => {
     beforeEach(() => {
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
     });
 
@@ -52,7 +50,7 @@ describe('Calculation-2024 Component', () => {
 
     test('should render summary rows', () => {
       const summaryRows = wrapper.findAll('tr');
-      const summaryTexts = summaryRows.wrappers.map(row => {
+      const summaryTexts = summaryRows.map(row => {
         const firstCell = row.find('td strong');
         return firstCell.exists() ? firstCell.text() : null;
       }).filter(Boolean);
@@ -74,8 +72,9 @@ describe('Calculation-2024 Component', () => {
       });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const slabs = wrapper.vm.slabs;
@@ -99,8 +98,9 @@ describe('Calculation-2024 Component', () => {
       });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const slabs = wrapper.vm.slabs;
@@ -119,8 +119,9 @@ describe('Calculation-2024 Component', () => {
       });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const slabs = wrapper.vm.slabs;
@@ -143,8 +144,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 25000 }); // 300k annually
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const totalTax = wrapper.vm.totalTax;
@@ -166,14 +168,15 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 33334 });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
       
       // First slab should have no tax
-      expect(taxBreakdown[0].slabCut).toBe('0');
+      expect(taxBreakdown[0].slabCut).toBe(0);
       
       // Second slab should have tax on the excess amount
       const secondSlabTax = parseFloat(taxBreakdown[1].slabCut);
@@ -192,8 +195,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // 360k annually
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const totalTax = wrapper.vm.totalTax;
@@ -217,8 +221,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 100000 }); // 1.2M annually
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const totalTax = wrapper.vm.totalTax;
@@ -239,8 +244,9 @@ describe('Calculation-2024 Component', () => {
       });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const totalTaxDisplay = wrapper.find('h2');
@@ -258,8 +264,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 30000 });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
@@ -278,8 +285,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 100000 });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
@@ -298,11 +306,12 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeInvestment', { index: 0, value: 50000 });
 
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
-      const payableRow = wrapper.findAll('tr').wrappers.find(row => {
+      const payableRow = wrapper.findAll('tr').find(row => {
         const strongText = row.find('td strong');
         return strongText.exists() && strongText.text() === 'Payable';
       });
@@ -322,8 +331,9 @@ describe('Calculation-2024 Component', () => {
   describe('Integration with Store', () => {
     test('should respond to changes in taxpayer profile', async () => {
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const initialSlabs = wrapper.vm.slabs;
@@ -344,8 +354,9 @@ describe('Calculation-2024 Component', () => {
 
     test('should respond to changes in salary', async () => {
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const initialTax = wrapper.vm.totalTax;
@@ -363,8 +374,9 @@ describe('Calculation-2024 Component', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 80000 });
       
       wrapper = mount(Calculation2024, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
       });
 
       const initialRebate = store.getters.investmentRebate;
