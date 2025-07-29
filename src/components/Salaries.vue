@@ -2,36 +2,10 @@
   table input {
     width: 150px;
   }
-  .button-container {
-    display: flex; /* Ensures inline display of buttons */
-    align-items: center; /* Vertically aligns the buttons if needed */
-    justify-content: start; /* Aligns buttons to the start of the container */
-  }
-  .button-container button {
-    padding: 8px 15px;
-    margin-right: 10px; /* Space between buttons */
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .button-container button:hover {
-    background-color: #45a049;
-  }
-
-
 </style>
 
 <template>
 <div>
-  <div class="button-container">
-    <button @click="exportData">Export Data</button>
-    <button @click="triggerFileInput">Import Data</button>
-    <button @click="resetData">Reset Data</button>  <!-- Reset Button -->
-    <input type="file" ref="fileInput" @change="importData" style="display: none;">
-  </div>
-
   <h2>Enter salary information</h2>
   <table>
     <tr>
@@ -44,7 +18,6 @@
       <th>House</th>
       <th>Medical</th>
       <th>Transportation</th>
-      <th>LFA</th>
     </tr>
 
     <tr v-for="(month, index) in months" v-bind:key="month.id">
@@ -72,7 +45,7 @@
         >
       </td>
 
-      <template v-for="part in parts">
+      <template v-for="part in visibleParts">
         <td v-bind:key="part">
           <input
             max="999999"
@@ -146,57 +119,6 @@ export default {
     changeBreakdown($event, index, part) {
       this.$store.commit('changeParts', { index, part, value: $event.target.value } );
     },
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-    exportData() {
-      const data = {
-        salaries: this.$store.state.salaries.months,
-        investments: this.$store.state.salaries.investments,
-        bonus: this.$store.state.salaries.bonus,
-        others: this.$store.state.salaries.others,
-      };
-      const fileName = 'salary-investment-data.json';
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.click();
-      URL.revokeObjectURL(url);
-    },
-    resetData() {
-      this.$store.commit('resetSalaries');
-      this.$store.commit('resetInvestments');
-      this.$store.commit('changeBonus', 0);
-      this.$store.commit('changeOthers', 0);
-      alert('All data has been reset!');
-    },
-    importData(event) {
-      const file = event.target.files[0];
-      if (!file) {
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        if (data.salaries) {
-          this.$store.commit('loadSalaries', data.salaries);
-        }
-        if (data.investments) {
-          this.$store.commit('loadInvestments', data.investments);
-        }
-        if (data.bonus) {
-          this.$store.commit('changeBonus', data.bonus);
-        }
-        if (data.others) {
-          this.$store.commit('changeOthers', data.others);
-        }
-        alert('Data imported successfully!');
-      };
-      reader.readAsText(file);
-    }
   },
   computed: {
     ...mapState({
@@ -215,6 +137,10 @@ export default {
       totalTransport: 'totalTransport',
       totalBasic: 'totalBasic',
     }),
+    
+    visibleParts() {
+      return this.parts.filter(part => part !== 'lfa');
+    },
   }
 };
 </script>

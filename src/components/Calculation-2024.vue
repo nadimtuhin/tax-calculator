@@ -21,7 +21,12 @@
       </tr>
       <tr>
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> <strong>{{totalTax}}</strong> </td>
+        <td> 
+          <strong>{{totalTax}}</strong>
+          <small v-if="isMinimumTaxApplied" style="color: red; display: block;">
+            (Minimum tax applied: BDT {{minimumTaxAmount}})
+          </small>
+        </td>
       </tr>
       <tr>
         <td> <strong>Tax deducted at source</strong> </td>
@@ -52,28 +57,39 @@ const LAKH = 100000;
 
 export default {
   name: "calculation-2024",
-  data: () => ({
-    slabs: [
-      ['First Tk3.5 lakh', 0, 3.5*LAKH, 0],
-      ['Next Tk1 lakh', 3.5*LAKH, (3.5+1)*LAKH, 5],
-      ['Next Tk4 lakh', (3.5+1)*LAKH, (3.5+1+4)*LAKH, 10],
-      ['Next Tk5 lakh', (3.5+1+4)*LAKH, (3.5+1+4+5)*LAKH, 15],
-      ['Next Tk5 lakh', (3.5+1+4+5)*LAKH, (3.5+1+4+5+5)*LAKH, 20],
-      ['Next Tk20 lakh', (3.5+1+4+5+5)*LAKH, (3.5+1+4+5+5+20)*LAKH, 25],
-      ['Above', (3.5+1+4+5+5+20)*LAKH, Infinity, 30],
-    ],
-  }),
   computed: {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
       investmentRebate: 'investmentRebate',
+      taxFreeThreshold: 'taxFreeThreshold',
+      minimumTaxAmount: 'minimumTaxAmount',
     }),
+    slabs() {
+      const threshold = this.taxFreeThreshold;
+      const firstSlabAmountInLakh = (threshold / LAKH).toFixed(1); // Convert to lakh with 1 decimal
+      
+      return [
+        [`First Tk${firstSlabAmountInLakh} lakh`, 0, threshold, 0],
+        ['Next Tk1 lakh', threshold, threshold + 1*LAKH, 5],
+        ['Next Tk4 lakh', threshold + 1*LAKH, threshold + 5*LAKH, 10],
+        ['Next Tk5 lakh', threshold + 5*LAKH, threshold + 10*LAKH, 15],
+        ['Next Tk5 lakh', threshold + 10*LAKH, threshold + 15*LAKH, 20],
+        ['Next Tk20 lakh', threshold + 15*LAKH, threshold + 35*LAKH, 25],
+        ['Above', threshold + 35*LAKH, Infinity, 30],
+      ];
+    },
     totalTax() {
-      return Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      // Apply minimum tax if applicable
+      return Math.max(calculatedTax, this.minimumTaxAmount);
     },
     taxBreakdown() {
       return calculateTaxBreakdown(this.taxableSalary, this.slabs);
+    },
+    isMinimumTaxApplied() {
+      const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      return calculatedTax < this.minimumTaxAmount;
     }
   }
 };

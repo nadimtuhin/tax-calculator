@@ -6,7 +6,7 @@ import salaries from "./salaries";
 
 Vue.use(Vuex);
 
-const appVersion = '0.7';
+const appVersion = '0.8';
 
 const store = new Vuex.Store({
   plugins: [createPersistedState({ key: appVersion })],

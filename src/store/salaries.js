@@ -18,13 +18,62 @@ function arraySum(arr) {
 
 const infinity = 99999999999999999999999999; // Inifiny has persist issues in localStorage
 
+const taxFreeThresholds = {
+  '2023-24': {
+    general: 350000,
+    female: 400000,
+    senior: 400000,
+    disabled: 475000,
+    parent_disabled: 50000, // additional amount
+    freedom_fighter: 500000,
+    third_gender: 475000,
+  },
+  '2024-25': {
+    general: 350000,
+    female: 400000,
+    senior: 400000,
+    disabled: 475000,
+    parent_disabled: 50000, // additional amount
+    freedom_fighter: 500000,
+    third_gender: 475000,
+  },
+};
+
+const minimumTax = {
+  '2022-23': {
+    dhaka: 5000,
+    chittagong: 4000,
+    other_city: 3000,
+    district: 2000,
+  },
+  '2023-24': {
+    dhaka: 5000,
+    chittagong: 5000,
+    other_city: 4000,
+    district: 3000,
+  },
+  '2024-25': {
+    dhaka: 5000,
+    chittagong: 5000,
+    other_city: 4000,
+    district: 3000,
+  },
+};
+
 const salaries = {
   state: () => ({
+    taxpayerProfile: {
+      category: 'general',
+      age: null,
+      location: 'dhaka',
+    },
+    currentYear: '2024-25',
     investments: [
       { name: 'DPS', amount: 0,  maximum: 120000 },
       { name: 'Life insurance premium', amount: 0,  maximum: infinity },
       { name: 'Stocks', amount: 0,  maximum: infinity },
-      { name: 'Savings certificate', amount: 0,  maximum: infinity },
+      { name: 'Savings certificate', amount: 0,  maximum: 500000 },
+      { name: 'Mutual fund', amount: 0,  maximum: 500000 },
       { name: 'Others', amount: 0,  maximum: infinity },
     ],
     parts: ['basic', 'house', 'medical', 'transport', 'lfa'],
@@ -74,6 +123,14 @@ const salaries = {
     },  
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
+    },
+    
+    updateTaxpayerProfile(state, profile) {
+      state.taxpayerProfile = profile;
+    },
+    
+    setCurrentYear(state, year) {
+      state.currentYear = year;
     },
 
     changeSubsequentSalaries(state, { index, value }) {
@@ -189,6 +246,29 @@ const salaries = {
     },
     investmentRebate(state, getters) {
       return Math.round(getters.totalRebateableInvestment * getters.rebatePercentage/100);
+    },
+    
+    taxFreeThreshold(state) {
+      const year = state.currentYear;
+      const category = state.taxpayerProfile.category;
+      const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
+      
+      let baseThreshold = thresholds[category] || thresholds.general;
+      
+      // Add additional amount for parent of disabled child
+      if (category === 'parent_disabled') {
+        baseThreshold = thresholds.general + thresholds.parent_disabled;
+      }
+      
+      return baseThreshold;
+    },
+    
+    minimumTaxAmount(state) {
+      const year = state.currentYear;
+      const location = state.taxpayerProfile.location;
+      const taxRates = minimumTax[year] || minimumTax['2024-25'];
+      
+      return taxRates[location] || taxRates.dhaka;
     },
   }
 };

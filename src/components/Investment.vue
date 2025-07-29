@@ -21,7 +21,10 @@
         max="9999999"
       />
     </td>
-    <td>{{investment.maximum > 9999999999 ? '': investment.maximum.toLocaleString()}}</td>
+    <td>
+      <span v-if="investment.maximum > 9999999999" class="unlimited">Unlimited</span>
+      <span v-else class="limited">{{investment.maximum.toLocaleString()}}</span>
+    </td>
   </tr>
 
   <tr>
@@ -48,7 +51,6 @@
     <td></td>
   </tr>
 </table>
-
 
 </div>
 </template>
@@ -97,6 +99,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.unlimited {
+  color: #28a745;
+  font-weight: 600;
+}
 
+.limited {
+  color: #dc3545;
+  font-weight: 600;
+}
 </style>
