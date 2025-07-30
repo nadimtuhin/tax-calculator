@@ -1,53 +1,86 @@
 <style scoped>
   table input {
-    width: 150px;
+    width: 120px;
   }
-  .button-container {
-    display: flex; /* Ensures inline display of buttons */
-    align-items: center; /* Vertically aligns the buttons if needed */
-    justify-content: start; /* Aligns buttons to the start of the container */
+  
+  table {
+    width: 100%;
+    font-size: 14px;
   }
-  .button-container button {
-    padding: 8px 15px;
-    margin-right: 10px; /* Space between buttons */
-    background-color: #4CAF50;
+  
+  th, td {
+    padding: 5px;
+    text-align: center;
+  }
+  
+  th {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  
+  .add-bonus-btn {
+    background: #4caf50;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
     cursor: pointer;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
   }
-  .button-container button:hover {
-    background-color: #45a049;
+  
+  .add-bonus-btn:hover {
+    background: #45a049;
+    transform: scale(1.1);
   }
-
-
+  
+  .remove-bonus-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .remove-bonus-btn:hover {
+    background: #da190b;
+    transform: scale(1.1);
+  }
 </style>
 
 <template>
 <div>
-  <div class="button-container">
-    <button @click="exportData">Export Data</button>
-    <button @click="triggerFileInput">Import Data</button>
-    <button @click="resetData">Reset Data</button>  <!-- Reset Button -->
-    <input type="file" ref="fileInput" @change="importData" style="display: none;">
-  </div>
-
   <h2>Enter salary information</h2>
   <table>
-    <tr>
-      <th></th>
-      <th>salary</th>
-      <th>
-        <span title="tax deduction at source">tds*</span>
-      </th>
-      <th>Basic</th>
-      <th>House</th>
-      <th>Medical</th>
-      <th>Transportation</th>
-      <th>LFA</th>
-    </tr>
-
-    <tr v-for="(month, index) in months" v-bind:key="month.id">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Salary</th>
+        <th>
+          <span title="tax deduction at source">TDS*</span>
+        </th>
+        <th>Basic</th>
+        <th>House</th>
+        <th>Medical</th>
+        <th>Transport</th>
+        <th>Others</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(month, index) in months" :key="month.id">
       <td><strong>{{month.id}}</strong></td>
       <td>
         <input
@@ -72,8 +105,8 @@
         >
       </td>
 
-      <template v-for="part in parts">
-        <td v-bind:key="part">
+      <template v-for="part in visibleParts" :key="part">
+        <td>
           <input
             max="999999"
             min="0"
@@ -84,35 +117,69 @@
           >
         </td>
       </template>
-    </tr>
+      </tr>
 
-    <tr>
-      <td>Bonus</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="bonus"
-          @input="changeBonus"
-        >
-      </td>
-    </tr>
-
-    <tr>
-      <td>Others</td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="999999"
-          step="1000"
-          :value="others"
-          @input="changeOthers"
-        >
-      </td>
-    </tr>
+      <tr>
+        <td>
+          Bonus
+          <button 
+            v-if="!showBonus2" 
+            @click="$store.commit('setShowBonus2', true)" 
+            class="add-bonus-btn"
+            type="button"
+            title="Add another bonus"
+          >
+            +
+          </button>
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="bonus"
+            @input="changeBonus"
+          >
+        </td>
+      </tr>
+      <tr v-if="showBonus2">
+        <td>
+          Bonus
+          <button 
+            @click="removeBonus2" 
+            class="remove-bonus-btn"
+            type="button"
+            title="Remove this bonus"
+          >
+            ×
+          </button>
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="bonus2"
+            @input="changeBonus2"
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Others (Additional Income)</td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="others"
+            @input="changeOthers"
+          >
+        </td>
+      </tr>
+    </tbody>
   </table>
 </div>
 </template>
@@ -122,6 +189,7 @@ import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "salaries",
+  
 
   mounted() {
     // const urlParams = new URLSearchParams(window.location.search);
@@ -140,63 +208,19 @@ export default {
     changeBonus($event) {
       this.$store.commit('changeBonus', $event.target.value );
     },
+    changeBonus2($event) {
+      this.$store.commit('changeBonus2', $event.target.value );
+    },
+    removeBonus2() {
+      this.$store.commit('setShowBonus2', false);
+      this.$store.commit('changeBonus2', 0);
+    },
     changeOthers($event) {
       this.$store.commit('changeOthers', $event.target.value );
     },
     changeBreakdown($event, index, part) {
       this.$store.commit('changeParts', { index, part, value: $event.target.value } );
     },
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-    exportData() {
-      const data = {
-        salaries: this.$store.state.salaries.months,
-        investments: this.$store.state.salaries.investments,
-        bonus: this.$store.state.salaries.bonus,
-        others: this.$store.state.salaries.others,
-      };
-      const fileName = 'salary-investment-data.json';
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.click();
-      URL.revokeObjectURL(url);
-    },
-    resetData() {
-      this.$store.commit('resetSalaries');
-      this.$store.commit('resetInvestments');
-      this.$store.commit('changeBonus', 0);
-      this.$store.commit('changeOthers', 0);
-      alert('All data has been reset!');
-    },
-    importData(event) {
-      const file = event.target.files[0];
-      if (!file) {
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        if (data.salaries) {
-          this.$store.commit('loadSalaries', data.salaries);
-        }
-        if (data.investments) {
-          this.$store.commit('loadInvestments', data.investments);
-        }
-        if (data.bonus) {
-          this.$store.commit('changeBonus', data.bonus);
-        }
-        if (data.others) {
-          this.$store.commit('changeOthers', data.others);
-        }
-        alert('Data imported successfully!');
-      };
-      reader.readAsText(file);
-    }
   },
   computed: {
     ...mapState({
@@ -204,17 +228,23 @@ export default {
       months: state => state.salaries.months,
       salaryBreakdown: state => state.breakdown.salaryBreakdown,
       bonus: state => state.salaries.bonus,
+      bonus2: state => state.salaries.bonus2,
+      showBonus2: state => state.salaries.showBonus2,
       others: state => state.salaries.others,
     }),
     ...mapGetters({
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',
-      totalLfa: 'totalLfa',
       totalMedical: 'totalMedical',
       totalTransport: 'totalTransport',
       totalBasic: 'totalBasic',
+      totalOthersBreakdown: 'totalOthersBreakdown',
     }),
+    
+    visibleParts() {
+      return this.parts; // Show all parts including others
+    },
   }
 };
 </script>

@@ -1,13 +1,10 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import App from "./App.vue";
 import store from "./store";
 import router from "./router";
 
-Vue.config.productionTip = false;
+// Import CSS reset
+import "./assets/styles/reset.css";
 
-new Vue({
-  router,
-  store: store,
-  render: h => h(App)
-}).$mount("#app");
+createApp(App).use(store).use(router).mount("#app");
