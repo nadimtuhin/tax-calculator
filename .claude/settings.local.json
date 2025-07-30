@@ -4,7 +4,23 @@
       "Bash(gh repo view:*)",
       "Bash(gh repo edit:*)",
       "Bash(mkdir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(yarn build)",
+      "Bash(yarn why:*)",
+      "Bash(yarn upgrade-interactive:*)",
+      "Bash(yarn outdated)",
+      "Bash(rm:*)",
+      "Bash(yarn install)",
+      "Bash(yarn test)",
+      "Bash(npm run test:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npm test)",
+      "Bash(npx jest:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

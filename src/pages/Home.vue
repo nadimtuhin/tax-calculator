@@ -1,16 +1,27 @@
 <template>
-  <div id="app" class="container">
-    <Salaries />
-    <div class="row" style="margin-top: 100px">
-      <div class="col-sm">
-        <taxable-income />
+  <div id="home-page">
+    <div class="main-content">
+      <div class="profile-container">
+        <div class="content-section">
+          <TaxpayerProfile />
+        </div>
       </div>
-      <div class="col-sm">
-        <investment />
+      <div class="content-section">
+        <Salaries />
       </div>
-    </div>
-    <div class="row" style="margin-top: 100px">
-      <div class="col-sm">
+      <div class="content-row">
+        <div class="content-col-half">
+          <div class="content-section">
+            <taxable-income />
+          </div>
+        </div>
+        <div class="content-col-half">
+          <div class="content-section">
+            <investment />
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
         <current />
       </div>
     </div>
@@ -24,6 +35,7 @@ import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
+import TaxpayerProfile from "../components/TaxpayerProfile";
 
 export default {
   name: "App",
@@ -33,17 +45,115 @@ export default {
     Salaries,
     TaxableIncome,
     Investment,
+    TaxpayerProfile,
   }
 };
 </script>
 
 <style>
-#app {
+#home-page {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  min-height: 100vh;
+  background-color: #f5f6fa;
+}
+
+
+.main-content {
+  padding: 30px;
+  max-width: none;
+  width: 100%;
+}
+
+.content-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.content-col-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-container {
+  margin: 0 auto 20px auto;
+}
+
+.content-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.content-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-align: left;
+}
+
+table {
+  width: 100%;
+}
+
+table th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  padding: 12px;
+  text-align: left;
+}
+
+table td {
+  padding: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+input[type="number"], select {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 10px;
+  transition: border-color 0.3s;
+}
+
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .content-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .content-section {
+    padding: 15px;
+  }
+
+  table {
+    font-size: 0.875rem;
+  }
+
+  table input {
+    width: 100px !important;
+  }
 }
 </style>

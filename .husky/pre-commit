@@ -1,0 +1,13 @@
+# Run linting
+yarn lint
+
+# Run tests
+yarn test
+
+# Check for security vulnerabilities with Trivy (if installed)
+if command -v trivy >/dev/null 2>&1; then
+  echo "Running Trivy security scan..."
+  trivy fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 .
+else
+  echo "Warning: Trivy not installed. Install with: brew install trivy"
+fi

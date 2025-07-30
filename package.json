@@ -1,26 +1,49 @@
 {
   "name": "bangladesh-tax-calculator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": false,
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "jest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "npm run test && npm run test:e2e",
+    "prepare": "husky",
+    "security:scan": "trivy fs --scanners vuln,secret .",
+    "security:scan-image": "trivy image --scanners vuln,secret",
+    "security:config": "trivy config ."
   },
   "dependencies": {
-    "@vue/cli-plugin-babel": "4.1.1",
-    "vue": "^2.6.11",
-    "vue-router": "^3.6.5",
-    "vuex": "3.4.0",
-    "vuex-persistedstate": "^3.0.1"
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "vuex": "^4.1.0",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-eslint": "4.1.1",
-    "@vue/cli-service": "4.1.1",
-    "babel-eslint": "^10.0.3",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.0.1",
-    "vue-template-compiler": "^2.6.11"
+    "@babel/core": "^7.28.0",
+    "@babel/eslint-parser": "^7.22.0",
+    "@babel/preset-env": "^7.28.0",
+    "@playwright/test": "^1.54.1",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "@vue/test-utils": "^2.4.0",
+    "@vue/vue3-jest": "^29.2.6",
+    "babel-jest": "^30.0.5",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.20.0",
+    "husky": "^9.1.7",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5"
   },
   "eslintConfig": {
     "root": true,
@@ -28,11 +51,14 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential"
+      "plugin:vue/vue3-essential"
     ],
-    "rules": {},
+    "rules": {
+      "vue/multi-word-component-names": "off"
+    },
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser",
+      "requireConfigFile": false
     }
   },
   "postcss": {
@@ -45,6 +71,35 @@
     "last 2 versions",
     "not ie <= 8"
   ],
+  "resolutions": {
+    "ansi-regex": "^5.0.1",
+    "cross-spawn": "^7.0.6",
+    "json5": "^2.2.3"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.(vue)$": "@vue/vue3-jest",
+      "^.+\\.js$": "babel-jest"
+    },
+    "testMatch": [
+      "**/tests/unit/**/*.spec.js",
+      "**/tests/unit/**/*.test.js"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{js,vue}",
+      "!src/main.js",
+      "!**/node_modules/**"
+    ]
+  },
   "keywords": [
     "vue",
     "vuejs",
