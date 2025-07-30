@@ -7,7 +7,7 @@
       <!-- Brand section -->
       <div class="navbar-brand-section">
         <router-link to="/" class="navbar-brand" aria-label="BD Tax Calculator - Go to calculator">
-          <span class="brand-icon">🧮</span>
+          <span class="brand-icon">🇧🇩</span>
           <span class="brand-text">BD Tax Calculator</span>
         </router-link>
       </div>
