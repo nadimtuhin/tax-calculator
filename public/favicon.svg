@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Bangladesh flag background (green) -->
+  <rect width="32" height="32" fill="#006a4e"/>
+  <!-- Red circle (slightly left of center as per flag design) -->
+  <circle cx="12" cy="16" r="6" fill="#f42a41"/>
+</svg>
