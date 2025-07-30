@@ -60,6 +60,7 @@ export default {
   background-color: #f5f6fa;
 }
 
+
 .main-content {
   padding: 30px;
   max-width: none;

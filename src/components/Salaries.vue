@@ -17,6 +17,48 @@
     font-size: 12px;
     white-space: nowrap;
   }
+  
+  .add-bonus-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .add-bonus-btn:hover {
+    background: #45a049;
+    transform: scale(1.1);
+  }
+  
+  .remove-bonus-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .remove-bonus-btn:hover {
+    background: #da190b;
+    transform: scale(1.1);
+  }
 </style>
 
 <template>
@@ -78,7 +120,18 @@
       </tr>
 
       <tr>
-        <td>Bonus</td>
+        <td>
+          Bonus
+          <button 
+            v-if="!showBonus2" 
+            @click="$store.commit('setShowBonus2', true)" 
+            class="add-bonus-btn"
+            type="button"
+            title="Add another bonus"
+          >
+            +
+          </button>
+        </td>
         <td>
           <input
             type="number"
@@ -87,6 +140,42 @@
             step="1000"
             :value="bonus"
             @input="changeBonus"
+          >
+        </td>
+      </tr>
+      <tr v-if="showBonus2">
+        <td>
+          Bonus
+          <button 
+            @click="removeBonus2" 
+            class="remove-bonus-btn"
+            type="button"
+            title="Remove this bonus"
+          >
+            ×
+          </button>
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="bonus2"
+            @input="changeBonus2"
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Others (Additional Income)</td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="999999"
+            step="1000"
+            :value="others"
+            @input="changeOthers"
           >
         </td>
       </tr>
@@ -100,6 +189,7 @@ import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "salaries",
+  
 
   mounted() {
     // const urlParams = new URLSearchParams(window.location.search);
@@ -118,6 +208,13 @@ export default {
     changeBonus($event) {
       this.$store.commit('changeBonus', $event.target.value );
     },
+    changeBonus2($event) {
+      this.$store.commit('changeBonus2', $event.target.value );
+    },
+    removeBonus2() {
+      this.$store.commit('setShowBonus2', false);
+      this.$store.commit('changeBonus2', 0);
+    },
     changeOthers($event) {
       this.$store.commit('changeOthers', $event.target.value );
     },
@@ -131,6 +228,8 @@ export default {
       months: state => state.salaries.months,
       salaryBreakdown: state => state.breakdown.salaryBreakdown,
       bonus: state => state.salaries.bonus,
+      bonus2: state => state.salaries.bonus2,
+      showBonus2: state => state.salaries.showBonus2,
       others: state => state.salaries.others,
     }),
     ...mapGetters({

@@ -92,6 +92,8 @@ const salaries = {
       { id: "June",  ...monthlyDefault() },
     ],
     bonus: 0,
+    bonus2: 0,
+    showBonus2: false,
     others: 0,
   }),
   mutations: {
@@ -174,10 +176,16 @@ const salaries = {
     changeBonus(state, value) {
       state.bonus = +value;
     },
+    changeBonus2(state, value) {
+      state.bonus2 = +value;
+    },
+    setShowBonus2(state, value) {
+      state.showBonus2 = value;
+    },
   },
   getters: {
     totalSalary(state) {
-      return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus;
+      return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus + state.bonus2;
     },
     totalTds(state) {
       return state.months.reduceRight((carry, item) => carry + +item.tds, 0);
@@ -245,7 +253,18 @@ const salaries = {
       return 15;
     },
     investmentRebate(state, getters) {
-      return Math.round(getters.totalRebateableInvestment * getters.rebatePercentage/100);
+      const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
+      const fifteenPercentOfInvestment = getters.totalInvestment * 0.15;
+      const tenLac = 1000000;
+      
+      // Take the minimum of these three values
+      const rebate = Math.min(
+        threePercentOfTaxableIncome,
+        fifteenPercentOfInvestment,
+        tenLac
+      );
+      
+      return Math.round(Math.max(0, rebate));
     },
     
     taxFreeThreshold(state) {

@@ -13,7 +13,14 @@
       "Bash(yarn upgrade-interactive:*)",
       "Bash(yarn outdated)",
       "Bash(rm:*)",
-      "Bash(yarn install)"
+      "Bash(yarn install)",
+      "Bash(yarn test)",
+      "Bash(npm run test:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npm test)",
+      "Bash(npx jest:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

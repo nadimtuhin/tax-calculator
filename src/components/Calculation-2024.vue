@@ -52,8 +52,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import calculateTaxBreakdown from '../calculateTaxBreakdown';
-
-const LAKH = 100000;
+import { calculateTaxSlabs } from '../utils/taxSlabs';
 
 export default {
   name: "calculation-2024",
@@ -66,18 +65,7 @@ export default {
       minimumTaxAmount: 'minimumTaxAmount',
     }),
     slabs() {
-      const threshold = this.taxFreeThreshold;
-      const firstSlabAmountInLakh = (threshold / LAKH).toFixed(1); // Convert to lakh with 1 decimal
-      
-      return [
-        [`First Tk${firstSlabAmountInLakh} lakh`, 0, threshold, 0],
-        ['Next Tk1 lakh', threshold, threshold + 1*LAKH, 5],
-        ['Next Tk4 lakh', threshold + 1*LAKH, threshold + 5*LAKH, 10],
-        ['Next Tk5 lakh', threshold + 5*LAKH, threshold + 10*LAKH, 15],
-        ['Next Tk5 lakh', threshold + 10*LAKH, threshold + 15*LAKH, 20],
-        ['Next Tk20 lakh', threshold + 15*LAKH, threshold + 35*LAKH, 25],
-        ['Above', threshold + 35*LAKH, Infinity, 30],
-      ];
+      return calculateTaxSlabs(this.taxFreeThreshold);
     },
     totalTax() {
       const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));

@@ -16,7 +16,7 @@
         <td>{{totalPercentage}} %</td>
       </tr>
 
-      <tr v-for="part in this.parts" :key="part">
+      <tr v-for="part in visibleParts" :key="part">
         <td>{{part}}</td>
         <td>
           $  <input
@@ -74,7 +74,13 @@ export default {
     }),
     ...mapGetters({
       totalPercentage: 'totalPercentage',
-    })
+    }),
+    visibleParts() {
+      return this.parts.filter(part => 
+        this.salaryBreakdown[part] && 
+        (this.salaryBreakdown[part].amount > 0 || this.salaryBreakdown[part].percentage > 0)
+      );
+    }
   }
 };
 </script>

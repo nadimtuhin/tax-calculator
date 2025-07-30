@@ -4,9 +4,15 @@
   "private": false,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test": "jest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "npm run test && npm run test:e2e",
     "prepare": "husky",
     "security:scan": "trivy fs --scanners vuln,secret .",
     "security:scan-image": "trivy image --scanners vuln,secret",
@@ -23,6 +29,7 @@
     "@babel/core": "^7.28.0",
     "@babel/eslint-parser": "^7.22.0",
     "@babel/preset-env": "^7.28.0",
+    "@playwright/test": "^1.54.1",
     "@vue/cli-plugin-eslint": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
     "@vue/test-utils": "^2.4.0",
@@ -77,8 +84,8 @@
       "^.+\\.js$": "babel-jest"
     },
     "testMatch": [
-      "**/tests/**/*.spec.js",
-      "**/tests/**/*.test.js"
+      "**/tests/unit/**/*.spec.js",
+      "**/tests/unit/**/*.test.js"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
