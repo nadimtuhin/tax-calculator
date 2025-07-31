@@ -20,7 +20,9 @@
       "Bash(npx playwright:*)",
       "Bash(npm test)",
       "Bash(npx jest:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

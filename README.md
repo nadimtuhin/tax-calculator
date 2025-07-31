@@ -25,7 +25,7 @@
 
 ## ✨ Overview
 
-Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help salaried individuals in Bangladesh calculate their income tax obligations accurately. Supporting both 2023 and 2024 tax years, this tool provides detailed breakdowns, investment tracking, and supports different taxpayer categories.
+Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help salaried individuals in Bangladesh calculate their income tax obligations accurately. Now featuring **dual tax comparison** between FY 2024-2025 and FY 2025-2026, this tool provides detailed breakdowns, investment tracking, and supports different taxpayer categories with side-by-side comparison of tax structures.
 
 <div align="center">
   <table>
@@ -45,10 +45,11 @@ Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help 
 <td width="50%">
 
 ### 💼 Tax Management
-- ✅ Support for 2023 & 2024 tax years
-- ✅ Multiple taxpayer profiles (General, Women/Senior, Disabled, Freedom Fighter)
+- ✅ **Dual tax comparison** FY 2024-25 vs 2025-26
+- ✅ Side-by-side calculation display
+- ✅ Multiple taxpayer profiles (General, Female, Senior, Disabled, Freedom Fighter)
 - ✅ Detailed salary component breakdown
-- ✅ Investment tracking & tax credits
+- ✅ Investment tracking & progressive rebate rates
 - ✅ TDS calculation support
 
 </td>
@@ -65,7 +66,18 @@ Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help 
 </tr>
 </table>
 
-## 🆕 What's New in v1.1.0
+## 🆕 What's New in v1.2.0
+
+| Feature | Description |
+|---------|-------------|
+| ⚖️ **Dual Tax Comparison** | Side-by-side comparison of FY 2024-25 vs FY 2025-26 tax calculations |
+| 📊 **Tax Structure Changes** | Reflects new thresholds, unified minimum tax, and progressive rebate rates |
+| 💰 **Savings Calculator** | Shows tax savings or additional tax with new structure |
+| 📱 **Responsive Comparison** | Mobile-optimized side-by-side or stacked layout |
+| 🧪 **Comprehensive Testing** | Full test coverage for dual calculations and edge cases |
+
+<details>
+<summary><strong>Previous Updates (v1.1.0)</strong></summary>
 
 | Feature | Description |
 |---------|-------------|
@@ -74,6 +86,8 @@ Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help 
 | 🎨 **Enhanced UI** | Improved navigation with quick action buttons |
 | 🧪 **Better Testing** | Comprehensive unit and E2E test coverage |
 | ⚡ **Performance** | Faster load times and improved reactivity |
+
+</details>
 
 ## 🚀 Quick Start
 
@@ -126,8 +140,9 @@ Visit `http://localhost:8080` to see the application running.
 ```
 src/
 ├── 📂 components/          # Reusable Vue components
-│   ├── 📄 Calculation-2023.vue
-│   ├── 📄 Calculation-2024.vue
+│   ├── 📄 Calculation-2024.vue    # FY 2024-25 calculations
+│   ├── 📄 Calculation-2025.vue    # FY 2025-26 calculations
+│   ├── 📄 TaxComparison.vue       # Dual comparison display
 │   ├── 📄 Investment.vue
 │   ├── 📄 TaxpayerProfile.vue
 │   └── ...
@@ -135,7 +150,10 @@ src/
 ├── 📂 store/              # Vuex store modules
 ├── 📂 router/             # Vue Router configuration
 ├── 📂 utils/              # Utility functions
-└── 📄 calculateTaxBreakdown.js  # Core tax logic
+│   ├── 📄 taxSlabs.js             # FY 2024-25 tax logic
+│   └── 📄 taxSlabs2025.js         # FY 2025-26 tax logic
+├── 📄 calculateTaxBreakdown.js    # FY 2024-25 calculations
+└── 📄 calculateTaxBreakdown2025.js # FY 2025-26 calculations
 ```
 
 ## 🤝 Contributing
@@ -155,11 +173,19 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ## 📈 Roadmap
 
-- [ ] Support for more tax years
+- [x] **Dual tax comparison** (FY 2024-25 vs 2025-26)
+- [ ] Historical tax year comparisons
+- [ ] Export comparison reports (PDF/Excel)
 - [ ] Business income tax calculation
 - [ ] Tax planning recommendations
-- [ ] Multi-language support
-- [ ] PDF report generation
+- [ ] Multi-language support (Bengali)
+- [ ] Chart visualizations for tax breakdown
+
+## 📚 Documentation
+
+- [Dual Tax Comparison Guide](DUAL_TAX_COMPARISON.md) - Comprehensive guide to the new comparison feature
+- [API Documentation](docs/) - Technical implementation details
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to the project
 
 ## 👨‍💻 Author
 

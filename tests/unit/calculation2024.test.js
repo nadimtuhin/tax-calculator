@@ -35,7 +35,7 @@ describe('Calculation-2024 Component', () => {
 
     test('should render the component', () => {
       expect(wrapper.exists()).toBe(true);
-      expect(wrapper.find('h2').text()).toContain('Tax on Proposed (2024) rate');
+      expect(wrapper.find('h2').text()).toContain('Tax for FY 2024-2025');
     });
 
     test('should render tax calculation table', () => {

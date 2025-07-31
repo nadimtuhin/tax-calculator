@@ -104,12 +104,20 @@ export default {
 
 <style scoped>
 .unlimited {
-  color: #28a745;
+  color: #000000;
   font-weight: 600;
+  background-color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #000000;
 }
 
 .limited {
-  color: #dc3545;
+  color: #ffffff;
   font-weight: 600;
+  background-color: #000000;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #000000;
 }
 </style>

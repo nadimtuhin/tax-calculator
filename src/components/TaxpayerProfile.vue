@@ -39,6 +39,19 @@
       </div>
       
       <div class="profile-field">
+        <label>Fiscal Year</label>
+        <select v-model="selectedFiscalYear" @change="updateProfile">
+          <option 
+            v-for="option in fiscalYearOptions" 
+            :key="option.value" 
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="profile-field">
         <label>Minimum Tax</label>
         <div class="readonly-value">BDT {{ minimumTax.toLocaleString() }}</div>
       </div>
@@ -59,6 +72,8 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex';
+
 export default {
   name: 'TaxpayerProfile',
   
@@ -67,39 +82,23 @@ export default {
       age: 30,
       selectedCategory: 'general',
       selectedLocation: 'dhaka',
+      selectedFiscalYear: '2024-25',
     };
   },
 
   computed: {
+    ...mapGetters({
+      fiscalYearOptions: 'fiscalYearOptions',
+      taxFreeThreshold: 'taxFreeThreshold',
+      minimumTaxAmount: 'minimumTaxAmount',
+    }),
+    
     threshold() {
-      const thresholds = {
-        general: 350000,
-        female: 400000,
-        senior: 400000,
-        disabled: 475000,
-        parent_disabled: 400000, // 350000 + 50000
-        freedom_fighter: 500000,
-        third_gender: 475000,
-      };
-      
-      let baseThreshold = thresholds[this.selectedCategory] || thresholds.general;
-      
-      if (this.selectedCategory === 'parent_disabled') {
-        baseThreshold = thresholds.general + 50000;
-      }
-      
-      return baseThreshold;
+      return this.taxFreeThreshold;
     },
     
     minimumTax() {
-      const taxes = {
-        dhaka: 5000,
-        chittagong: 5000,
-        other_city: 4000,
-        district: 3000,
-      };
-      
-      return taxes[this.selectedLocation] || taxes.dhaka;
+      return this.minimumTaxAmount;
     },
     
     categoryName() {
@@ -117,21 +116,40 @@ export default {
   },
 
   mounted() {
+    // Initialize from store
+    const currentProfile = this.$store.state.salaries?.taxpayerProfile;
+    const currentYear = this.$store.state.salaries?.currentYear;
+    
+    if (currentProfile) {
+      this.selectedCategory = currentProfile.category || 'general';
+      this.age = currentProfile.age || 30;
+      this.selectedLocation = currentProfile.location || 'dhaka';
+    }
+    
+    if (currentYear) {
+      this.selectedFiscalYear = currentYear;
+    }
+    
     this.updateProfile();
   },
 
   methods: {
+    ...mapMutations(['updateTaxpayerProfile', 'setCurrentYear']),
+    
     updateProfile() {
       if (this.age >= 65 && this.selectedCategory === 'general') {
         this.selectedCategory = 'senior';
       }
       
       // Update Vuex store
-      this.$store.commit('updateTaxpayerProfile', {
+      this.updateTaxpayerProfile({
         category: this.selectedCategory,
         age: parseInt(this.age),
         location: this.selectedLocation,
       });
+      
+      // Update fiscal year
+      this.setCurrentYear(this.selectedFiscalYear);
     },
   },
 };
@@ -196,7 +214,7 @@ export default {
 }
 
 .age-notice {
-  color: #dc3545;
+  color: #0066cc;
   font-size: 0.875rem;
 }
 

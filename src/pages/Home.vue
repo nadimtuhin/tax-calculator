@@ -21,8 +21,26 @@
           </div>
         </div>
       </div>
+      
+      <!-- Tax Calculation Comparison Section - Moved to bottom -->
+      <div class="tax-comparison-section">
+        <div class="comparison-row">
+          <div class="comparison-col">
+            <div class="content-section">
+              <current />
+            </div>
+          </div>
+          <div class="comparison-col">
+            <div class="content-section">
+              <calculation-2025 />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tax Comparison Summary - Now at the bottom -->
       <div class="content-section">
-        <current />
+        <tax-comparison />
       </div>
     </div>
   </div>
@@ -31,6 +49,8 @@
 <script>
 /* eslint-disable */
 import Current from "../components/Calculation-2024";
+import Calculation2025 from "../components/Calculation-2025";
+import TaxComparison from "../components/TaxComparison";
 import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
@@ -42,6 +62,8 @@ export default {
   data: () => ({}),
   components: {
     Current,
+    Calculation2025,
+    TaxComparison,
     Salaries,
     TaxableIncome,
     Investment,
@@ -134,12 +156,70 @@ input[type="number"]:focus, select:focus {
 }
 
 
+/* Tax Comparison Layout */
+.tax-comparison-section {
+  margin-top: 20px;
+}
+
+.comparison-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.comparison-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tax Difference Highlighting */
+.tax-highlight-savings {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  color: #000000;
+  font-weight: 600;
+}
+
+.tax-highlight-increase {
+  background-color: #000000;
+  border: 2px solid #000000;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.tax-comparison-badge {
+  font-size: 0.875rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.badge-savings {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  font-weight: 700;
+}
+
+.badge-increase {
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-weight: 700;
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding: 15px;
   }
 
   .content-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .comparison-row {
     flex-direction: column;
     gap: 15px;
   }

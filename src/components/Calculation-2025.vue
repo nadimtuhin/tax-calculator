@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax for {{currentYearLabel}} {{totalTax}}</h2>
+  <h2>Tax for {{otherYearLabel}} {{totalTax}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -8,7 +8,7 @@
           <strong>Income (per year)</strong>
         </td>
         <td>
-          <strong>Proposed rate [%]</strong>
+          <strong>New rate [%]</strong>
         </td>
         <td>
           <strong>Tax (BDT)</strong>
@@ -51,39 +51,29 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import calculateTaxBreakdown from '../calculateTaxBreakdown';
-import { calculateTaxSlabs } from '../utils/taxSlabs';
 
 export default {
-  name: "calculation-2024",
+  name: "calculation-2025",
   computed: {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
-      investmentRebate: 'investmentRebate',
-      taxFreeThreshold: 'taxFreeThreshold',
-      minimumTaxAmount: 'minimumTaxAmount',
+      
+      // FY 2025-2026 specific getters
+      investmentRebate: 'investmentRebate2025',
+      taxFreeThreshold: 'taxFreeThreshold2025',
+      minimumTaxAmount: 'minimumTaxAmount2025',
+      taxBreakdown: 'taxBreakdown2025',
+      calculatedTax: 'calculatedTax2025',
+      totalTax: 'totalTax2025',
+      isMinimumTaxApplied: 'isMinimumTaxApplied2025',
+      payableTax: 'payableTax2025',
+      
       currentYear: 'currentYear',
       fiscalYearOptions: 'fiscalYearOptions'
     }),
-    currentYearLabel() {
-      const option = this.fiscalYearOptions.find(opt => opt.value === this.currentYear);
-      return option ? option.label : 'FY 2024-2025';
-    },
-    slabs() {
-      return calculateTaxSlabs(this.taxFreeThreshold);
-    },
-    totalTax() {
-      const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
-      // Apply minimum tax if applicable
-      return Math.max(calculatedTax, this.minimumTaxAmount);
-    },
-    taxBreakdown() {
-      return calculateTaxBreakdown(this.taxableSalary, this.slabs);
-    },
-    isMinimumTaxApplied() {
-      const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
-      return calculatedTax < this.minimumTaxAmount;
+    otherYearLabel() {
+      return this.currentYear === '2024-25' ? 'FY 2025-2026' : 'FY 2024-2025';
     }
   }
 };

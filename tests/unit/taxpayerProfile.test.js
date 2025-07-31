@@ -85,36 +85,43 @@ describe('TaxpayerProfile Component', () => {
     test('should calculate correct threshold for different categories', async () => {
       // Test general category
       wrapper.vm.selectedCategory = 'general';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(350000);
       
       // Test female category
       wrapper.vm.selectedCategory = 'female';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000);
       
       // Test senior category
       wrapper.vm.selectedCategory = 'senior';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000);
       
       // Test disabled category
       wrapper.vm.selectedCategory = 'disabled';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(475000);
       
       // Test parent of disabled child
       wrapper.vm.selectedCategory = 'parent_disabled';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(400000); // 350000 + 50000
       
       // Test freedom fighter
       wrapper.vm.selectedCategory = 'freedom_fighter';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(500000);
       
       // Test third gender
       wrapper.vm.selectedCategory = 'third_gender';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.threshold).toBe(475000);
     });
@@ -122,21 +129,25 @@ describe('TaxpayerProfile Component', () => {
     test('should calculate correct minimum tax for different locations', async () => {
       // Test Dhaka
       wrapper.vm.selectedLocation = 'dhaka';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(5000);
       
       // Test Chittagong
       wrapper.vm.selectedLocation = 'chittagong';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(5000);
       
       // Test other city corporations
       wrapper.vm.selectedLocation = 'other_city';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(4000);
       
       // Test district towns
       wrapper.vm.selectedLocation = 'district';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(wrapper.vm.minimumTax).toBe(3000);
     });
@@ -233,6 +244,7 @@ describe('TaxpayerProfile Component', () => {
       
       // Change to female category
       wrapper.vm.selectedCategory = 'female';
+      wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       
       expect(thresholdAmount.text()).toBe('BDT 400,000');

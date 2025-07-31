@@ -1,3 +1,17 @@
+import { 
+  getTaxFreeThreshold2025, 
+  getMinimumTax2025, 
+  getRebatePercentage2025, 
+  getMaxRebateableInvestment2025,
+  calculateTaxSlabs2025 
+} from '../utils/taxSlabs2025';
+import calculateTaxBreakdown2025, { 
+  calculateInvestmentRebate2025, 
+  calculateFinalTax2025 
+} from '../calculateTaxBreakdown2025';
+import { calculateTaxSlabs } from '../utils/taxSlabs';
+import calculateTaxBreakdown from '../calculateTaxBreakdown';
+
 function monthlyDefault() {
   return {
     salary: 0,
@@ -37,6 +51,15 @@ const taxFreeThresholds = {
     freedom_fighter: 500000,
     third_gender: 475000,
   },
+  '2025-26': {
+    general: 375000,
+    female: 425000,
+    senior: 425000,
+    disabled: 500000,
+    parent_disabled: 50000, // additional amount
+    freedom_fighter: 525000,
+    third_gender: 500000,
+  },
 };
 
 const minimumTax = {
@@ -58,6 +81,12 @@ const minimumTax = {
     other_city: 4000,
     district: 3000,
   },
+  '2025-26': {
+    dhaka: 5000,
+    chittagong: 5000,
+    other_city: 5000,
+    district: 5000,
+  },
 };
 
 const salaries = {
@@ -68,6 +97,10 @@ const salaries = {
       location: 'dhaka',
     },
     currentYear: '2024-25',
+    fiscalYearOptions: [
+      { value: '2024-25', label: 'FY 2024-2025' },
+      { value: '2025-26', label: 'FY 2025-2026' }
+    ],
     investments: [
       { name: 'DPS', amount: 0,  maximum: 120000 },
       { name: 'Life insurance premium', amount: 0,  maximum: infinity },
@@ -184,6 +217,12 @@ const salaries = {
     },
   },
   getters: {
+    fiscalYearOptions(state) {
+      return state.fiscalYearOptions;
+    },
+    currentYear(state) {
+      return state.currentYear;
+    },
     totalSalary(state) {
       return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus + state.bonus2;
     },
@@ -289,6 +328,104 @@ const salaries = {
       
       return taxRates[location] || taxRates.dhaka;
     },
+    
+    taxSlabs(state, getters) {
+      return calculateTaxSlabs(getters.taxFreeThreshold);
+    },
+    
+    taxBreakdown(state, getters) {
+      return calculateTaxBreakdown(getters.taxableSalary, getters.taxSlabs);
+    },
+    
+    calculatedTax(state, getters) {
+      return Math.round(getters.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
+    },
+    
+    totalTax(state, getters) {
+      return Math.max(getters.calculatedTax, getters.minimumTaxAmount);
+    },
+    
+    isMinimumTaxApplied(state, getters) {
+      return getters.calculatedTax < getters.minimumTaxAmount;
+    },
+    
+    payableTax(state, getters) {
+      return Math.max(0, getters.totalTax - getters.totalTds - getters.investmentRebate);
+    },
+
+    // FY 2025-2026 Getters (Non-breaking additions)
+    taxFreeThreshold2025(state) {
+      return getTaxFreeThreshold2025(state.taxpayerProfile);
+    },
+    
+    minimumTaxAmount2025(state) {
+      return getMinimumTax2025(state.taxpayerProfile.location);
+    },
+    
+    taxSlabs2025(state, getters) {
+      return calculateTaxSlabs2025(getters.taxFreeThreshold2025);
+    },
+    
+    rebatePercentage2025(state, getters) {
+      return getRebatePercentage2025(getters.taxableSalary);
+    },
+    
+    maxRebateableInvestment2025(state, getters) {
+      return getMaxRebateableInvestment2025(getters.taxableSalary);
+    },
+    
+    totalRebateableInvestment2025(state, getters) {
+      const rebateable = state.investments
+        .map(i => [i.amount, i.maximum])
+        .reduceRight((c, arr) => {
+          return c+(Math.min(...arr))
+        }, 0);
+
+      return Math.min(getters.maxRebateableInvestment2025, rebateable);
+    },
+    
+    investmentRebate2025(state, getters) {
+      return calculateInvestmentRebate2025(
+        getters.totalRebateableInvestment2025,
+        getters.rebatePercentage2025,
+        getters.maxRebateableInvestment2025
+      );
+    },
+    
+    taxBreakdown2025(state, getters) {
+      return calculateTaxBreakdown2025(getters.taxableSalary, getters.taxSlabs2025);
+    },
+    
+    calculatedTax2025(state, getters) {
+      return Math.round(getters.taxBreakdown2025.reduceRight((c,i)=>c+ +i.slabCut, 0));
+    },
+    
+    totalTax2025(state, getters) {
+      return Math.max(getters.calculatedTax2025, getters.minimumTaxAmount2025);
+    },
+    
+    isMinimumTaxApplied2025(state, getters) {
+      return getters.calculatedTax2025 < getters.minimumTaxAmount2025;
+    },
+    
+    payableTax2025(state, getters) {
+      return Math.max(0, getters.totalTax2025 - getters.totalTds - getters.investmentRebate2025);
+    },
+    
+    // Comparison getters
+    taxDifference(state, getters) {
+      return getters.totalTax2025 - getters.totalTax;
+    },
+    
+    taxSavings(state, getters) {
+      const difference = getters.taxDifference;
+      return difference < 0 ? Math.abs(difference) : 0;
+    },
+    
+    additionalTax(state, getters) {
+      const difference = getters.taxDifference;
+      return difference > 0 ? difference : 0;
+    }
   }
 };
 
