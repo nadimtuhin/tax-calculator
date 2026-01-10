@@ -1,9 +1,9 @@
 const LAKH = 100000;
 
 // Bangladesh Tax Slab Structure FY 2025-2026 (amounts in lakh)
-// Note: 5% bracket has been removed, structure simplified to 6 slabs
-const TAX_SLAB_AMOUNTS_2025 = [3, 4, 5, 20]; // After threshold: 3L, 4L, 5L, 20L
-const TAX_RATES_2025 = [0, 10, 15, 20, 25, 30]; // 0% for threshold, then 10%, 15%, etc. (no 5%)
+// Based on NBR official documentation - same structure as FY 2024-2025
+const TAX_SLAB_AMOUNTS_2025 = [1, 4, 5, 5]; // After threshold: 1L, 4L, 5L, 5L
+const TAX_RATES_2025 = [0, 5, 10, 15, 20, 25]; // 0% for threshold, then 5%, 10%, 15%, 20%, 25%
 
 const formatLakh = (lakhs) => {
   return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
@@ -54,16 +54,16 @@ export function calculateTaxSlabs2025(taxFreeThreshold) {
 
 /**
  * Get tax-free thresholds for FY 2025-2026
- * Updated thresholds: +25,000 BDT across all categories
+ * Based on NBR official documentation
  */
 export const TAX_FREE_THRESHOLDS_2025 = {
-  general: 375000,        // +25K from 350K
-  female: 425000,         // +25K from 400K
-  senior: 425000,         // +25K from 400K (65+ years)
-  disabled: 500000,       // +25K from 475K
-  third_gender: 500000,   // +25K from 475K
-  freedom_fighter: 525000, // +25K from 500K
-  parent_disabled: 425000  // 375K + 50K exemption
+  general: 350000,        // 3.5 lakh
+  female: 400000,         // 4.0 lakh
+  senior: 400000,         // 4.0 lakh (65+ years)
+  disabled: 475000,       // 4.75 lakh
+  third_gender: 475000,   // 4.75 lakh
+  freedom_fighter: 500000, // 5.0 lakh
+  parent_disabled: 400000  // 4.0 lakh
 };
 
 /**
