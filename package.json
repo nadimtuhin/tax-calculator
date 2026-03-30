@@ -10,7 +10,7 @@
     "serve": "vue-cli-service serve",
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
+    "lint": "eslint --fix src/",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@vue/cli-plugin-babel": "^5.0.8",
     "vue": "^3.4.0",
-    "vue-router": "^4.2.0",
+    "vue-router": "^5.0.4",
     "vuex": "^4.1.0",
     "vuex-persistedstate": "^4.1.0"
   },
@@ -39,27 +39,13 @@
     "@vue/test-utils": "^2.4.0",
     "@vue/vue3-jest": "^29.2.6",
     "babel-jest": "^30.0.5",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.20.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-vue": "^10.8.0",
+    "globals": "^17.4.0",
     "husky": "^9.1.7",
     "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential"
-    ],
-    "rules": {
-      "vue/multi-word-component-names": "off"
-    },
-    "parserOptions": {
-      "parser": "@babel/eslint-parser",
-      "requireConfigFile": false
-    }
+    "jest-environment-jsdom": "^30.0.5",
+    "vue-eslint-parser": "^10.4.0"
   },
   "postcss": {
     "plugins": {
@@ -93,12 +79,16 @@
       "**/tests/integration/**/*.test.js"
     ],
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^perfect-debounce$": "<rootDir>/__mocks__/perfect-debounce.js"
     },
     "collectCoverageFrom": [
       "src/**/*.{js,vue}",
       "!src/main.js",
       "!**/node_modules/**"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(perfect-debounce|@vue/devtools-kit|@vue/devtools-api)/)"
     ]
   },
   "keywords": [
