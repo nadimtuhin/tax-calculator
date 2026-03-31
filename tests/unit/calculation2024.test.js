@@ -16,6 +16,7 @@ describe('Calculation-2024 Component', () => {
         }
       }
     });
+    store.commit('setCurrentYear', '2024-25');
   });
 
   afterEach(() => {

@@ -246,8 +246,8 @@ describe('TaxableIncome Component', () => {
       
       const tooltipModal = wrapper.find('.tooltip-modal');
       expect(tooltipModal.text()).toContain('House Rent Exemption');
-      expect(tooltipModal.text()).toContain('50% of basic salary');
-      expect(tooltipModal.text()).toContain('৳3,00,000 per year');
+      expect(tooltipModal.text()).toContain('Proportional share of consolidated allowance exemption');
+      expect(tooltipModal.text()).toContain('Under ITA 2023');
     });
 
     test('should display correct tooltip content for medical', async () => {
@@ -256,8 +256,8 @@ describe('TaxableIncome Component', () => {
       
       const tooltipModal = wrapper.find('.tooltip-modal');
       expect(tooltipModal.text()).toContain('Medical Allowance Exemption');
-      expect(tooltipModal.text()).toContain('10% of basic salary');
-      expect(tooltipModal.text()).toContain('৳1,20,000 per year');
+      expect(tooltipModal.text()).toContain('Proportional share of consolidated allowance exemption');
+      expect(tooltipModal.text()).toContain('Under ITA 2023');
     });
 
     test('should display correct tooltip content for transport', async () => {
@@ -266,8 +266,8 @@ describe('TaxableIncome Component', () => {
       
       const tooltipModal = wrapper.find('.tooltip-modal');
       expect(tooltipModal.text()).toContain('Transport Allowance Exemption');
-      expect(tooltipModal.text()).toContain('Actual transport allowance');
-      expect(tooltipModal.text()).toContain('৳30,000 per year');
+      expect(tooltipModal.text()).toContain('Proportional share of consolidated allowance exemption');
+      expect(tooltipModal.text()).toContain('Under ITA 2023');
     });
 
     test('should close tooltip when close button is clicked', async () => {

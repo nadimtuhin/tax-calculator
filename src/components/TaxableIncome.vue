@@ -27,9 +27,9 @@
           <div class="tooltip-modal" @click.stop>
             <button class="tooltip-close" @click="showTooltip = null">&times;</button>
             <strong>House Rent Exemption:</strong><br>
-            • 50% of basic salary OR actual house allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳3,00,000 per year
+            • Proportional share of consolidated allowance exemption<br>
+            • Under ITA 2023, house/medical/transport exemptions are combined<br>
+            • Total exemption: min(all allowances, 1/3 of gross, ৳4,50,000 FY24-25 / ৳5,00,000 FY25-26)
           </div>
         </div>
       </td>
@@ -47,9 +47,9 @@
           <div class="tooltip-modal" @click.stop>
             <button class="tooltip-close" @click="showTooltip = null">&times;</button>
             <strong>Medical Allowance Exemption:</strong><br>
-            • 10% of basic salary OR actual medical allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳1,20,000 per year
+            • Proportional share of consolidated allowance exemption<br>
+            • Under ITA 2023, house/medical/transport exemptions are combined<br>
+            • Total exemption: min(all allowances, 1/3 of gross, ৳4,50,000 FY24-25 / ৳5,00,000 FY25-26)
           </div>
         </div>
       </td>
@@ -67,8 +67,9 @@
           <div class="tooltip-modal" @click.stop>
             <button class="tooltip-close" @click="showTooltip = null">&times;</button>
             <strong>Transport Allowance Exemption:</strong><br>
-            • Actual transport allowance received<br>
-            • Maximum: ৳30,000 per year
+            • Proportional share of consolidated allowance exemption<br>
+            • Under ITA 2023, house/medical/transport exemptions are combined<br>
+            • Total exemption: min(all allowances, 1/3 of gross, ৳4,50,000 FY24-25 / ৳5,00,000 FY25-26)
           </div>
         </div>
       </td>

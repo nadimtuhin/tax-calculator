@@ -1,44 +1,40 @@
 <template>
   <div id="home-page">
     <div class="main-content">
-      <div class="profile-container">
-        <div class="content-section">
-          <TaxpayerProfile />
-        </div>
-      </div>
+      <YearSwitcher />
+
       <div class="content-section">
-        <Salaries />
+        <SalaryWizard />
       </div>
-      <div class="content-row">
-        <div class="content-col-half">
-          <div class="content-section">
-            <taxable-income />
-          </div>
-        </div>
-        <div class="content-col-half">
-          <div class="content-section">
-            <investment />
-          </div>
-        </div>
+
+      <!-- Active year calculation — full width (hidden when comparison is expanded) -->
+      <div v-if="!showComparison" class="content-section">
+        <calculation-2025 v-if="currentYear === '2025-26'" />
+        <calculation-2026 v-else />
       </div>
-      
-      <!-- Tax Calculation Comparison Section - Moved to bottom -->
-      <div class="tax-comparison-section">
+
+      <!-- Compare both years toggle -->
+      <div class="compare-toggle-row">
+        <button class="compare-toggle-btn" @click="showComparison = !showComparison">
+          {{ showComparison ? '▲ Hide year comparison' : '▼ Compare both years' }}
+        </button>
+      </div>
+
+      <div v-if="showComparison" class="tax-comparison-section">
         <div class="comparison-row">
-          <div class="comparison-col">
-            <div class="content-section">
-              <current />
-            </div>
-          </div>
           <div class="comparison-col">
             <div class="content-section">
               <calculation-2025 />
             </div>
           </div>
+          <div class="comparison-col">
+            <div class="content-section">
+              <calculation-2026 />
+            </div>
+          </div>
         </div>
       </div>
-      
-      <!-- Tax Comparison Summary - Now at the bottom -->
+
       <div class="content-section">
         <tax-comparison />
       </div>
@@ -48,27 +44,29 @@
 
 <script>
 /* eslint-disable */
-import Current from "../components/Calculation-2024";
 import Calculation2025 from "../components/Calculation-2025";
+import Calculation2026 from "../components/Calculation-2026";
 import TaxComparison from "../components/TaxComparison";
-import SalaryBreakdown from "../components/SalaryBreakdown";
-import Salaries from "../components/Salaries";
-import Investment from "../components/Investment";
-import TaxableIncome from "../components/TaxableIncome";
-import TaxpayerProfile from "../components/TaxpayerProfile";
+import SalaryWizard from "../components/SalaryWizard";
+import YearSwitcher from "../components/YearSwitcher";
 
 export default {
   name: "App",
-  data: () => ({}),
+  data: () => ({
+    showComparison: false,
+  }),
   components: {
-    Current,
     Calculation2025,
+    Calculation2026,
     TaxComparison,
-    Salaries,
-    TaxableIncome,
-    Investment,
-    TaxpayerProfile,
-  }
+    SalaryWizard,
+    YearSwitcher,
+  },
+  computed: {
+    currentYear() {
+      return this.$store.state.salaries.currentYear;
+    },
+  },
 };
 </script>
 
@@ -79,20 +77,19 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   min-height: 100vh;
-  background-color: #f5f6fa;
+  background-color: #F4F6F4;
 }
 
-
 .main-content {
-  padding: 30px;
-  max-width: none;
-  width: 100%;
+  padding: 12px;
+  margin: 0 auto;
 }
 
 .content-row {
   display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .content-col-half {
@@ -100,16 +97,41 @@ export default {
   min-width: 0;
 }
 
-.profile-container {
-  margin: 0 auto 20px auto;
-}
-
 .content-section {
   background-color: white;
   border-radius: 8px;
-  padding: 25px;
+  padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 600px) {
+  .main-content {
+    padding: 20px;
+  }
+  .content-section {
+    padding: 20px;
+  }
+  .content-row {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 960px) {
+  .main-content {
+    padding: 30px;
+    max-width: 1100px;
+  }
+  .content-row {
+    flex-direction: row;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .content-section {
+    padding: 25px;
+    margin-bottom: 20px;
+  }
 }
 
 .content-section h2 {
@@ -151,14 +173,37 @@ input[type="number"], select {
 
 input[type="number"]:focus, select:focus {
   outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  border-color: #006A4E;
+  box-shadow: 0 0 0 0.2rem rgba(0, 106, 78, 0.2);
 }
 
+/* Compare toggle */
+.compare-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.compare-toggle-btn {
+  background: none;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.compare-toggle-btn:hover {
+  border-color: #006A4E;
+  color: #006A4E;
+  background: rgba(0, 106, 78, 0.06);
+}
 
 /* Tax Comparison Layout */
 .tax-comparison-section {
-  margin-top: 20px;
+  margin-top: 4px;
 }
 
 .comparison-row {
@@ -175,14 +220,14 @@ input[type="number"]:focus, select:focus {
 /* Tax Difference Highlighting */
 .tax-highlight-savings {
   background-color: #ffffff;
-  border: 2px solid #000000;
-  color: #000000;
+  border: 2px solid #006A4E;
+  color: #006A4E;
   font-weight: 600;
 }
 
 .tax-highlight-increase {
-  background-color: #000000;
-  border: 2px solid #000000;
+  background-color: #F42A41;
+  border: 2px solid #F42A41;
   color: #ffffff;
   font-weight: 600;
 }
@@ -197,43 +242,22 @@ input[type="number"]:focus, select:focus {
 
 .badge-savings {
   background-color: #ffffff;
-  color: #000000;
-  border: 2px solid #000000;
+  color: #006A4E;
+  border: 2px solid #006A4E;
   font-weight: 700;
 }
 
 .badge-increase {
-  background-color: #000000;
+  background-color: #F42A41;
   color: #ffffff;
-  border: 2px solid #000000;
+  border: 2px solid #F42A41;
   font-weight: 700;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 15px;
-  }
-
-  .content-row {
-    flex-direction: column;
-    gap: 15px;
-  }
-
+@media (min-width: 960px) {
   .comparison-row {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .content-section {
-    padding: 15px;
-  }
-
-  table {
-    font-size: 0.875rem;
-  }
-
-  table input {
-    width: 100px !important;
+    flex-direction: row;
+    gap: 20px;
   }
 }
 </style>

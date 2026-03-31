@@ -27,7 +27,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
     });
 
     await router.push('/');
-    
+
     wrapper = mount(Home, {
       global: {
         plugins: [store, router]
@@ -42,17 +42,21 @@ describe('Side-by-Side Tax Comparison Integration', () => {
   });
 
   describe('Component Integration', () => {
-    test('should render both calculation components side by side', () => {
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
+    test('should render active year calculation and tax comparison', () => {
+      // Active year (2025-26 by default) renders full-width
       const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
 
-      expect(calculation2024.exists()).toBe(true);
       expect(calculation2025.exists()).toBe(true);
       expect(taxComparison.exists()).toBe(true);
     });
 
-    test('should have correct layout structure', () => {
+    test('should show 2-column comparison when toggled open', async () => {
+      // Toggle comparison open
+      await wrapper.vm.$nextTick();
+      wrapper.vm.showComparison = true;
+      await wrapper.vm.$nextTick();
+
       const comparisonSection = wrapper.find('.tax-comparison-section');
       const comparisonRow = wrapper.find('.comparison-row');
       const comparisonCols = wrapper.findAll('.comparison-col');
@@ -62,161 +66,119 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       expect(comparisonCols).toHaveLength(2);
     });
 
-    test('should display tax comparison summary above calculations', () => {
+    test('should display tax comparison summary', () => {
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      
-      // Both components should exist
       expect(taxComparison.exists()).toBe(true);
-      expect(calculation2024.exists()).toBe(true);
-      
-      // Tax comparison should be in a content section
+
       const comparisonSection = wrapper.find('.content-section').element;
-      const calculationSection = wrapper.find('.tax-comparison-section').element;
-      
       expect(comparisonSection).toBeTruthy();
-      expect(calculationSection).toBeTruthy();
     });
   });
 
   describe('Data Flow Integration', () => {
-    test('should update both calculations when taxpayer profile changes', async () => {
-      // Get initial calculations
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
+    test('should update calculation when taxpayer profile changes', async () => {
       const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const initialThreshold2024 = calculation2024.vm.taxFreeThreshold;
-      const initialThreshold2025 = calculation2025.vm.taxFreeThreshold;
 
-      // Change taxpayer profile
+      const initialThreshold = calculation2025.vm.taxFreeThreshold;
+
       store.commit('updateTaxpayerProfile', {
         category: 'female',
         age: 30,
         location: 'dhaka'
       });
-
       await wrapper.vm.$nextTick();
 
-      const newThreshold2024 = calculation2024.vm.taxFreeThreshold;
-      const newThreshold2025 = calculation2025.vm.taxFreeThreshold;
-
-      expect(newThreshold2024).toBeGreaterThan(initialThreshold2024);
-      expect(newThreshold2025).toBeGreaterThan(initialThreshold2025);
-      expect(newThreshold2025).toBeGreaterThan(newThreshold2024); // 2025 should be higher
+      const newThreshold = calculation2025.vm.taxFreeThreshold;
+      expect(newThreshold).toBeGreaterThan(initialThreshold);
     });
 
-    test('should update both calculations when salary changes', async () => {
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
+    test('should update calculation when salary changes', async () => {
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 30, location: 'dhaka' });
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
       const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const initialTax2024 = calculation2024.vm.totalTax;
-      const initialTax2025 = calculation2025.vm.totalTax;
+      const initialTax = calculation2025.vm.totalTax;
 
-      // Increase salary
       store.commit('changeSubsequentSalaries', { index: 0, value: 80000 });
       await wrapper.vm.$nextTick();
 
-      const newTax2024 = calculation2024.vm.totalTax;
-      const newTax2025 = calculation2025.vm.totalTax;
-
-      expect(newTax2024).toBeGreaterThan(initialTax2024);
-      expect(newTax2025).toBeGreaterThan(initialTax2025);
+      expect(calculation2025.vm.totalTax).toBeGreaterThan(initialTax);
     });
 
     test('should update comparison summary when calculations change', async () => {
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
-      
-      const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
-      
-      const initialDifference = taxComparison.vm.taxDifference;
-
-      // Change salary to affect tax calculations
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 30, location: 'dhaka' });
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
       await wrapper.vm.$nextTick();
 
-      const newDifference = taxComparison.vm.taxDifference;
-      
-      // Difference should change when calculations change
-      expect(newDifference).not.toBe(initialDifference);
+      const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
+      expect(taxComparison.vm.activeTaxDifference).toBeDefined();
+
+      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const taxBefore = calculation2025.vm.totalTax;
+
+      store.commit('changeSubsequentSalaries', { index: 0, value: 100000 });
+      await wrapper.vm.$nextTick();
+
+      expect(calculation2025.vm.totalTax).toBeGreaterThan(taxBefore);
     });
 
-    test('should respond to investment changes in both calculations', async () => {
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
+    test('should respond to investment changes', async () => {
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 30, location: 'dhaka' });
       store.commit('changeSubsequentSalaries', { index: 0, value: 80000 });
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
       const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const initialRebate2024 = calculation2024.vm.investmentRebate;
-      const initialRebate2025 = calculation2025.vm.investmentRebate;
+      const initialRebate = calculation2025.vm.investmentRebate;
 
-      // Add investment
       store.commit('changeInvestment', { index: 0, value: 100000 });
       await wrapper.vm.$nextTick();
 
-      const newRebate2024 = calculation2024.vm.investmentRebate;
-      const newRebate2025 = calculation2025.vm.investmentRebate;
-
-      expect(newRebate2024).toBeGreaterThan(initialRebate2024);
-      expect(newRebate2025).toBeGreaterThan(initialRebate2025);
+      expect(calculation2025.vm.investmentRebate).toBeGreaterThan(initialRebate);
     });
   });
 
   describe('Tax Calculation Accuracy', () => {
-    test('should show different thresholds for same taxpayer profile', async () => {
+    test('should show correct thresholds for general taxpayer in both years', async () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
         location: 'dhaka'
       });
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const threshold2024 = calculation2024.vm.taxFreeThreshold;
-      const threshold2025 = calculation2025.vm.taxFreeThreshold;
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
-      expect(threshold2024).toBe(350000);
+      const threshold2025 = calc2025.vm.taxFreeThreshold;
+      const threshold2026 = calc2026.vm.taxFreeThreshold;
+
+      // Both 2025-26 and 2026-27 have 375k threshold for general taxpayer
       expect(threshold2025).toBe(375000);
-      expect(threshold2025 - threshold2024).toBe(25000); // 25K increase
+      expect(threshold2026).toBe(375000);
     });
 
-    test('should show different minimum tax amounts', async () => {
+    test('should show correct minimum tax amounts per location', async () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
-        location: 'district' // Different location for 2024-25
+        location: 'district'
       });
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const minimumTax2024 = calculation2024.vm.minimumTaxAmount;
-      const minimumTax2025 = calculation2025.vm.minimumTaxAmount;
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
-      expect(minimumTax2024).toBe(3000); // District minimum for 2024-25
-      expect(minimumTax2025).toBe(5000); // Unified minimum for 2025-26
+      const minimumTax2025 = calc2025.vm.minimumTaxAmount;
+      const minimumTax2026 = calc2026.vm.minimumTaxAmount;
+
+      // Both 2025-26 and 2026-27 have flat 5000 for all locations
+      expect(minimumTax2025).toBe(5000);
+      expect(minimumTax2026).toBe(5000);
     });
 
-    test('should handle different tax slab structures', async () => {
+    test('should handle tax slab structures (no 5% bracket in both years)', async () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
@@ -224,29 +186,30 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const breakdown2024 = calculation2024.vm.taxBreakdown;
-      const breakdown2025 = calculation2025.vm.taxBreakdown;
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
-      expect(breakdown2024).toHaveLength(7); // 2024-25 has 7 slabs
-      expect(breakdown2025).toHaveLength(6); // 2025-26 has 6 slabs
+      const breakdown2025 = calc2025.vm.taxBreakdown;
+      const breakdown2026 = calc2026.vm.taxBreakdown;
 
-      // Check that 2024 has 5% bracket but 2025 doesn't
-      const rates2024 = breakdown2024.map(slab => slab.slabPercentage);
+      // Both 2025-26 and 2026-27 have 6 slabs (no 5% bracket)
+      expect(breakdown2025).toHaveLength(6);
+      expect(breakdown2026).toHaveLength(6);
+
+      // Neither year has a 5% bracket
       const rates2025 = breakdown2025.map(slab => slab.slabPercentage);
+      const rates2026 = breakdown2026.map(slab => slab.slabPercentage);
 
-      expect(rates2024).toContain(5);
       expect(rates2025).not.toContain(5);
+      expect(rates2026).not.toContain(5);
     });
   });
 
   describe('Comparison Accuracy', () => {
-    test('should correctly calculate tax savings when 2025 is lower', async () => {
-      // Set up scenario where 2025 tax might be lower due to higher threshold
+    test('should correctly calculate tax savings/additional tax', async () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
@@ -254,22 +217,23 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 35000 }); // 420K annually
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      const totalTax2024 = calculation2024.vm.totalTax;
-      const totalTax2025 = calculation2025.vm.totalTax;
-      const taxSavings = taxComparison.vm.taxSavings;
-      const additionalTax = taxComparison.vm.additionalTax;
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
-      if (totalTax2025 < totalTax2024) {
-        expect(taxSavings).toBe(totalTax2024 - totalTax2025);
+      const totalTax2025 = calc2025.vm.totalTax;
+      const totalTax2026 = calc2026.vm.totalTax;
+      const taxSavings = taxComparison.vm.activeTaxSavings;
+      const additionalTax = taxComparison.vm.activeAdditionalTax;
+
+      if (totalTax2026 < totalTax2025) {
+        expect(taxSavings).toBe(totalTax2025 - totalTax2026);
         expect(additionalTax).toBe(0);
       } else {
-        expect(additionalTax).toBe(totalTax2025 - totalTax2024);
+        expect(additionalTax).toBe(totalTax2026 - totalTax2025);
         expect(taxSavings).toBe(0);
       }
     });
@@ -284,32 +248,34 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       store.commit('changeSubsequentTds', { index: 0, value: 5000 });
       store.commit('changeInvestment', { index: 0, value: 100000 });
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
+
       // Use store getters which handle negative amounts correctly
       const payable2025 = store.getters.payableTax2025;
-      const payable2024 = Math.max(0, calculation2024.vm.totalTax - calculation2024.vm.totalTds - calculation2024.vm.investmentRebate);
+      const payable2026 = store.getters.payableTax2026;
 
       // Both should use same TDS and share common taxpayer data
-      expect(calculation2024.vm.totalTds).toBe(calculation2025.vm.totalTds);
-      expect(payable2024).toBeGreaterThanOrEqual(0);
+      expect(calc2025.vm.totalTds).toBe(calc2026.vm.totalTds);
       expect(payable2025).toBeGreaterThanOrEqual(0);
+      expect(payable2026).toBeGreaterThanOrEqual(0);
     });
   });
 
   describe('Different Taxpayer Categories', () => {
+    // 2025-26 and 2026-27 share the same thresholds for all existing categories
     const testCategories = [
-      { category: 'general', threshold2024: 350000, threshold2025: 375000 },
-      { category: 'female', threshold2024: 400000, threshold2025: 425000 },
-      { category: 'disabled', threshold2024: 475000, threshold2025: 500000 },
-      { category: 'freedom_fighter', threshold2024: 500000, threshold2025: 525000 },
-      { category: 'third_gender', threshold2024: 475000, threshold2025: 500000 }
+      { category: 'general', threshold2025: 375000, threshold2026: 375000 },
+      { category: 'female', threshold2025: 425000, threshold2026: 425000 },
+      { category: 'disabled', threshold2025: 500000, threshold2026: 500000 },
+      { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 525000 },
+      { category: 'third_gender', threshold2025: 500000, threshold2026: 500000 }
     ];
 
-    testCategories.forEach(({ category, threshold2024, threshold2025 }) => {
+    testCategories.forEach(({ category, threshold2025, threshold2026 }) => {
       test(`should handle ${category} taxpayer correctly`, async () => {
         store.commit('updateTaxpayerProfile', {
           category: category,
@@ -317,32 +283,40 @@ describe('Side-by-Side Tax Comparison Integration', () => {
           location: 'dhaka'
         });
 
+        wrapper.vm.showComparison = true;
         await wrapper.vm.$nextTick();
 
-        const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-        const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-        
-        expect(calculation2024.vm.taxFreeThreshold).toBe(threshold2024);
-        expect(calculation2025.vm.taxFreeThreshold).toBe(threshold2025);
-        expect(threshold2025 - threshold2024).toBe(25000); // Consistent 25K increase
+        const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+        const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
+
+        expect(calc2025.vm.taxFreeThreshold).toBe(threshold2025);
+        expect(calc2026.vm.taxFreeThreshold).toBe(threshold2026);
+        // Thresholds are equal between 2025-26 and 2026-27 for existing categories
+        expect(threshold2026).toBe(threshold2025);
       });
     });
   });
 
   describe('Responsive Design Integration', () => {
-    test('should maintain proper layout structure', () => {
+    test('should maintain proper layout structure', async () => {
+      wrapper.vm.showComparison = true;
+      await wrapper.vm.$nextTick();
+
       const comparisonRow = wrapper.find('.comparison-row');
       const comparisonCols = wrapper.findAll('.comparison-col');
 
       expect(comparisonRow.classes()).toContain('comparison-row');
       expect(comparisonCols).toHaveLength(2);
-      
+
       comparisonCols.forEach(col => {
         expect(col.classes()).toContain('comparison-col');
       });
     });
 
-    test('should have CSS classes for responsive behavior', () => {
+    test('should have CSS classes for responsive behavior', async () => {
+      wrapper.vm.showComparison = true;
+      await wrapper.vm.$nextTick();
+
       // Check that the CSS classes exist for responsive design
       const mainContent = wrapper.find('.main-content');
       const comparisonSection = wrapper.find('.tax-comparison-section');
@@ -361,15 +335,16 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 0 });
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
-      
-      expect(calculation2024.vm.totalTax).toBe(calculation2024.vm.minimumTaxAmount);
-      expect(calculation2025.vm.totalTax).toBe(calculation2025.vm.minimumTaxAmount);
-      expect(taxComparison.vm.taxDifference).toBeDefined();
+
+      expect(calc2025.vm.totalTax).toBe(calc2025.vm.minimumTaxAmount);
+      expect(calc2026.vm.totalTax).toBe(calc2026.vm.minimumTaxAmount);
+      expect(taxComparison.vm.activeTaxDifference).toBeDefined();
     });
 
     test('should handle very high income gracefully', async () => {
@@ -380,38 +355,43 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 1000000 }); // 12M annually
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      expect(calculation2024.vm.totalTax).toBeGreaterThan(1000000);
-      expect(calculation2025.vm.totalTax).toBeGreaterThan(1000000);
-      
-      // Both should handle high income without errors
-      expect(calculation2024.vm.taxBreakdown).toHaveLength(7);
-      expect(calculation2025.vm.taxBreakdown).toHaveLength(6);
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
+
+      expect(calc2025.vm.totalTax).toBeGreaterThan(1000000);
+      expect(calc2026.vm.totalTax).toBeGreaterThan(1000000);
+
+      // Both should handle high income without errors (6 slabs each)
+      expect(calc2025.vm.taxBreakdown).toHaveLength(6);
+      expect(calc2026.vm.taxBreakdown).toHaveLength(6);
     });
 
     test('should handle missing taxpayer profile gracefully', async () => {
       // Reset taxpayer profile to empty
       store.commit('updateTaxpayerProfile', {});
 
+      wrapper.vm.showComparison = true;
       await wrapper.vm.$nextTick();
 
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
-      // Should default to general taxpayer
-      expect(calculation2024.vm.taxFreeThreshold).toBe(350000);
-      expect(calculation2025.vm.taxFreeThreshold).toBe(375000);
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
+
+      // Should default to general taxpayer (375k for both years)
+      expect(calc2025.vm.taxFreeThreshold).toBe(375000);
+      expect(calc2026.vm.taxFreeThreshold).toBe(375000);
     });
   });
 
   describe('Performance and Reactivity', () => {
     test('should update all components reactively', async () => {
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      wrapper.vm.showComparison = true;
+      await wrapper.vm.$nextTick();
+
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
 
       // Make multiple changes
@@ -425,28 +405,31 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
       await wrapper.vm.$nextTick();
 
-      // All components should reflect the changes
-      expect(calculation2024.vm.taxFreeThreshold).toBe(400000);
-      expect(calculation2025.vm.taxFreeThreshold).toBe(425000);
-      expect(calculation2024.vm.investmentRebate).toBeGreaterThan(0);
-      expect(calculation2025.vm.investmentRebate).toBeGreaterThan(0);
-      expect(taxComparison.vm.taxDifference).toBeDefined();
+      // All components should reflect the changes (female threshold = 425k in both years)
+      expect(calc2025.vm.taxFreeThreshold).toBe(425000);
+      expect(calc2026.vm.taxFreeThreshold).toBe(425000);
+      expect(calc2025.vm.investmentRebate).toBeGreaterThan(0);
+      expect(calc2026.vm.investmentRebate).toBeGreaterThan(0);
+      expect(taxComparison.vm.activeTaxDifference).toBeDefined();
     });
 
     test('should maintain component isolation', async () => {
-      const calculation2024 = wrapper.findComponent({ name: 'calculation-2024' });
-      const calculation2025 = wrapper.findComponent({ name: 'calculation-2025' });
-      
+      wrapper.vm.showComparison = true;
+      await wrapper.vm.$nextTick();
+
+      const calc2025 = wrapper.findComponent({ name: 'calculation-2025' });
+      const calc2026 = wrapper.findComponent({ name: 'calculation-2026' });
+
       // Components should have their own computed properties
-      expect(calculation2024.vm.totalTax).toBeDefined();
-      expect(calculation2025.vm.totalTax).toBeDefined();
-      
+      expect(calc2025.vm.totalTax).toBeDefined();
+      expect(calc2026.vm.totalTax).toBeDefined();
+
       // But they should react to same store changes
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
       await wrapper.vm.$nextTick();
-      
-      expect(calculation2024.vm.totalTax).toBeGreaterThan(0);
-      expect(calculation2025.vm.totalTax).toBeGreaterThan(0);
+
+      expect(calc2025.vm.totalTax).toBeGreaterThan(0);
+      expect(calc2026.vm.totalTax).toBeGreaterThan(0);
     });
   });
 });

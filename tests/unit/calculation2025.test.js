@@ -35,13 +35,13 @@ describe('Calculation-2025 Component', () => {
 
     test('should render the component', () => {
       expect(wrapper.exists()).toBe(true);
-      expect(wrapper.find('h2').text()).toContain('Tax for FY 2025-2026');
+      expect(wrapper.find('h2').text()).toContain('Tax for 2025-2026');
     });
 
     test('should render tax calculation table', () => {
       const table = wrapper.find('table');
       expect(table.exists()).toBe(true);
-      
+
       const headers = table.findAll('td strong');
       expect(headers.at(0).text()).toBe('Income (per year)');
       expect(headers.at(1).text()).toBe('New rate [%]');
@@ -54,7 +54,7 @@ describe('Calculation-2025 Component', () => {
         const firstCell = row.find('td strong');
         return firstCell.exists() ? firstCell.text() : null;
       }).filter(Boolean);
-      
+
       expect(summaryTexts).toContain('Total tax');
       expect(summaryTexts).toContain('Tax deducted at source');
       expect(summaryTexts).toContain('Tax rebate on investment');
@@ -86,7 +86,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
 
       wrapper = mount(Calculation2025, {
@@ -96,16 +96,16 @@ describe('Calculation-2025 Component', () => {
       });
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
-      
+
       expect(taxBreakdown).toHaveLength(6); // 6 slabs for 2025-26
-      
-      // Check that tax rates don't include 5%
+
+      // Check that tax rates do NOT include 5%
       const rates = taxBreakdown.map(slab => slab.slabPercentage);
       expect(rates).not.toContain(5);
       expect(rates).toEqual([0, 10, 15, 20, 25, 30]);
     });
 
-    test('should show higher tax-free threshold for 2025-26', () => {
+    test('should show correct tax-free threshold for 2025-26', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
@@ -119,20 +119,25 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(375000); // 25K higher than 2024-25
+      expect(threshold).toBe(375000); // Increased from 350k in 2024-25
     });
 
-    test('should apply unified minimum tax of 5000', () => {
-      const locations = ['dhaka', 'chittagong', 'other_city', 'district'];
-      
-      locations.forEach(location => {
+    test('should apply flat 5000 minimum tax for all locations', () => {
+      const locationExpected = {
+        dhaka: 5000,
+        chittagong: 5000,
+        other_city: 5000,
+        district: 5000
+      };
+
+      Object.entries(locationExpected).forEach(([location, expected]) => {
         store.commit('updateTaxpayerProfile', {
           category: 'general',
           age: 30,
           location: location
         });
-        
-        store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // Low income
+
+        store.commit('changeSubsequentSalaries', { index: 0, value: 20000 }); // Low income
 
         wrapper = mount(Calculation2025, {
           global: {
@@ -141,7 +146,7 @@ describe('Calculation-2025 Component', () => {
         });
 
         const minimumTax = wrapper.vm.minimumTaxAmount;
-        expect(minimumTax).toBe(5000); // Unified for all locations
+        expect(minimumTax).toBe(expected);
       });
     });
   });
@@ -240,7 +245,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 25000 }); // 300K annually
 
       wrapper = mount(Calculation2025, {
@@ -253,7 +258,7 @@ describe('Calculation-2025 Component', () => {
       const calculatedTax = wrapper.vm.calculatedTax;
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = wrapper.vm.minimumTaxAmount;
-      
+
       expect(calculatedTax).toBe(0);
       expect(totalTax).toBe(minimumTax); // Should apply minimum tax
     });
@@ -264,7 +269,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 40000 }); // 480K annually
 
       wrapper = mount(Calculation2025, {
@@ -274,7 +279,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
-      
+
       expect(taxBreakdown[0].slabCut).toBe(0); // No tax on first 375K
       expect(taxBreakdown[1].slabCut).toBeGreaterThan(0); // Tax on excess at 10%
       expect(taxBreakdown[1].slabPercentage).toBe(10); // First taxable bracket is 10%
@@ -286,8 +291,8 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'district'
       });
-      
-      store.commit('changeSubsequentSalaries', { index: 0, value: 32000 }); // 384K annually
+
+      store.commit('changeSubsequentSalaries', { index: 0, value: 20000 }); // 240K annually
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -299,9 +304,9 @@ describe('Calculation-2025 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = wrapper.vm.minimumTaxAmount;
       const isMinimumTaxApplied = wrapper.vm.isMinimumTaxApplied;
-      
+
       expect(totalTax).toBe(minimumTax);
-      expect(totalTax).toBe(5000); // Unified minimum tax
+      expect(totalTax).toBe(5000); // Flat minimum tax for all locations in 2025-26
       expect(isMinimumTaxApplied).toBe(true);
     });
 
@@ -311,7 +316,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 100000 }); // 1.2M annually
 
       wrapper = mount(Calculation2025, {
@@ -324,7 +329,7 @@ describe('Calculation-2025 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = wrapper.vm.minimumTaxAmount;
       const isMinimumTaxApplied = wrapper.vm.isMinimumTaxApplied;
-      
+
       expect(totalTax).toBe(calculatedTax);
       expect(totalTax).toBeGreaterThan(minimumTax);
       expect(isMinimumTaxApplied).toBe(false);
@@ -338,7 +343,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
       store.commit('changeInvestment', { index: 0, value: 100000 }); // Investment
 
@@ -358,7 +363,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
       store.commit('changeSubsequentTds', { index: 0, value: 5000 }); // TDS
 
@@ -378,7 +383,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 83334 });
       store.commit('changeSubsequentTds', { index: 0, value: 2000 });
       store.commit('changeInvestment', { index: 0, value: 50000 });
@@ -395,12 +400,12 @@ describe('Calculation-2025 Component', () => {
       });
 
       expect(payableRow).toBeTruthy();
-      
+
       const totalTax = wrapper.vm.totalTax;
       const totalTds = wrapper.vm.totalTds;
       const investmentRebate = wrapper.vm.investmentRebate;
       const expectedPayable = totalTax - totalTds - investmentRebate;
-      
+
       const payableCell = payableRow.findAll('td').at(2);
       expect(payableCell.text().trim()).toBe(expectedPayable.toString());
     });
@@ -413,8 +418,8 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // Low income
+
+      store.commit('changeSubsequentSalaries', { index: 0, value: 20000 }); // Low income
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -425,7 +430,7 @@ describe('Calculation-2025 Component', () => {
       const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
       expect(minimumTaxNotice.exists()).toBe(true);
       expect(minimumTaxNotice.text()).toContain('Minimum tax applied');
-      expect(minimumTaxNotice.text()).toContain('BDT 5000'); // Unified minimum tax
+      expect(minimumTaxNotice.text()).toContain('BDT 5000'); // Flat minimum tax 2025-26
     });
 
     test('should not show minimum tax notice when not applied', () => {
@@ -434,7 +439,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 100000 }); // High income
 
       wrapper = mount(Calculation2025, {
@@ -453,7 +458,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
 
       wrapper = mount(Calculation2025, {
@@ -477,18 +482,18 @@ describe('Calculation-2025 Component', () => {
       });
 
       const initialThreshold = wrapper.vm.taxFreeThreshold;
-      
+
       store.commit('updateTaxpayerProfile', {
         category: 'female',
         age: 30,
         location: 'dhaka'
       });
-      
+
       await wrapper.vm.$nextTick();
-      
+
       const newThreshold = wrapper.vm.taxFreeThreshold;
       expect(newThreshold).toBeGreaterThan(initialThreshold);
-      expect(newThreshold).toBe(425000); // Female threshold
+      expect(newThreshold).toBe(425000); // Female threshold 2025-26
     });
 
     test('should respond to changes in salary', async () => {
@@ -505,11 +510,11 @@ describe('Calculation-2025 Component', () => {
       });
 
       const initialTax = wrapper.vm.totalTax;
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 80000 });
-      
+
       await wrapper.vm.$nextTick();
-      
+
       const newTax = wrapper.vm.totalTax;
       expect(newTax).toBeGreaterThan(initialTax);
     });
@@ -521,7 +526,7 @@ describe('Calculation-2025 Component', () => {
         location: 'dhaka'
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 80000 });
-      
+
       wrapper = mount(Calculation2025, {
         global: {
           plugins: [store]
@@ -529,11 +534,11 @@ describe('Calculation-2025 Component', () => {
       });
 
       const initialRebate = wrapper.vm.investmentRebate;
-      
+
       store.commit('changeInvestment', { index: 0, value: 100000 });
-      
+
       await wrapper.vm.$nextTick();
-      
+
       const newRebate = wrapper.vm.investmentRebate;
       expect(newRebate).toBeGreaterThan(initialRebate);
     });
@@ -546,8 +551,8 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
-      store.commit('changeSubsequentSalaries', { index: 0, value: 31250 }); // Exactly 375K annually
+
+      store.commit('changeSubsequentSalaries', { index: 0, value: 31250 }); // Approx 375K annually
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -558,7 +563,7 @@ describe('Calculation-2025 Component', () => {
       const taxBreakdown = wrapper.vm.taxBreakdown;
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = wrapper.vm.minimumTaxAmount;
-      
+
       expect(taxBreakdown[0].slabCut).toBe(0);
       expect(totalTax).toBe(minimumTax); // Should apply minimum tax
     });
@@ -569,7 +574,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 500000 }); // 6M annually
 
       wrapper = mount(Calculation2025, {
@@ -580,7 +585,7 @@ describe('Calculation-2025 Component', () => {
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
       const totalTax = wrapper.vm.totalTax;
-      
+
       expect(taxBreakdown).toHaveLength(6);
       expect(taxBreakdown[5].slabCut).toBeGreaterThan(0); // Highest slab should have tax
       expect(totalTax).toBeGreaterThan(100000); // Substantial tax amount
@@ -592,7 +597,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       store.commit('changeSubsequentSalaries', { index: 0, value: 40000 });
 
       wrapper = mount(Calculation2025, {
@@ -603,7 +608,7 @@ describe('Calculation-2025 Component', () => {
 
       const initialThreshold = wrapper.vm.taxFreeThreshold;
       expect(initialThreshold).toBe(375000);
-      
+
       store.commit('updateTaxpayerProfile', {
         category: 'disabled',
         age: 30,
@@ -637,11 +642,13 @@ describe('Calculation-2025 Component', () => {
       expect(wrapper.vm.investmentRebate).toBeDefined();
       expect(wrapper.vm.taxFreeThreshold).toBeDefined();
       expect(wrapper.vm.totalTax).toBeDefined();
-      
-      // Check that these are different from default store values
-      const defaultThreshold = store.getters.taxFreeThreshold;
+
+      // 2025 threshold is higher than 2024 for general taxpayer
+      store.commit('setCurrentYear', '2024-25');
+      const defaultThreshold2024 = store.getters.taxFreeThreshold;
+      store.commit('setCurrentYear', '2025-26');
       const component2025Threshold = wrapper.vm.taxFreeThreshold;
-      expect(component2025Threshold).toBeGreaterThan(defaultThreshold);
+      expect(component2025Threshold).toBeGreaterThan(defaultThreshold2024);
     });
 
     test('should display "New (2025-26) rate" in header', () => {
@@ -652,7 +659,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const header = wrapper.find('h2');
-      expect(header.text()).toContain('Tax for FY 2025-2026');
+      expect(header.text()).toContain('Tax for 2025-2026');
     });
   });
 });

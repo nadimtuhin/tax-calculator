@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h2>Tax for 2025-2026 {{totalTax}}</h2>
+  <h2>Tax for 2026-2027 {{totalTax}}</h2>
   <table class="table table-bordered">
     <tbody>
       <tr>
@@ -8,7 +8,7 @@
           <strong>Income (per year)</strong>
         </td>
         <td>
-          <strong>New rate [%]</strong>
+          <strong>Rate [%]</strong>
         </td>
         <td>
           <strong>Tax (BDT)</strong>
@@ -21,7 +21,7 @@
       </tr>
       <tr>
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> 
+        <td>
           <strong>{{totalTax}}</strong>
           <small v-if="isMinimumTaxApplied" style="color: red; display: block;">
             (Minimum tax applied: BDT {{minimumTaxAmount}})
@@ -46,35 +46,28 @@
     </tbody>
   </table>
 </div>
-
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 
 export default {
-  name: "calculation-2025",
+  name: "calculation-2026",
   computed: {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
-      
-      // FY 2025-2026 specific getters
-      investmentRebate: 'investmentRebate2025',
-      taxFreeThreshold: 'taxFreeThreshold2025',
-      minimumTaxAmount: 'minimumTaxAmount2025',
-      taxBreakdown: 'taxBreakdown2025',
-      calculatedTax: 'calculatedTax2025',
-      totalTax: 'totalTax2025',
-      isMinimumTaxApplied: 'isMinimumTaxApplied2025',
-      payableTax: 'payableTax2025',
-      
-      currentYear: 'currentYear',
-      fiscalYearOptions: 'fiscalYearOptions'
+
+      // FY 2026-2027 specific getters
+      investmentRebate: 'investmentRebate2026',
+      taxFreeThreshold: 'taxFreeThreshold2026',
+      minimumTaxAmount: 'minimumTaxAmount2026',
+      taxBreakdown: 'taxBreakdown2026',
+      calculatedTax: 'calculatedTax2026',
+      totalTax: 'totalTax2026',
+      isMinimumTaxApplied: 'isMinimumTaxApplied2026',
+      payableTax: 'payableTax2026',
     }),
-    otherYearLabel() {
-      return '2025-2026';
-    }
   }
 };
 </script>

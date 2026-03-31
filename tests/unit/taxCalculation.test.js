@@ -24,8 +24,9 @@ describe('Tax Calculation Tests', () => {
         location: 'dhaka'
       });
       
+      // FY 2025-26 thresholds (increased by BDT 25,000 vs 2024-25)
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(350000);
+      expect(threshold).toBe(375000);
     });
 
     test('should calculate correct threshold for female taxpayer', () => {
@@ -34,9 +35,9 @@ describe('Tax Calculation Tests', () => {
         age: 30,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(400000);
+      expect(threshold).toBe(425000);
     });
 
     test('should calculate correct threshold for senior citizen', () => {
@@ -45,9 +46,9 @@ describe('Tax Calculation Tests', () => {
         age: 70,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(400000);
+      expect(threshold).toBe(425000);
     });
 
     test('should calculate correct threshold for disabled person', () => {
@@ -56,9 +57,9 @@ describe('Tax Calculation Tests', () => {
         age: 35,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(475000);
+      expect(threshold).toBe(500000);
     });
 
     test('should calculate correct threshold for parent of disabled child', () => {
@@ -67,9 +68,9 @@ describe('Tax Calculation Tests', () => {
         age: 35,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(400000); // 350000 + 50000
+      expect(threshold).toBe(425000); // 375000 + 50000
     });
 
     test('should calculate correct threshold for freedom fighter', () => {
@@ -78,9 +79,9 @@ describe('Tax Calculation Tests', () => {
         age: 35,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(500000);
+      expect(threshold).toBe(525000);
     });
 
     test('should calculate correct threshold for third gender', () => {
@@ -89,9 +90,9 @@ describe('Tax Calculation Tests', () => {
         age: 35,
         location: 'dhaka'
       });
-      
+
       const threshold = store.getters.taxFreeThreshold;
-      expect(threshold).toBe(475000);
+      expect(threshold).toBe(500000);
     });
   });
 
@@ -125,8 +126,9 @@ describe('Tax Calculation Tests', () => {
         location: 'other_city'
       });
       
+      // FY 2025-26: unified minimum tax of BDT 5,000 across all locations
       const minimumTax = store.getters.minimumTaxAmount;
-      expect(minimumTax).toBe(4000);
+      expect(minimumTax).toBe(5000);
     });
 
     test('should calculate correct minimum tax for district towns', () => {
@@ -135,9 +137,9 @@ describe('Tax Calculation Tests', () => {
         age: 30,
         location: 'district'
       });
-      
+
       const minimumTax = store.getters.minimumTaxAmount;
-      expect(minimumTax).toBe(3000);
+      expect(minimumTax).toBe(5000);
     });
   });
 
@@ -201,8 +203,8 @@ describe('Tax Calculation Tests', () => {
       const taxBreakdown = calculateTaxBreakdown(taxableSalary, slabs);
       const totalTax = Math.round(taxBreakdown.reduce((sum, slab) => sum + parseFloat(slab.slabCut), 0));
       
-      // 50,000 at 5% = 2,500
-      expect(totalTax).toBe(2500);
+      // threshold is 375,000; income ~400k → 25,000 taxable at 5% = 1,250
+      expect(totalTax).toBe(1250);
     });
 
     test('should apply minimum tax when calculated tax is lower', () => {
@@ -283,7 +285,7 @@ describe('Tax Calculation Tests', () => {
       const maxRebateableInvestment = store.getters.maxRebateableInvestment;
       const totalRebateableInvestment = store.getters.totalRebateableInvestment;
       
-      expect(maxRebateableInvestment).toBe(Math.round(taxableSalary / 5)); // 20% of taxable income
+      expect(maxRebateableInvestment).toBe(Math.round(taxableSalary / 5)); // 20% of taxable income per Finance Act 2024
       expect(totalRebateableInvestment).toBeLessThanOrEqual(maxRebateableInvestment);
     });
   });
@@ -293,13 +295,19 @@ describe('Tax Calculation Tests', () => {
       // Set up basic salary components
       store.commit('changeParts', { part: 'basic', index: 0, value: 50000 });
       store.commit('changeParts', { part: 'house', index: 0, value: 30000 });
-      
-      const totalBasic = store.getters.totalBasic;
+
       const totalHouse = store.getters.totalHouse;
+      const totalMedical = store.getters.totalMedical;
+      const totalTransport = store.getters.totalTransport;
+      const totalSalary = store.getters.totalSalary;
       const houseExempt = store.getters.houseExempt;
-      
-      // House exemption is minimum of: house allowance, 50% of basic, or 300,000
-      const expectedExemption = Math.min(totalHouse, totalBasic / 2, 300000);
+
+      // Under ITA 2023: consolidated exemption = min(allowances, salary/3, cap)
+      // houseExempt = proportional share of consolidated exemption
+      const totalAllowances = totalHouse + totalMedical + totalTransport;
+      const cap = 500000; // FY 2025-26 cap
+      const totalExempt = Math.min(totalAllowances, Math.round(totalSalary / 3), cap);
+      const expectedExemption = totalAllowances === 0 ? 0 : Math.round(totalExempt * totalHouse / totalAllowances);
       expect(houseExempt).toBe(expectedExemption);
     });
 
@@ -307,25 +315,38 @@ describe('Tax Calculation Tests', () => {
       // Set up basic salary and medical allowance
       store.commit('changeParts', { part: 'basic', index: 0, value: 50000 });
       store.commit('changeParts', { part: 'medical', index: 0, value: 10000 });
-      
-      const totalBasic = store.getters.totalBasic;
+
+      const totalHouse = store.getters.totalHouse;
       const totalMedical = store.getters.totalMedical;
+      const totalTransport = store.getters.totalTransport;
+      const totalSalary = store.getters.totalSalary;
       const medicalExempt = store.getters.medicalExempt;
-      
-      // Medical exemption is minimum of: medical allowance, 10% of basic, or 120,000
-      const expectedExemption = Math.min(totalMedical, totalBasic / 10, 120000);
+
+      // Under ITA 2023: consolidated exemption = min(allowances, salary/3, cap)
+      // medicalExempt = proportional share of consolidated exemption
+      const totalAllowances = totalHouse + totalMedical + totalTransport;
+      const cap = 500000; // FY 2025-26 cap
+      const totalExempt = Math.min(totalAllowances, Math.round(totalSalary / 3), cap);
+      const expectedExemption = totalAllowances === 0 ? 0 : Math.round(totalExempt * totalMedical / totalAllowances);
       expect(medicalExempt).toBe(expectedExemption);
     });
 
     test('should calculate transport exemption correctly', () => {
       // Set up transport allowance
       store.commit('changeParts', { part: 'transport', index: 0, value: 25000 });
-      
+
+      const totalHouse = store.getters.totalHouse;
+      const totalMedical = store.getters.totalMedical;
       const totalTransport = store.getters.totalTransport;
+      const totalSalary = store.getters.totalSalary;
       const transportExempt = store.getters.transportExempt;
-      
-      // Transport exemption is minimum of transport allowance or 30,000
-      const expectedExemption = Math.min(totalTransport, 30000);
+
+      // Under ITA 2023: consolidated exemption = min(allowances, salary/3, cap)
+      // transportExempt = proportional share of consolidated exemption
+      const totalAllowances = totalHouse + totalMedical + totalTransport;
+      const cap = 500000; // FY 2025-26 cap
+      const totalExempt = Math.min(totalAllowances, Math.round(totalSalary / 3), cap);
+      const expectedExemption = totalAllowances === 0 ? 0 : Math.round(totalExempt * totalTransport / totalAllowances);
       expect(transportExempt).toBe(expectedExemption);
     });
 
@@ -353,11 +374,11 @@ describe('Tax Calculation Tests', () => {
       const taxableSalary = store.getters.taxableSalary;
       const threshold = store.getters.taxFreeThreshold;
       
-      expect(threshold).toBe(400000);
-      
+      expect(threshold).toBe(425000);
+
       // Create tax slabs
       const slabs = [
-        [`First Tk4.0 lakh`, 0, threshold, 0],
+        [`First Tk4.25 lakh`, 0, threshold, 0],
         ['Next Tk1 lakh', threshold, threshold + 100000, 5],
         ['Next Tk4 lakh', threshold + 100000, threshold + 500000, 10],
         ['Next Tk5 lakh', threshold + 500000, threshold + 1000000, 15],
@@ -369,8 +390,8 @@ describe('Tax Calculation Tests', () => {
       const taxBreakdown = calculateTaxBreakdown(taxableSalary, slabs);
       const totalTax = Math.round(taxBreakdown.reduce((sum, slab) => sum + parseFloat(slab.slabCut), 0));
       
-      // 50,000 at 5% = 2,500
-      expect(totalTax).toBe(2500);
+      // threshold is 425,000; income 450k → 25,000 taxable at 5% = 1,250
+      expect(totalTax).toBe(1250);
     });
 
     test('should handle senior citizen with automatic category detection', () => {
@@ -384,8 +405,8 @@ describe('Tax Calculation Tests', () => {
       const threshold = store.getters.taxFreeThreshold;
       const minimumTax = store.getters.minimumTaxAmount;
       
-      expect(threshold).toBe(400000); // Senior citizen threshold
-      expect(minimumTax).toBe(3000); // District minimum tax
+      expect(threshold).toBe(425000); // Senior citizen threshold (FY 2025-26)
+      expect(minimumTax).toBe(5000); // Unified minimum tax (FY 2025-26)
     });
 
     test('should handle complete tax calculation with all components', () => {

@@ -1,6 +1,6 @@
-import calculateTaxBreakdown2025, { 
+import calculateTaxBreakdown2025, {
   calculateInvestmentRebate2025,
-  calculateFinalTax2025 
+  calculateFinalTax2025
 } from '@/calculateTaxBreakdown2025';
 import { calculateTaxSlabs2025 } from '@/utils/taxSlabs2025';
 
@@ -18,7 +18,7 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       expect(breakdown).toHaveLength(6);
-      
+
       // All slabs should have zero tax
       breakdown.forEach(slab => {
         expect(slab.slabCut).toBe(0);
@@ -30,15 +30,15 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       expect(breakdown).toHaveLength(6);
-      
+
       // First slab (0%) should have no tax
       expect(breakdown[0].slabCut).toBe(0);
       expect(breakdown[0].slabAmount).toBe(375000);
-      
+
       // Second slab (10%) should have tax on 100k
       expect(breakdown[1].slabCut).toBe(10000); // 100k * 10% = 10k
       expect(breakdown[1].slabAmount).toBe(100000);
-      
+
       // Remaining slabs should have no tax
       for (let i = 2; i < 6; i++) {
         expect(breakdown[i].slabCut).toBe(0);
@@ -47,26 +47,24 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
     });
 
     test('should calculate tax correctly for income spanning multiple brackets', () => {
-      const taxableSalary = 1200000; // Spans first 3 brackets
+      // 375k threshold + 300k (3L @10%) + 325k into 15% bracket = 1,000,000
+      const taxableSalary = 1000000;
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       // First slab: 375k at 0% = 0
       expect(breakdown[0].slabCut).toBe(0);
       expect(breakdown[0].slabAmount).toBe(375000);
-      
+
       // Second slab: 300k at 10% = 30k
       expect(breakdown[1].slabCut).toBe(30000);
       expect(breakdown[1].slabAmount).toBe(300000);
-      
-      // Third slab: 400k at 15% = 60k
-      expect(breakdown[2].slabCut).toBe(60000);
-      expect(breakdown[2].slabAmount).toBe(400000);
-      
-      // Fourth slab: 125k at 20% = 25k
-      expect(breakdown[3].slabCut).toBe(25000);
-      expect(breakdown[3].slabAmount).toBe(125000);
-      
+
+      // Third slab: 325k at 15% = 48,750
+      expect(breakdown[2].slabCut).toBe(48750);
+      expect(breakdown[2].slabAmount).toBe(325000);
+
       // Remaining slabs should have no tax
+      expect(breakdown[3].slabCut).toBe(0);
       expect(breakdown[4].slabCut).toBe(0);
       expect(breakdown[5].slabCut).toBe(0);
     });
@@ -84,6 +82,7 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       expect(breakdown[5].slabAmount).toBe(1425000); // Remaining at 30%
 
       // Calculate expected tax
+      // 0 + 30,000 + 60,000 + 100,000 + 500,000 + 427,500 = 1,117,500
       const expectedTax = 0 + 30000 + 60000 + 100000 + 500000 + 427500;
       const actualTax = breakdown.reduce((sum, slab) => sum + slab.slabCut, 0);
       expect(actualTax).toBe(expectedTax);
@@ -126,10 +125,10 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       expect(breakdown[1].slabCut).toBe(0); // Should be rounded to 0
       expect(breakdown[1].slabAmount).toBe(1);
 
-      // Test exact slab boundary
-      breakdown = calculateTaxBreakdown2025(675000, testSlabs); // End of 10% slab
+      // Test exact slab boundary — end of 10% slab (375k + 300k = 675k)
+      breakdown = calculateTaxBreakdown2025(675000, testSlabs);
       expect(breakdown[1].slabAmount).toBe(300000);
-      expect(breakdown[1].slabCut).toBe(30000);
+      expect(breakdown[1].slabCut).toBe(30000); // 300k * 10%
       expect(breakdown[2].slabCut).toBe(0);
     });
   });
@@ -258,7 +257,7 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
     test('should maintain consistency between breakdown and total calculations', () => {
       const taxableSalary = 1500000;
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
-      
+
       const totalTaxFromBreakdown = breakdown.reduce((sum, slab) => sum + slab.slabCut, 0);
       const totalAmountFromBreakdown = breakdown.reduce((sum, slab) => sum + slab.slabAmount, 0);
 
@@ -270,7 +269,7 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       const taxableSalary = 800000;
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
       const calculatedTax = breakdown.reduce((sum, slab) => sum + slab.slabCut, 0);
-      
+
       const investmentRebate = calculateInvestmentRebate2025(100000, 15, 160000);
       const finalTax = calculateFinalTax2025(calculatedTax, 5000, 10000, investmentRebate);
 
@@ -283,24 +282,24 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
   });
 
   describe('Comparison with 2024-25 Structure', () => {
-    test('should have 6 slabs instead of 7', () => {
+    test('should have 6 slabs (one fewer than 2024-25 due to 5% removal)', () => {
       const breakdown = calculateTaxBreakdown2025(1000000, testSlabs);
-      expect(breakdown).toHaveLength(6); // 2025-26 has 6 slabs, 2024-25 had 7
+      expect(breakdown).toHaveLength(6); // 2025-26 has 6 slabs (5% bracket removed)
     });
 
-    test('should start with 10% bracket instead of 5%', () => {
-      const taxableSalary = 400000; // Just above threshold
+    test('should start with 10% bracket (5% removed in 2025-26)', () => {
+      const taxableSalary = 450000; // Just above 375k threshold
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
-      
+
       // Find first taxable slab
       const firstTaxableSlab = breakdown.find(slab => slab.slabCut > 0);
-      expect(firstTaxableSlab.slabPercentage).toBe(10); // Should be 10%, not 5%
+      expect(firstTaxableSlab.slabPercentage).toBe(10); // Starts at 10%, 5% removed
     });
 
-    test('should handle unified minimum tax of 5000', () => {
+    test('should handle minimum tax correctly', () => {
       const calculatedTax = 1000;
-      const minimumTax = 5000; // Unified for all locations in 2025-26
-      
+      const minimumTax = 5000;
+
       const finalTax = calculateFinalTax2025(calculatedTax, minimumTax, 0, 0);
       expect(finalTax.totalTax).toBe(5000);
       expect(finalTax.isMinimumTaxApplied).toBe(true);

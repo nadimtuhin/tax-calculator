@@ -27,24 +27,24 @@
     </div>
     
     <div class="comparison-result">
-      <div v-if="taxSavings > 0" class="savings-highlight">
+      <div v-if="activeTaxSavings > 0" class="savings-highlight">
         <div class="result-badge badge-savings">
-          <strong>You will SAVE ৳{{taxSavings.toLocaleString()}}</strong>
+          <strong>You will SAVE ৳{{activeTaxSavings.toLocaleString()}}</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, you will pay ৳{{taxSavings.toLocaleString()}} less in taxes.
+          Under {{otherYearLabel}}, you will pay ৳{{activeTaxSavings.toLocaleString()}} less in taxes.
         </div>
       </div>
-      
-      <div v-else-if="additionalTax > 0" class="increase-highlight">
+
+      <div v-else-if="activeAdditionalTax > 0" class="increase-highlight">
         <div class="result-badge badge-increase">
-          <strong>You will pay ৳{{additionalTax.toLocaleString()}} MORE</strong>
+          <strong>You will pay ৳{{activeAdditionalTax.toLocaleString()}} MORE</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, you will pay ৳{{additionalTax.toLocaleString()}} more in taxes.
+          Under {{otherYearLabel}}, you will pay ৳{{activeAdditionalTax.toLocaleString()}} more in taxes.
         </div>
       </div>
-      
+
       <div v-else class="no-change">
         <div class="result-badge badge-neutral">
           <strong>No change in tax amount</strong>
@@ -60,12 +60,12 @@
         <summary>View Detailed Breakdown</summary>
         <div class="breakdown-content">
           <div class="breakdown-section">
-            <h4>Key Changes in FY 2025-2026:</h4>
+            <h4>Key Changes in 2026-2027 vs 2025-2026:</h4>
             <ul>
-              <li>Tax-free threshold increased by ৳25,000</li>
-              <li>5% tax bracket removed (simplified to 6 slabs)</li>
-              <li>Unified minimum tax of ৳5,000</li>
-              <li>Tax rates: 0%, 10%, 15%, 20%, 25%, 30%</li>
+              <li>New "July Warrior" category (tax-free threshold: ৳5,25,000)</li>
+              <li>Same slab structure as 2025-2026</li>
+              <li>Unified minimum tax of ৳5,000 (unchanged)</li>
+              <li>Investment rebate formula unchanged</li>
             </ul>
           </div>
           
@@ -75,32 +75,34 @@
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>FY 2024-25</th>
-                  <th>FY 2025-26</th>
+                  <th>{{currentYearLabel}}</th>
+                  <th>{{otherYearLabel}}</th>
                   <th>Difference</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Tax-free Threshold</td>
-                  <td>৳{{taxFreeThreshold2024.toLocaleString()}}</td>
-                  <td>৳{{taxFreeThreshold2025.toLocaleString()}}</td>
-                  <td class="positive">+৳{{(taxFreeThreshold2025 - taxFreeThreshold2024).toLocaleString()}}</td>
+                  <td>৳{{currentYearThreshold.toLocaleString()}}</td>
+                  <td>৳{{otherYearThreshold.toLocaleString()}}</td>
+                  <td :class="(otherYearThreshold - currentYearThreshold) >= 0 ? 'positive' : 'negative'">
+                    {{(otherYearThreshold - currentYearThreshold) >= 0 ? '+' : ''}}৳{{(otherYearThreshold - currentYearThreshold).toLocaleString()}}
+                  </td>
                 </tr>
                 <tr>
                   <td>Total Tax</td>
-                  <td>৳{{totalTax2024.toLocaleString()}}</td>
-                  <td>৳{{totalTax2025.toLocaleString()}}</td>
-                  <td :class="taxDifference > 0 ? 'negative' : 'positive'">
-                    {{taxDifference > 0 ? '+' : ''}}৳{{taxDifference.toLocaleString()}}
+                  <td>৳{{currentYearTax.toLocaleString()}}</td>
+                  <td>৳{{otherYearTax.toLocaleString()}}</td>
+                  <td :class="activeTaxDifference > 0 ? 'negative' : 'positive'">
+                    {{activeTaxDifference > 0 ? '+' : ''}}৳{{activeTaxDifference.toLocaleString()}}
                   </td>
                 </tr>
                 <tr>
                   <td>Final Payable</td>
-                  <td>৳{{payableTax2024.toLocaleString()}}</td>
-                  <td>৳{{payableTax2025.toLocaleString()}}</td>
-                  <td :class="(payableTax2025 - payableTax2024) > 0 ? 'negative' : 'positive'">
-                    {{(payableTax2025 - payableTax2024) > 0 ? '+' : ''}}৳{{(payableTax2025 - payableTax2024).toLocaleString()}}
+                  <td>৳{{currentYearPayable.toLocaleString()}}</td>
+                  <td>৳{{otherYearPayable.toLocaleString()}}</td>
+                  <td :class="(otherYearPayable - currentYearPayable) > 0 ? 'negative' : 'positive'">
+                    {{(otherYearPayable - currentYearPayable) > 0 ? '+' : ''}}৳{{(otherYearPayable - currentYearPayable).toLocaleString()}}
                   </td>
                 </tr>
               </tbody>
@@ -119,57 +121,69 @@ export default {
   name: "TaxComparison",
   computed: {
     ...mapGetters({
-      // FY 2024-25 (current)
-      totalTax2024: 'totalTax',
-      taxFreeThreshold2024: 'taxFreeThreshold',
-      payableTax2024: 'payableTax',
-      
-      // FY 2025-26 (new)
       totalTax2025: 'totalTax2025',
       taxFreeThreshold2025: 'taxFreeThreshold2025',
       payableTax2025: 'payableTax2025',
-      
-      // Comparison
-      taxDifference: 'taxDifference',
-      taxSavings: 'taxSavings',
-      additionalTax: 'additionalTax',
-      
-      // Current year
+
+      totalTax2026: 'totalTax2026',
+      taxFreeThreshold2026: 'taxFreeThreshold2026',
+      payableTax2026: 'payableTax2026',
+
       currentYear: 'currentYear',
-      fiscalYearOptions: 'fiscalYearOptions'
+      fiscalYearOptions: 'fiscalYearOptions',
     }),
-    
+
     currentYearLabel() {
       const option = this.fiscalYearOptions.find(opt => opt.value === this.currentYear);
-      return option ? option.label : 'FY 2024-2025';
+      return option ? option.label : '2025-2026';
     },
-    
+
     otherYearLabel() {
-      return this.currentYear === '2024-25' ? 'FY 2025-2026' : 'FY 2024-2025';
+      return this.currentYear === '2026-27' ? '2025-2026' : '2026-2027';
     },
-    
+
     currentYearTax() {
-      return this.currentYear === '2024-25' ? this.totalTax2024 : this.totalTax2025;
+      return this.currentYear === '2026-27' ? this.totalTax2026 : this.totalTax2025;
     },
-    
+
     currentYearThreshold() {
-      return this.currentYear === '2024-25' ? this.taxFreeThreshold2024 : this.taxFreeThreshold2025;
+      return this.currentYear === '2026-27' ? this.taxFreeThreshold2026 : this.taxFreeThreshold2025;
     },
-    
+
+    currentYearPayable() {
+      return this.currentYear === '2026-27' ? this.payableTax2026 : this.payableTax2025;
+    },
+
     otherYearTax() {
-      return this.currentYear === '2024-25' ? this.totalTax2025 : this.totalTax2024;
+      return this.currentYear === '2026-27' ? this.totalTax2025 : this.totalTax2026;
     },
-    
+
     otherYearThreshold() {
-      return this.currentYear === '2024-25' ? this.taxFreeThreshold2025 : this.taxFreeThreshold2024;
-    }
+      return this.currentYear === '2026-27' ? this.taxFreeThreshold2025 : this.taxFreeThreshold2026;
+    },
+
+    otherYearPayable() {
+      return this.currentYear === '2026-27' ? this.payableTax2025 : this.payableTax2026;
+    },
+
+    activeTaxDifference() {
+      return this.otherYearTax - this.currentYearTax;
+    },
+
+    activeTaxSavings() {
+      return this.activeTaxDifference < 0 ? Math.abs(this.activeTaxDifference) : 0;
+    },
+
+    activeAdditionalTax() {
+      return this.activeTaxDifference > 0 ? this.activeTaxDifference : 0;
+    },
   }
 };
 </script>
 
 <style scoped>
 .tax-comparison-summary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #006A4E 0%, #008A66 100%);
   color: white;
   border-radius: 12px;
   padding: 24px;
@@ -241,22 +255,22 @@ export default {
 
 .badge-savings {
   background-color: #ffffff;
-  color: #000000;
-  border: 2px solid #000000;
+  color: #006A4E;
+  border: 2px solid #ffffff;
   border-radius: 6px;
 }
 
 .badge-increase {
-  background-color: #000000;
+  background-color: #F42A41;
   color: #ffffff;
-  border: 2px solid #000000;
+  border: 2px solid #F42A41;
   border-radius: 6px;
 }
 
 .badge-neutral {
-  background-color: #f5f5f5;
-  color: #000000;
-  border: 2px solid #666666;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 6px;
 }
 
@@ -324,21 +338,21 @@ export default {
 }
 
 .positive {
-  color: #000000;
+  color: #006A4E;
   font-weight: 700;
   background-color: #ffffff;
   padding: 2px 6px;
   border-radius: 3px;
-  border: 1px solid #000000;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .negative {
   color: #ffffff;
   font-weight: 700;
-  background-color: #000000;
+  background-color: #F42A41;
   padding: 2px 6px;
   border-radius: 3px;
-  border: 1px solid #000000;
+  border: 1px solid #F42A41;
 }
 
 @media (max-width: 768px) {

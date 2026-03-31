@@ -131,7 +131,7 @@ describe('Navbar Component', () => {
     });
 
     test('should render GitHub link with correct attributes', () => {
-      const githubLink = wrapper.find('.github-btn');
+      const githubLink = wrapper.find('.nav-action-github');
       expect(githubLink.exists()).toBe(true);
       expect(githubLink.attributes('href')).toBe('https://github.com/nadimtuhin/pathao-tax-calculator');
       expect(githubLink.attributes('target')).toBe('_blank');
@@ -151,14 +151,14 @@ describe('Navbar Component', () => {
       const dataActions = wrapper.find('.data-actions');
       expect(dataActions.exists()).toBe(true);
 
-      const randomBtn = wrapper.find('.action-btn-random');
-      const exportBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Export'));
-      const importBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Import'));
-      const resetBtn = wrapper.find('.action-btn-danger');
+      const randomBtn = wrapper.find('[aria-label="Fill with random sample data"]');
+      const exportBtn = wrapper.find('[aria-label="Export your tax data"]');
+      const importBtn = wrapper.find('[aria-label="Import tax data from file"]');
+      const resetBtn = wrapper.find('.nav-action-danger');
 
       expect(randomBtn.exists()).toBe(true);
-      expect(exportBtn).toBeTruthy();
-      expect(importBtn).toBeTruthy();
+      expect(exportBtn.exists()).toBe(true);
+      expect(importBtn.exists()).toBe(true);
       expect(resetBtn.exists()).toBe(true);
     });
 
@@ -261,7 +261,7 @@ describe('Navbar Component', () => {
 
     test('should populate random data when random button is clicked', async () => {
       const spy = jest.spyOn(store, 'commit');
-      const randomBtn = wrapper.find('.action-btn-random');
+      const randomBtn = wrapper.find('[aria-label="Fill with random sample data"]');
 
       await randomBtn.trigger('click');
 
@@ -319,9 +319,7 @@ describe('Navbar Component', () => {
     });
 
     test('should export data when export button is clicked', async () => {
-      const exportBtn = wrapper.findAll('.action-btn').find(btn => 
-        btn.text().includes('Export')
-      );
+      const exportBtn = wrapper.find('[aria-label="Export your tax data"]');
 
       await exportBtn.trigger('click');
 
@@ -339,9 +337,7 @@ describe('Navbar Component', () => {
       store.commit('updateTaxpayerProfile', { category: 'female', age: 30, location: 'dhaka' });
       store.commit('changeBonus', 50000);
 
-      const exportBtn = wrapper.findAll('.action-btn').find(btn => 
-        btn.text().includes('Export')
-      );
+      const exportBtn = wrapper.find('[aria-label="Export your tax data"]');
 
       await exportBtn.trigger('click');
 
@@ -371,9 +367,7 @@ describe('Navbar Component', () => {
       const fileInput = wrapper.find('input[type="file"]');
       const clickSpy = jest.spyOn(fileInput.element, 'click').mockImplementation(() => {});
 
-      const importBtn = wrapper.findAll('.action-btn').find(btn => 
-        btn.text().includes('Import')
-      );
+      const importBtn = wrapper.find('[aria-label="Import tax data from file"]');
 
       await importBtn.trigger('click');
 
@@ -478,7 +472,7 @@ describe('Navbar Component', () => {
       global.confirm.mockReturnValue(true);
       const spy = jest.spyOn(store, 'commit');
 
-      const resetBtn = wrapper.find('.action-btn-danger');
+      const resetBtn = wrapper.find('.nav-action-danger');
       await resetBtn.trigger('click');
 
       expect(global.confirm).toHaveBeenCalledWith(
@@ -504,7 +498,7 @@ describe('Navbar Component', () => {
       global.confirm.mockReturnValue(false);
       const spy = jest.spyOn(store, 'commit');
 
-      const resetBtn = wrapper.find('.action-btn-danger');
+      const resetBtn = wrapper.find('.nav-action-danger');
       await resetBtn.trigger('click');
 
       expect(global.confirm).toHaveBeenCalled();
@@ -524,29 +518,32 @@ describe('Navbar Component', () => {
     });
 
     test('should have proper ARIA labels on buttons', () => {
-      const randomBtn = wrapper.find('.action-btn-random');
-      const exportBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Export'));
-      const importBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Import'));
-      const resetBtn = wrapper.find('.action-btn-danger');
-      const githubLink = wrapper.find('.github-btn');
+      const randomBtn = wrapper.find('[aria-label="Fill with random sample data"]');
+      const exportBtn = wrapper.find('[aria-label="Export your tax data"]');
+      const importBtn = wrapper.find('[aria-label="Import tax data from file"]');
+      const resetBtn = wrapper.find('.nav-action-danger');
+      const githubLink = wrapper.find('.nav-action-github');
 
+      expect(randomBtn.exists()).toBe(true);
       expect(randomBtn.attributes('aria-label')).toBe('Fill with random sample data');
+      expect(exportBtn.exists()).toBe(true);
       expect(exportBtn.attributes('aria-label')).toBe('Export your tax data');
+      expect(importBtn.exists()).toBe(true);
       expect(importBtn.attributes('aria-label')).toBe('Import tax data from file');
       expect(resetBtn.attributes('aria-label')).toBe('Reset all tax data');
       expect(githubLink.attributes('aria-label')).toBe('View source code on GitHub');
     });
 
-    test('should have proper title attributes for tooltips', () => {
-      const randomBtn = wrapper.find('.action-btn-random');
-      const exportBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Export'));
-      const importBtn = wrapper.findAll('.action-btn').find(btn => btn.text().includes('Import'));
-      const resetBtn = wrapper.find('.action-btn-danger');
+    test('should have aria-label attributes on action buttons', () => {
+      const randomBtn = wrapper.find('[aria-label="Fill with random sample data"]');
+      const exportBtn = wrapper.find('[aria-label="Export your tax data"]');
+      const importBtn = wrapper.find('[aria-label="Import tax data from file"]');
+      const resetBtn = wrapper.find('[aria-label="Reset all tax data"]');
 
-      expect(randomBtn.attributes('title')).toBe('Random Data');
-      expect(exportBtn.attributes('title')).toBe('Export Data');
-      expect(importBtn.attributes('title')).toBe('Import Data');
-      expect(resetBtn.attributes('title')).toBe('Reset Data');
+      expect(randomBtn.attributes('aria-label')).toBe('Fill with random sample data');
+      expect(exportBtn.attributes('aria-label')).toBe('Export your tax data');
+      expect(importBtn.attributes('aria-label')).toBe('Import tax data from file');
+      expect(resetBtn.attributes('aria-label')).toBe('Reset all tax data');
     });
 
     test('should have hidden file input with aria-label', () => {

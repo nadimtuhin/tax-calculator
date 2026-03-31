@@ -21,76 +21,27 @@
       <div class="navbar-actions">
         <div class="action-buttons">
           <div v-if="$route.name === 'Home'" class="data-actions">
-            <button 
-              @click="populateRandomData" 
-              class="action-btn action-btn-random" 
-              aria-label="Fill with random sample data"
-              title="Random Data"
-            >
-              <span class="btn-icon">🎲</span>
-              <span class="btn-text">Random</span>
-            </button>
-            <button 
-              @click="exportData" 
-              class="action-btn" 
-              aria-label="Export your tax data"
-              title="Export Data"
-            >
-              <span class="btn-icon">📤</span>
-              <span class="btn-text">Export</span>
-            </button>
-            <button 
-              @click="triggerFileInput" 
-              class="action-btn" 
-              aria-label="Import tax data from file"
-              title="Import Data"
-            >
-              <span class="btn-icon">📥</span>
-              <span class="btn-text">Import</span>
-            </button>
-            <button 
-              @click="resetData" 
-              class="action-btn action-btn-danger" 
-              aria-label="Reset all tax data"
-              title="Reset Data"
-            >
-              <span class="btn-icon">🔄</span>
-              <span class="btn-text">Reset</span>
-            </button>
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="importData" 
+            <button @click="populateRandomData" class="nav-action" aria-label="Fill with random sample data">Random</button>
+            <button @click="exportData" class="nav-action" aria-label="Export your tax data">Export</button>
+            <button @click="triggerFileInput" class="nav-action" aria-label="Import tax data from file">Import</button>
+            <button @click="resetData" class="nav-action nav-action-danger" aria-label="Reset all tax data">Reset</button>
+            <input
+              type="file"
+              ref="fileInput"
+              @change="importData"
               accept=".json"
               style="display: none;"
               aria-label="Choose file to import"
             >
           </div>
-          
-          <!-- Star modal button for localhost -->
-          <button 
-            v-if="isLocalhost" 
-            @click="openStarModal" 
-            class="action-btn star-btn" 
-            aria-label="Open star modal"
-            title="Open Star Modal"
-          >
-            <span class="btn-icon">⭐</span>
-            <span class="btn-text">Star</span>
-          </button>
-          
-          <!-- GitHub link -->
-          <a 
-            href="https://github.com/nadimtuhin/pathao-tax-calculator" 
-            target="_blank" 
+
+          <a
+            href="https://github.com/nadimtuhin/pathao-tax-calculator"
+            target="_blank"
             rel="noopener noreferrer"
-            class="action-btn github-btn" 
+            class="nav-action nav-action-github"
             aria-label="View source code on GitHub"
-            title="GitHub Repository"
-          >
-            <span class="btn-icon">🐙</span>
-            <span class="btn-text">GitHub</span>
-          </a>
+          >GitHub</a>
         </div>
       </div>
     </div>
@@ -278,12 +229,12 @@ export default {
 
 /* Main navbar */
 .navbar {
-  background: #ffffff;
-  border-bottom: 2px solid #e1e5e9;
+  background: #006A4E;
+  border-bottom: 2px solid #005240;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 82, 64, 0.35);
 }
 
 .navbar-container {
@@ -304,7 +255,7 @@ export default {
   gap: 8px;
   font-size: 20px;
   font-weight: 700;
-  color: #1a365d;
+  color: #ffffff;
   text-decoration: none;
   transition: all 0.2s ease;
   padding: 8px 12px;
@@ -312,13 +263,13 @@ export default {
 }
 
 .navbar-brand:hover {
-  color: #2c5282;
-  background-color: #f7fafc;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
 }
 
 .navbar-brand:focus {
-  outline: 2px solid #4299e1;
+  outline: 2px solid rgba(255, 255, 255, 0.7);
   outline-offset: 2px;
 }
 
@@ -371,7 +322,7 @@ export default {
   font-weight: 600;
 }
 
-/* Action buttons */
+/* Action toolbar */
 .navbar-actions {
   flex-shrink: 0;
   margin-left: auto;
@@ -379,95 +330,58 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 4px;
 }
 
 .data-actions {
   display: flex;
-  gap: 8px;
-  margin-right: 8px;
-  padding-right: 8px;
-  border-right: 1px solid #e2e8f0;
-}
-
-.github-btn {
-  background-color: #2d3748;
-  color: #ffffff;
-}
-
-.github-btn:hover {
-  background-color: #1a202c;
-  color: #ffffff;
-}
-
-.star-btn {
-  background-color: #ffd700;
-  color: #744210;
-}
-
-.star-btn:hover {
-  background-color: #ffc107;
-  color: #533011;
-}
-
-.action-btn {
-  display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  margin-right: 12px;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.nav-action {
+  background: none;
   border: none;
-  border-radius: 4px;
-  background: #f7fafc;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 44px;
-  min-width: 44px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  transition: color 0.15s, background 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
 }
 
-.action-btn:hover {
-  background-color: #edf2f7;
-  color: #2d3748;
+.nav-action:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.action-btn:focus {
-  outline: 2px solid #4299e1;
+.nav-action:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
   outline-offset: 2px;
 }
 
-.action-btn:active {
-  transform: translateY(0);
+.nav-action-danger {
+  color: rgba(255, 180, 180, 0.9);
 }
 
-.action-btn-danger {
-  background-color: #fed7d7;
-  color: #c53030;
+.nav-action-danger:hover {
+  color: #ffffff;
+  background: rgba(244, 42, 65, 0.3);
 }
 
-.action-btn-danger:hover {
-  background-color: #feb2b2;
-  color: #9b2c2c;
-}
-
-.action-btn-random {
-  background-color: #e0f2fe;
-  color: #0277bd;
-}
-
-.action-btn-random:hover {
-  background-color: #b3e5fc;
-  color: #01579b;
-}
-
-.btn-icon {
-  font-size: 14px;
-}
-
-.btn-text {
-  display: inline;
+.nav-action-github {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
 }
 
 /* Responsive design */
@@ -476,37 +390,28 @@ export default {
     padding: 0 16px;
     min-height: 56px;
   }
-  
+
   .navbar-brand {
     font-size: 18px;
     padding: 6px 8px;
   }
-  
+
   .brand-icon {
     font-size: 20px;
   }
-  
+
   .navbar-nav {
     display: none;
   }
-  
-  .action-buttons {
-    gap: 4px;
-  }
-  
-  .action-btn {
-    padding: 6px 8px;
+
+  .nav-action {
     font-size: 12px;
-    min-height: 40px;
-    min-width: 40px;
+    padding: 5px 7px;
   }
-  
-  .btn-text {
-    display: none;
-  }
-  
-  .btn-icon {
-    font-size: 14px;
+
+  .data-actions {
+    margin-right: 6px;
+    padding-right: 6px;
   }
 }
 
@@ -514,28 +419,17 @@ export default {
   .navbar-container {
     padding: 0 12px;
   }
-  
+
   .navbar-brand {
     font-size: 16px;
   }
-  
+
   .brand-text {
     display: none;
   }
-  
-  .action-buttons {
-    gap: 2px;
-  }
-  
+
   .data-actions {
-    margin-right: 2px;
-    padding-right: 2px;
-  }
-  
-  .action-btn {
-    padding: 4px 6px;
-    min-height: 36px;
-    min-width: 36px;
+    display: none;
   }
 }
 

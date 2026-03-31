@@ -1,9 +1,10 @@
 const LAKH = 100000;
 
 // Bangladesh Tax Slab Structure FY 2025-2026 (amounts in lakh)
-// Note: 5% bracket has been removed, structure simplified to 6 slabs
+// Per Finance Ordinance 2025 (Artho Adhyadesh 2025) / NBR Paripatra 2025-2026 Section 1.1.
+// The 5% bracket has been removed; second slab starts at 10% on next 3 lakh.
 const TAX_SLAB_AMOUNTS_2025 = [3, 4, 5, 20]; // After threshold: 3L, 4L, 5L, 20L
-const TAX_RATES_2025 = [0, 10, 15, 20, 25, 30]; // 0% for threshold, then 10%, 15%, etc. (no 5%)
+const TAX_RATES_2025 = [0, 10, 15, 20, 25, 30]; // 0% for threshold, then 10%, 15%, etc.
 
 const formatLakh = (lakhs) => {
   return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
@@ -22,24 +23,24 @@ const formatRange = (from, to) => {
  */
 export function calculateTaxSlabs2025(taxFreeThreshold) {
   const thresholdInLakh = taxFreeThreshold / LAKH;
-  
+
   // Build all slab amounts including threshold
   const allSlabAmounts = [thresholdInLakh, ...TAX_SLAB_AMOUNTS_2025];
-  
+
   let cumulative = 0;
   const slabs = [];
-  
+
   // Create each slab progressively
   allSlabAmounts.forEach((amount, index) => {
     const from = cumulative * LAKH;
     const to = (cumulative + amount) * LAKH;
     const slabType = index === 0 ? 'First' : 'Next';
     const description = `${slabType} Tk${formatLakh(amount)} lakh ${formatRange(from, to)}`;
-    
+
     slabs.push([description, from, to, TAX_RATES_2025[index]]);
     cumulative += amount;
   });
-  
+
   // Add final "Above" slab
   const finalFrom = cumulative * LAKH;
   slabs.push([
@@ -48,27 +49,32 @@ export function calculateTaxSlabs2025(taxFreeThreshold) {
     Infinity,
     TAX_RATES_2025[TAX_RATES_2025.length - 1]
   ]);
-  
+
   return slabs;
 }
 
 /**
- * Get tax-free thresholds for FY 2025-2026
- * Updated thresholds: +25,000 BDT across all categories
+ * Tax-free thresholds for FY 2025-2026
+ * Per Finance Ordinance 2025 / NBR Paripatra 2025-2026 Section 1.1.
+ * Increased by BDT 25,000 across all categories vs FY 2024-2025.
+ * Includes new "July Warrior" category (gazetted wounded in July 2024 uprising).
  */
 export const TAX_FREE_THRESHOLDS_2025 = {
-  general: 375000,        // +25K from 350K
-  female: 425000,         // +25K from 400K
-  senior: 425000,         // +25K from 400K (65+ years)
-  disabled: 500000,       // +25K from 475K
-  third_gender: 500000,   // +25K from 475K
-  freedom_fighter: 525000, // +25K from 500K
-  parent_disabled: 425000  // 375K + 50K exemption
+  general: 375000,
+  female: 425000,
+  senior: 425000,
+  disabled: 500000,
+  third_gender: 500000,
+  freedom_fighter: 525000,
+  // july_warrior (525000) applies from FY 2026-27 per Finance Ordinance 2025
+  parent_disabled: 425000    // 375K base + 50K additional
 };
 
 /**
- * Get minimum tax amounts for FY 2025-2026
- * Unified minimum tax of 5,000 BDT across all locations
+ * Minimum tax amounts for FY 2025-2026
+ * Flat BDT 5,000 for all locations per Finance Ordinance 2025.
+ * The old three-tier structure (5k/4k/3k) applied only in FY 2024-2025.
+ * First-time taxpayers: BDT 1,000 (handled separately in UI).
  */
 export const MINIMUM_TAX_2025 = {
   dhaka: 5000,
@@ -84,12 +90,12 @@ export const MINIMUM_TAX_2025 = {
  */
 export function getTaxFreeThreshold2025(taxpayerProfile) {
   const { category, age } = taxpayerProfile;
-  
+
   // Handle age-based senior citizen detection
   if (age >= 65 && category !== 'disabled' && category !== 'freedom_fighter' && category !== 'third_gender') {
     return TAX_FREE_THRESHOLDS_2025.senior;
   }
-  
+
   return TAX_FREE_THRESHOLDS_2025[category] || TAX_FREE_THRESHOLDS_2025.general;
 }
 
@@ -103,27 +109,16 @@ export function getMinimumTax2025(location) {
 }
 
 /**
- * Get rebate percentage for investments in FY 2025-2026
- * Investment rebate rates remain same as FY 2024-2025
+ * Calculate investment rebate for FY 2025-2026
+ * Per Finance Ordinance 2025 Section 78 / NBR Paripatra 2025-2026 Section 19.
+ * Rebate = lowest of: (a) 3% of total income, (b) 15% of qualifying investment, (c) BDT 10,00,000
  * @param {number} taxableIncome - Taxable income in BDT
- * @returns {number} Rebate percentage
+ * @param {number} totalInvestment - Total qualifying investment in BDT
+ * @returns {number} Investment rebate in BDT
  */
-export function getRebatePercentage2025(taxableIncome) {
-  if (taxableIncome <= 500000) return 10;
-  if (taxableIncome <= 700000) return 12.5;
-  if (taxableIncome <= 1100000) return 15;
-  if (taxableIncome <= 1600000) return 17.5;
-  return 20;
-}
-
-/**
- * Calculate maximum rebateable investment for FY 2025-2026
- * Remains 20% of taxable income or BDT 10 lakh, whichever is lower
- * @param {number} taxableIncome - Taxable income in BDT
- * @returns {number} Maximum rebateable investment in BDT
- */
-export function getMaxRebateableInvestment2025(taxableIncome) {
-  const twentyPercentOfIncome = Math.round(taxableIncome / 5);
-  const maxCap = 1000000; // 10 lakh BDT
-  return Math.min(twentyPercentOfIncome, maxCap);
+export function calculateInvestmentRebate2025FromIncome(taxableIncome, totalInvestment) {
+  const threePercentOfIncome = taxableIncome * 0.03;
+  const fifteenPercentOfInvestment = totalInvestment * 0.15;
+  const cap = 1000000; // 10 lakh BDT
+  return Math.round(Math.min(threePercentOfIncome, fifteenPercentOfInvestment, cap));
 }
