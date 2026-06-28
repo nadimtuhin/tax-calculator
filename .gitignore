@@ -30,3 +30,4 @@ Thumbs.db
 
 # Claude settings
 .claude/
+build
