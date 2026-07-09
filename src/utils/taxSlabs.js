@@ -1,8 +1,8 @@
 const LAKH = 100000;
 
 // Bangladesh Tax Slab Structure (amounts in lakh)
-const TAX_SLAB_AMOUNTS = [1, 4, 5, 5]; // After threshold: 1L, 4L, 5L, 5L
-const TAX_RATES = [0, 5, 10, 15, 20, 25]; // 0% for threshold, then 5%, 10%, 15%, 20%, 25%
+const TAX_SLAB_AMOUNTS = [1, 4, 5, 5, 20]; // After threshold: 1L, 4L, 5L, 5L, 20L
+const TAX_RATES = [0, 5, 10, 15, 20, 25, 30]; // 0% for threshold, then 5%, 10%, 15%, 20%, 25%, 30%
 
 const formatLakh = (lakhs) => {
   return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;

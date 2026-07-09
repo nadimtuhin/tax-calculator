@@ -80,13 +80,13 @@ describe('Calculation-2025 Component', () => {
       expect(totalTaxDisplay.text()).toContain(wrapper.vm.totalTax.toString());
     });
 
-    test('should use FY 2025-26 tax slabs (7 slabs, includes 5% bracket)', () => {
+    test('should use FY 2025-26 tax slabs (6 slabs, no 5% bracket)', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
         location: 'dhaka'
       });
-
+      
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
 
       wrapper = mount(Calculation2025, {
@@ -96,16 +96,16 @@ describe('Calculation-2025 Component', () => {
       });
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
-
-      expect(taxBreakdown).toHaveLength(7); // 7 slabs for 2025-26
-
-      // Check that tax rates include 5%
+      
+      expect(taxBreakdown).toHaveLength(6); // 6 slabs for 2025-26
+      
+      // Check that tax rates don't include 5%
       const rates = taxBreakdown.map(slab => slab.slabPercentage);
-      expect(rates).toContain(5);
-      expect(rates).toEqual([0, 5, 10, 15, 20, 25]);
+      expect(rates).not.toContain(5);
+      expect(rates).toEqual([0, 10, 15, 20, 25, 30]);
     });
 
-    test('should show tax-free threshold for 2025-26', () => {
+    test('should show higher tax-free threshold for 2025-26', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
@@ -119,7 +119,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(350000); // Same as 2024-25 per NBR official
+      expect(threshold).toBe(375000); // 25K higher than 2024-25
     });
 
     test('should apply unified minimum tax of 5000', () => {
@@ -161,7 +161,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(400000); // Female threshold for 2025-26
+      expect(threshold).toBe(425000); // Female threshold for 2025-26
     });
 
     test('should calculate correctly for disabled person', () => {
@@ -178,7 +178,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(475000); // Disabled threshold for 2025-26
+      expect(threshold).toBe(500000); // Disabled threshold for 2025-26
     });
 
     test('should calculate correctly for freedom fighter', () => {
@@ -195,7 +195,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(500000); // Freedom fighter threshold for 2025-26
+      expect(threshold).toBe(525000); // Freedom fighter threshold for 2025-26
     });
 
     test('should calculate correctly for third gender', () => {
@@ -212,7 +212,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(475000); // Third gender threshold for 2025-26
+      expect(threshold).toBe(500000); // Third gender threshold for 2025-26
     });
 
     test('should auto-detect senior citizen', () => {
@@ -229,7 +229,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const threshold = wrapper.vm.taxFreeThreshold;
-      expect(threshold).toBe(400000); // Senior threshold for 2025-26
+      expect(threshold).toBe(425000); // Senior threshold for 2025-26
     });
   });
 
@@ -258,13 +258,13 @@ describe('Calculation-2025 Component', () => {
       expect(totalTax).toBe(minimumTax); // Should apply minimum tax
     });
 
-    test('should calculate correct tax for income in first bracket (5%)', () => {
+    test('should calculate correct tax for income in first bracket (10%)', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
         location: 'dhaka'
       });
-
+      
       store.commit('changeSubsequentSalaries', { index: 0, value: 40000 }); // 480K annually
 
       wrapper = mount(Calculation2025, {
@@ -274,10 +274,10 @@ describe('Calculation-2025 Component', () => {
       });
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
-
-      expect(taxBreakdown[0].slabCut).toBe(0); // No tax on first 350K
-      expect(taxBreakdown[1].slabCut).toBeGreaterThan(0); // Tax on excess at 5%
-      expect(taxBreakdown[1].slabPercentage).toBe(5); // First taxable bracket is 5%
+      
+      expect(taxBreakdown[0].slabCut).toBe(0); // No tax on first 375K
+      expect(taxBreakdown[1].slabCut).toBeGreaterThan(0); // Tax on excess at 10%
+      expect(taxBreakdown[1].slabPercentage).toBe(10); // First taxable bracket is 10%
     });
 
     test('should apply minimum tax when calculated tax is lower', () => {
@@ -546,8 +546,8 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-
-      store.commit('changeSubsequentSalaries', { index: 0, value: 29167 }); // Exactly 350K annually
+      
+      store.commit('changeSubsequentSalaries', { index: 0, value: 31250 }); // Exactly 375K annually
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -558,7 +558,7 @@ describe('Calculation-2025 Component', () => {
       const taxBreakdown = wrapper.vm.taxBreakdown;
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = wrapper.vm.minimumTaxAmount;
-
+      
       expect(taxBreakdown[0].slabCut).toBe(0);
       expect(totalTax).toBe(minimumTax); // Should apply minimum tax
     });
@@ -569,7 +569,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-
+      
       store.commit('changeSubsequentSalaries', { index: 0, value: 500000 }); // 6M annually
 
       wrapper = mount(Calculation2025, {
@@ -580,8 +580,8 @@ describe('Calculation-2025 Component', () => {
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
       const totalTax = wrapper.vm.totalTax;
-
-      expect(taxBreakdown).toHaveLength(7);
+      
+      expect(taxBreakdown).toHaveLength(6);
       expect(taxBreakdown[5].slabCut).toBeGreaterThan(0); // Highest slab should have tax
       expect(totalTax).toBeGreaterThan(100000); // Substantial tax amount
     });
@@ -592,7 +592,7 @@ describe('Calculation-2025 Component', () => {
         age: 30,
         location: 'dhaka'
       });
-
+      
       store.commit('changeSubsequentSalaries', { index: 0, value: 40000 });
 
       wrapper = mount(Calculation2025, {
@@ -602,8 +602,8 @@ describe('Calculation-2025 Component', () => {
       });
 
       const initialThreshold = wrapper.vm.taxFreeThreshold;
-      expect(initialThreshold).toBe(350000);
-
+      expect(initialThreshold).toBe(375000);
+      
       store.commit('updateTaxpayerProfile', {
         category: 'disabled',
         age: 30,
@@ -611,7 +611,7 @@ describe('Calculation-2025 Component', () => {
       });
 
       const newThreshold = wrapper.vm.taxFreeThreshold;
-      expect(newThreshold).toBe(475000);
+      expect(newThreshold).toBe(500000);
     });
   });
 
