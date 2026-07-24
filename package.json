@@ -30,7 +30,7 @@
     "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.0",
+    "@babel/core": "^7.29.6",
     "@babel/eslint-parser": "^7.22.0",
     "@babel/preset-env": "^7.28.0",
     "@playwright/test": "^1.54.1",
