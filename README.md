@@ -1,6 +1,80 @@
 <div align="center">
-  
-# 🇧🇩 Bangladesh Tax Calculator
+
+# Bangladesh Tax Calculator
+
+![Bangladesh Tax Calculator: income tax for salaried people, FY 2024-25 vs 2025-26](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/hero.svg)
+
+**Know your tax before you file.** Put in your salary and see the tax under both fiscal years, side by side.
+
+[`Live demo`](https://tax.nadimtuhin.com) `Vue 3` [`MIT`](LICENSE) `★ 20`
+
+</div>
+
+<br>
+
+Working out income tax by hand means slabs, rebates, and a new rule set each year. This app does the math for salaried people in Bangladesh and shows FY 2024-25 next to FY 2025-26, so you can see what changes for you. It runs in your browser and keeps your data local.
+
+<br>
+
+![Get started](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-start.svg)
+
+**1. Open the app.** Go to [tax.nadimtuhin.com](https://tax.nadimtuhin.com). Nothing to install.
+
+**2. Enter your numbers.** Pick a taxpayer profile (General, Female, Senior, Disabled, Freedom Fighter, Parent of Disabled Child, Third Gender), then add your salary and investments.
+
+**3. Read the result.** You get the tax for each year, a breakdown, and what you save or pay extra under the new structure.
+
+**Want to run it yourself?** You need Node 20 or newer and Yarn.
+
+```bash
+git clone https://github.com/nadimtuhin/tax-calculator.git
+cd tax-calculator
+yarn install
+yarn dev
+```
+
+Open `http://localhost:8080`.
+
+<br>
+
+![What you get](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-how.svg)
+
+**Two years, one screen.** FY 2024-25 and FY 2025-26 sit side by side, with the savings or extra tax shown for you.
+
+**Your data stays with you.** Inputs are saved in your browser between visits. You can export and import them.
+
+<br>
+
+![Need help](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-help.svg)
+
+<details>
+<summary><code>yarn: command not found</code>, or an error about Node</summary>
+
+Run `node -v`. You need 20 or newer, from [nodejs.org](https://nodejs.org). Install Yarn with `npm install -g yarn`, or run `npm install` and `npm run dev` instead.
+
+</details>
+
+<details>
+<summary>Is my salary sent anywhere?</summary>
+
+No. The calculation runs in your browser. The page loads Google Analytics for page views only.
+
+</details>
+
+<details>
+<summary>Can I trust the result for filing?</summary>
+
+The app follows the National Board of Revenue (NBR) guidelines, but check the final figure against the official rules or ask a tax professional before you file.
+
+</details>
+
+<br>
+
+![For developers](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-dev.svg)
+
+Everything below is reference. You don't need it to get started.
+
+[Features](#-key-features) · [Scripts](#-available-scripts) · [Stack](#%EF%B8%8F-technical-stack) · [Structure](#-project-structure) · [Contributing](#-contributing) · [Roadmap](#-roadmap)
 
 <p align="center">
   <strong>A modern, user-friendly web application for calculating income tax in Bangladesh</strong>
@@ -19,9 +93,6 @@
   <img src="https://img.shields.io/badge/Maintained-yes-green?style=flat-square" alt="Maintained">
 </p>
 
-</div>
-
----
 
 ## ✨ Overview
 
@@ -47,7 +118,7 @@ Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help 
 ### 💼 Tax Management
 - ✅ **Dual tax comparison** FY 2024-25 vs 2025-26
 - ✅ Side-by-side calculation display
-- ✅ Multiple taxpayer profiles (General, Female, Senior, Disabled, Freedom Fighter)
+- ✅ Multiple taxpayer profiles (General, Female, Senior, Disabled, Freedom Fighter, Parent of Disabled Child, Third Gender)
 - ✅ Detailed salary component breakdown
 - ✅ Investment tracking & progressive rebate rates
 - ✅ TDS calculation support
@@ -93,7 +164,7 @@ Bangladesh Tax Calculator is a comprehensive Vue 3 application designed to help 
 
 ### Prerequisites
 
-- **Node.js** 16.0 or higher
+- **Node.js** 20.0 or higher
 - **npm** 8.0+ or **Yarn** 1.22+
 
 ### Installation
