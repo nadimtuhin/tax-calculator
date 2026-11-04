@@ -16,6 +16,8 @@ describe('Calculation-2024 Component', () => {
         }
       }
     });
+    // Calculation-2024 displays the "current year" label; set to 2024-25 for these tests
+    store.commit('setCurrentYear', '2024-25');
   });
 
   afterEach(() => {

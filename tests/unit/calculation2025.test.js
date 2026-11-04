@@ -627,6 +627,9 @@ describe('Calculation-2025 Component', () => {
     });
 
     test('should use 2025-specific getters', () => {
+      // Set to 2024-25 so taxFreeThreshold (currentYear getter) = 350k,
+      // while taxFreeThreshold2025 (component getter) = 375k
+      store.commit('setCurrentYear', '2024-25');
       wrapper = mount(Calculation2025, {
         global: {
           plugins: [store]
@@ -637,10 +640,10 @@ describe('Calculation-2025 Component', () => {
       expect(wrapper.vm.investmentRebate).toBeDefined();
       expect(wrapper.vm.taxFreeThreshold).toBeDefined();
       expect(wrapper.vm.totalTax).toBeDefined();
-      
-      // Check that these are different from default store values
-      const defaultThreshold = store.getters.taxFreeThreshold;
-      const component2025Threshold = wrapper.vm.taxFreeThreshold;
+
+      // 2025 threshold (375k) > 2024 threshold (350k)
+      const defaultThreshold = store.getters.taxFreeThreshold; // 2024-25 = 350k
+      const component2025Threshold = wrapper.vm.taxFreeThreshold;  // 375k
       expect(component2025Threshold).toBeGreaterThan(defaultThreshold);
     });
 

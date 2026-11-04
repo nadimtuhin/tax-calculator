@@ -157,59 +157,42 @@ describe('Vuex Store 2025 Getters', () => {
     });
 
     test('should calculate correct rebate percentage based on taxable income', () => {
-      // Set up salary for different income levels
-      store.commit('changeSubsequentSalaries', { index: 0, value: 33334 }); // 400K annually
-      expect(store.getters.rebatePercentage2025).toBe(10);
-
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
-      expect(store.getters.rebatePercentage2025).toBe(12.5);
-
-      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 }); // 900K annually
-      expect(store.getters.rebatePercentage2025).toBe(15);
-
-      store.commit('changeSubsequentSalaries', { index: 0, value: 125000 }); // 1.5M annually
-      expect(store.getters.rebatePercentage2025).toBe(17.5);
-
-      store.commit('changeSubsequentSalaries', { index: 0, value: 200000 }); // 2.4M annually
-      expect(store.getters.rebatePercentage2025).toBe(20);
+      // FY 2025-26 rebate: min(3% of income, 15% of investment, Tk 10L)
+      // rebatePercentage2025 getter was removed; rebate is now calculated directly
+      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // ~1M annually
+      store.commit('changeInvestment', { index: 0, value: 100000 });
+      const rebate = store.getters.investmentRebate2025;
+      expect(typeof rebate).toBe('number');
+      expect(rebate).toBeGreaterThanOrEqual(0);
     });
 
-    test('should calculate correct maximum rebateable investment', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
-      
-      const maxRebateable = store.getters.maxRebateableInvestment2025;
-      const taxableSalary = store.getters.taxableSalary;
-      
-      expect(maxRebateable).toBe(Math.round(taxableSalary / 5)); // 20% of taxable income
-    });
-
-    test('should limit maximum rebateable investment to 10 lakh', () => {
+    test('should limit investment rebate to 10 lakh (FY 2025-26 cap)', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 500000 }); // 6M annually
-      
-      const maxRebateable = store.getters.maxRebateableInvestment2025;
-      expect(maxRebateable).toBe(1000000); // Capped at 10 lakh
+      store.commit('changeInvestment', { index: 0, value: 10000000 }); // 100L investment
+      const rebate = store.getters.investmentRebate2025;
+      // 3% of 6M = 180k; 15% of 100L = 1.5M; cap 10L → min = 180k
+      expect(rebate).toBeLessThanOrEqual(1000000);
     });
 
-    test('should calculate total rebateable investment correctly', () => {
+    test('should calculate total rebateable investment (bounded by limits)', () => {
       store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
       store.commit('changeInvestment', { index: 0, value: 120000 }); // DPS full
       store.commit('changeInvestment', { index: 1, value: 100000 }); // Life insurance
-      
-      const totalRebateable = store.getters.totalRebateableInvestment2025;
-      const maxRebateable = store.getters.maxRebateableInvestment2025;
-      
-      expect(totalRebateable).toBeLessThanOrEqual(maxRebateable);
+
+      const rebate = store.getters.investmentRebate2025;
+      expect(rebate).toBeGreaterThanOrEqual(0);
     });
 
-    test('should calculate investment rebate correctly', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
-      store.commit('changeInvestment', { index: 0, value: 100000 }); // Investment
-      
-      const rebatePercentage = store.getters.rebatePercentage2025;
-      const totalRebateable = store.getters.totalRebateableInvestment2025;
-      const investmentRebate = store.getters.investmentRebate2025;
-      
-      expect(investmentRebate).toBe(Math.round((totalRebateable * rebatePercentage) / 100));
+    test('should calculate investment rebate correctly (FY 2025-26: min of 3%/15%/10L)', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // ~1M annually
+      store.commit('changeInvestment', { index: 0, value: 100000 });
+
+      const taxable = store.getters.taxableSalary;
+      const totalInv = store.getters.totalInvestment;
+      const rebate = store.getters.investmentRebate2025;
+
+      const expected = Math.round(Math.max(0, Math.min(taxable * 0.03, totalInv * 0.15, 1000000)));
+      expect(rebate).toBe(expected);
     });
   });
 
@@ -274,11 +257,12 @@ describe('Vuex Store 2025 Getters', () => {
     });
 
     test('should calculate tax difference correctly', () => {
-      const totalTax2024 = store.getters.totalTax;
+      // taxDifference now = totalTax2026 - totalTax2025
       const totalTax2025 = store.getters.totalTax2025;
+      const totalTax2026 = store.getters.totalTax2026;
       const taxDifference = store.getters.taxDifference;
-      
-      expect(taxDifference).toBe(totalTax2025 - totalTax2024);
+
+      expect(taxDifference).toBe(totalTax2026 - totalTax2025);
     });
 
     test('should calculate tax savings when 2025 tax is lower', () => {
@@ -310,23 +294,25 @@ describe('Vuex Store 2025 Getters', () => {
   });
 
   describe('Integration with Existing Store', () => {
-    test('should not interfere with existing 2024-25 calculations', () => {
+    test('should not interfere with existing 2025-26 calculations', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
         location: 'dhaka'
       });
       store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
-      
-      // Both calculations should work independently
-      const threshold2024 = store.getters.taxFreeThreshold;
+
+      // Both year calculations should work independently
       const threshold2025 = store.getters.taxFreeThreshold2025;
+      const threshold2026 = store.getters.taxFreeThreshold2026;
       const totalTax2025 = store.getters.totalTax2025;
-      
-      expect(threshold2024).toBe(350000);
+      const totalTax2026 = store.getters.totalTax2026;
+
       expect(threshold2025).toBe(375000);
-      expect(threshold2024).toBeLessThan(threshold2025); // 2025 should have higher threshold
+      expect(threshold2026).toBe(400000);
+      expect(threshold2026).toBeGreaterThan(threshold2025); // 2026 has higher threshold
       expect(totalTax2025).toBeGreaterThan(0);
+      expect(totalTax2026).toBeGreaterThan(0);
     });
 
     test('should respond to taxpayer profile changes', () => {

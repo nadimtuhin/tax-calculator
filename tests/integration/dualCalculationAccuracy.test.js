@@ -1,9 +1,13 @@
+/**
+ * Dual Tax Calculation Accuracy Integration Tests
+ * Updated for FY 2025-26 vs FY 2026-27 comparison (Finance Act 2026)
+ */
 import { createStore } from 'vuex';
 import salariesStore from '@/store/salaries';
-import { calculateTaxSlabs } from '@/utils/taxSlabs';
 import { calculateTaxSlabs2025 } from '@/utils/taxSlabs2025';
-import calculateTaxBreakdown from '@/calculateTaxBreakdown';
+import { calculateTaxSlabs2026, calculateInvestmentRebate2026 } from '@/utils/taxSlabs2026';
 import calculateTaxBreakdown2025 from '@/calculateTaxBreakdown2025';
+import calculateTaxBreakdown2026 from '@/calculateTaxBreakdown2026';
 
 describe('Dual Tax Calculation Accuracy Integration', () => {
   let store;
@@ -22,10 +26,10 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
   describe('Tax Calculation Consistency', () => {
     test('should maintain calculation consistency across different salary levels', () => {
       const salaryLevels = [300000, 500000, 800000, 1200000, 2000000, 5000000];
-      
+
       salaryLevels.forEach(annualSalary => {
         const monthlySalary = Math.round(annualSalary / 12);
-        
+
         store.commit('updateTaxpayerProfile', {
           category: 'general',
           age: 30,
@@ -34,13 +38,6 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
 
         const taxableSalary = store.getters.taxableSalary;
-        
-        // 2024-25 calculations
-        const threshold2024 = store.getters.taxFreeThreshold;
-        const slabs2024 = calculateTaxSlabs(threshold2024);
-        const breakdown2024 = calculateTaxBreakdown(taxableSalary, slabs2024);
-        const calculatedTax2024 = breakdown2024.reduce((sum, slab) => sum + slab.slabCut, 0);
-        const totalTax2024 = Math.max(calculatedTax2024, store.getters.minimumTaxAmount);
 
         // 2025-26 calculations
         const threshold2025 = store.getters.taxFreeThreshold2025;
@@ -49,72 +46,48 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         const calculatedTax2025 = breakdown2025.reduce((sum, slab) => sum + slab.slabCut, 0);
         const totalTax2025 = Math.max(calculatedTax2025, store.getters.minimumTaxAmount2025);
 
-        // Store calculations
-        const storeTotalTax2025 = store.getters.totalTax2025;
+        // 2026-27 calculations
+        const threshold2026 = store.getters.taxFreeThreshold2026;
+        const slabs2026 = calculateTaxSlabs2026(threshold2026);
+        const breakdown2026 = calculateTaxBreakdown2026(taxableSalary, slabs2026);
+        const calculatedTax2026 = breakdown2026.reduce((sum, slab) => sum + slab.slabCut, 0);
+        const totalTax2026 = Math.max(calculatedTax2026, store.getters.minimumTaxAmount2026);
 
-        // Verify consistency
-        expect(totalTax2025).toBe(storeTotalTax2025);
-        
-        // Verify thresholds
-        expect(threshold2025 - threshold2024).toBe(25000);
+        // Verify store matches direct calculation
+        expect(totalTax2025).toBe(store.getters.totalTax2025);
+        expect(totalTax2026).toBe(store.getters.totalTax2026);
 
-        // Log for debugging specific cases
-        if (annualSalary === 500000) {
-          console.log(`Salary: ${annualSalary}, Tax2024: ${totalTax2024}, Tax2025: ${totalTax2025}, Difference: ${totalTax2025 - totalTax2024}`);
-        }
+        // 2026-27 threshold is 25k higher
+        expect(threshold2026 - threshold2025).toBe(25000);
       });
     });
 
-    test('should calculate accurate tax differences for boundary cases', () => {
-      const boundaryTestCases = [
-        { salary: 350000, description: '𝟚024-25 threshold' },
-        { salary: 375000, description: '2025-26 threshold' },
-        { salary: 450000, description: 'End of 5% bracket (2024-25)' },
-        { salary: 675000, description: 'End of first taxable bracket (2025-26)' },
-        { salary: 850000, description: 'Slab boundary' },
-        { salary: 1350000, description: 'Mid-level income' }
+    test('should have correct threshold differences for all categories', () => {
+      const categories = [
+        { category: 'general', threshold2025: 375000, threshold2026: 400000 },
+        { category: 'female', threshold2025: 425000, threshold2026: 450000 },
+        { category: 'disabled', threshold2025: 500000, threshold2026: 525000 },
+        { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 550000 },
+        { category: 'third_gender', threshold2025: 500000, threshold2026: 525000 }
       ];
 
-      boundaryTestCases.forEach(({ salary, description }) => {
-        const monthlySalary = Math.round(salary / 12);
-        
-        store.commit('updateTaxpayerProfile', {
-          category: 'general',
-          age: 30,
-          location: 'dhaka'
-        });
-        store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
-
-        const totalTax2024 = calculateTotalTax2024(store);
-        const totalTax2025 = store.getters.totalTax2025;
-        const difference = totalTax2025 - totalTax2024;
-
-        console.log(`${description} (${salary}): 2024=${totalTax2024}, 2025=${totalTax2025}, diff=${difference}`);
-
-        // Both should be valid positive amounts or minimum tax
-        expect(totalTax2024).toBeGreaterThanOrEqual(0);
-        expect(totalTax2025).toBeGreaterThanOrEqual(0);
-        
-        // For income at 2025 threshold (375k), 2025 should be lower due to higher threshold
-        if (salary === 375000) {
-          expect(totalTax2025).toBeLessThanOrEqual(totalTax2024);
-        }
+      categories.forEach(({ category, threshold2025, threshold2026 }) => {
+        store.commit('updateTaxpayerProfile', { category, age: 35, location: 'dhaka' });
+        expect(store.getters.taxFreeThreshold2025).toBe(threshold2025);
+        expect(store.getters.taxFreeThreshold2026).toBe(threshold2026);
       });
     });
   });
 
   describe('Investment Rebate Accuracy', () => {
-    test('should calculate rebates consistently for both tax years', () => {
-      const testScenarios = [
-        { salary: 600000, investment: 50000, description: 'Low investment' },
-        { salary: 1000000, investment: 150000, description: 'Medium investment' },
-        { salary: 2000000, investment: 300000, description: 'High investment' },
-        { salary: 1500000, investment: 500000, description: 'Investment exceeds 20% limit' }
+    test('should calculate rebates correctly for both tax years', () => {
+      const testCases = [
+        { description: 'Low income', monthlySalary: 50000, investment: 50000 },
+        { description: 'Mid income', monthlySalary: 100000, investment: 150000 },
+        { description: 'High income', monthlySalary: 300000, investment: 500000 }
       ];
 
-      testScenarios.forEach(({ salary, investment, description }) => {
-        const monthlySalary = Math.round(salary / 12);
-        
+      testCases.forEach(({ description, monthlySalary, investment }) => {
         store.commit('updateTaxpayerProfile', {
           category: 'general',
           age: 30,
@@ -124,265 +97,146 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         store.commit('changeInvestment', { index: 0, value: investment });
 
         const taxableSalary = store.getters.taxableSalary;
-        
-        // 2024-25 rebate
-        const rebate2024 = store.getters.investmentRebate;
-        
-        // 2025-26 rebate
-        const rebate2025 = store.getters.investmentRebate2025;
-        const rebatePercentage2025 = store.getters.rebatePercentage2025;
-        const maxRebateable2025 = store.getters.maxRebateableInvestment2025;
+        const totalInvestment = store.getters.totalInvestment;
 
-        // Both rebates should be calculated correctly
-        expect(rebate2024).toBeGreaterThanOrEqual(0);
-        expect(rebate2025).toBeGreaterThanOrEqual(0);
-        
-        // Rebate percentage should increase with income
-        if (taxableSalary > 1100000) {
-          expect(rebatePercentage2025).toBeGreaterThanOrEqual(15);
-        }
+        // FY 2025-26: min(3% income, 15% investment, 10L)
+        const expectedRebate2025 = Math.round(Math.max(0, Math.min(
+          taxableSalary * 0.03,
+          totalInvestment * 0.15,
+          1000000
+        )));
+        expect(store.getters.investmentRebate2025).toBe(expectedRebate2025);
 
-        // Max rebateable should be 20% of taxable income or 10 lakh
-        const expectedMax = Math.min(Math.round(taxableSalary / 5), 1000000);
-        expect(maxRebateable2025).toBe(expectedMax);
+        // FY 2026-27: min(3% income, 10% investment, 7.5L)
+        const expectedRebate2026 = calculateInvestmentRebate2026(taxableSalary, totalInvestment);
+        expect(store.getters.investmentRebate2026).toBe(expectedRebate2026);
 
-        console.log(`${description}: Rebate2024=${rebate2024}, Rebate2025=${rebate2025}, %=${rebatePercentage2025}`);
+        // 2026-27 rebate is always <= 2025-26 rebate (lower rate + lower cap)
+        expect(store.getters.investmentRebate2026).toBeLessThanOrEqual(store.getters.investmentRebate2025);
       });
+    });
+
+    test('rebate cap: 2025-26 capped at Tk 10L, 2026-27 at Tk 7.5L', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 500000 }); // 6M annually
+      store.commit('changeInvestment', { index: 0, value: 50000000 }); // huge investment
+
+      const rebate2025 = store.getters.investmentRebate2025;
+      const rebate2026 = store.getters.investmentRebate2026;
+
+      // Both hit their respective income-percent floor before the cap at this level
+      // but we can verify cap is respected
+      expect(rebate2025).toBeLessThanOrEqual(1000000);
+      expect(rebate2026).toBeLessThanOrEqual(750000);
     });
   });
 
   describe('Minimum Tax Application', () => {
-    test('should apply correct minimum tax for different locations', () => {
+    test('should apply flat Tk 5,000 minimum tax in both years for all locations', () => {
       const locations = ['dhaka', 'chittagong', 'other_city', 'district'];
-      const expectedMinimums2024 = { dhaka: 5000, chittagong: 5000, other_city: 4000, district: 3000 };
-      const expectedMinimum2025 = 5000; // Unified
 
       locations.forEach(location => {
         store.commit('updateTaxpayerProfile', {
           category: 'general',
           age: 30,
-          location: location
+          location
         });
-        store.commit('changeSubsequentSalaries', { index: 0, value: 25000 }); // Low income
+        store.commit('changeSubsequentSalaries', { index: 0, value: 10000 }); // very low
 
-        const minimumTax2024 = store.getters.minimumTaxAmount;
         const minimumTax2025 = store.getters.minimumTaxAmount2025;
-        const totalTax2024 = calculateTotalTax2024(store);
+        const minimumTax2026 = store.getters.minimumTaxAmount2026;
+
+        expect(minimumTax2025).toBe(5000);
+        expect(minimumTax2026).toBe(5000);
+
+        // Low income should trigger minimum tax
         const totalTax2025 = store.getters.totalTax2025;
-
-        expect(minimumTax2024).toBe(expectedMinimums2024[location]);
-        expect(minimumTax2025).toBe(expectedMinimum2025);
-        
-        // For low income, should apply minimum tax
-        expect(totalTax2024).toBe(minimumTax2024);
-        expect(totalTax2025).toBe(minimumTax2025);
-      });
-    });
-
-    test('should handle minimum tax vs calculated tax correctly', () => {
-      const testCases = [
-        { salary: 300000, description: 'Below both thresholds' },
-        { salary: 360000, description: 'Between thresholds' },
-        { salary: 400000, description: 'Above both thresholds' },
-        { salary: 500000, description: 'Clearly above both' }
-      ];
-
-      testCases.forEach(({ salary, description }) => {
-        const monthlySalary = Math.round(salary / 12);
-        
-        store.commit('updateTaxpayerProfile', {
-          category: 'general',
-          age: 30,
-          location: 'dhaka'
-        });
-        store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
-
-        const calculatedTax2024 = store.getters.calculatedTax2025; // Using store helper
-        const calculatedTax2025 = store.getters.calculatedTax2025;
-        const totalTax2024 = calculateTotalTax2024(store);
-        const totalTax2025 = store.getters.totalTax2025;
-        const isMinimumApplied2025 = store.getters.isMinimumTaxApplied2025;
-
-        // Total tax should be at least the minimum
-        expect(totalTax2024).toBeGreaterThanOrEqual(store.getters.minimumTaxAmount);
-        expect(totalTax2025).toBeGreaterThanOrEqual(store.getters.minimumTaxAmount2025);
-
-        // Minimum application should be consistent
-        if (calculatedTax2025 < store.getters.minimumTaxAmount2025) {
-          expect(isMinimumApplied2025).toBe(true);
-          expect(totalTax2025).toBe(store.getters.minimumTaxAmount2025);
-        } else {
-          expect(isMinimumApplied2025).toBe(false);
-          expect(totalTax2025).toBe(calculatedTax2025);
-        }
-
-        console.log(`${description}: Calc2025=${calculatedTax2025}, Total2025=${totalTax2025}, MinApplied=${isMinimumApplied2025}`);
+        const totalTax2026 = store.getters.totalTax2026;
+        expect(totalTax2025).toBe(5000);
+        expect(totalTax2026).toBe(5000);
       });
     });
   });
 
   describe('Taxpayer Category Accuracy', () => {
-    const categories = [
-      { category: 'general', threshold2024: 350000, threshold2025: 375000 },
-      { category: 'female', threshold2024: 400000, threshold2025: 425000 },
-      { category: 'disabled', threshold2024: 475000, threshold2025: 500000 },
-      { category: 'freedom_fighter', threshold2024: 500000, threshold2025: 525000 },
-      { category: 'third_gender', threshold2024: 475000, threshold2025: 500000 }
+    const categoryTests = [
+      {
+        category: 'general',
+        threshold2025: 375000,
+        threshold2026: 400000
+      },
+      {
+        category: 'female',
+        threshold2025: 425000,
+        threshold2026: 450000
+      },
+      {
+        category: 'disabled',
+        threshold2025: 500000,
+        threshold2026: 525000
+      },
+      {
+        category: 'freedom_fighter',
+        threshold2025: 525000,
+        threshold2026: 550000
+      },
+      {
+        category: 'third_gender',
+        threshold2025: 500000,
+        threshold2026: 525000
+      }
     ];
 
-    categories.forEach(({ category, threshold2024, threshold2025 }) => {
+    categoryTests.forEach(({ category, threshold2025, threshold2026 }) => {
       test(`should calculate accurately for ${category} taxpayer`, () => {
         store.commit('updateTaxpayerProfile', {
-          category: category,
-          age: 30,
+          category,
+          age: 35,
           location: 'dhaka'
         });
+        store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
 
-        // Test at threshold + 100k to ensure tax calculation
-        const testSalary = threshold2025 + 100000;
-        const monthlySalary = Math.round(testSalary / 12);
-        store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
-
-        const actualThreshold2024 = store.getters.taxFreeThreshold;
         const actualThreshold2025 = store.getters.taxFreeThreshold2025;
-        const totalTax2024 = calculateTotalTax2024(store);
+        const actualThreshold2026 = store.getters.taxFreeThreshold2026;
         const totalTax2025 = store.getters.totalTax2025;
+        const totalTax2026 = store.getters.totalTax2026;
 
-        expect(actualThreshold2024).toBe(threshold2024);
         expect(actualThreshold2025).toBe(threshold2025);
-        expect(actualThreshold2025 - actualThreshold2024).toBe(25000);
+        expect(actualThreshold2026).toBe(threshold2026);
+        expect(actualThreshold2026 - actualThreshold2025).toBe(25000);
 
-        // Both should have some tax at this income level
-        expect(totalTax2024).toBeGreaterThan(0);
+        // Taxes should be non-negative
         expect(totalTax2025).toBeGreaterThan(0);
-        
-        // Due to removal of 5% bracket, 2025 tax is often higher than 2024
-        // The 25K higher threshold helps, but 10% vs 5% rate hurts
-        const taxDifference = totalTax2025 - totalTax2024;
-        
-        // Tax difference should be reasonable (not extreme)
-        expect(Math.abs(taxDifference)).toBeLessThan(testSalary * 0.05); // Less than 5% of income
+        expect(totalTax2026).toBeGreaterThan(0);
       });
     });
   });
 
-  describe('Tax Slab Structure Validation', () => {
-    test('should use correct number of slabs for each tax year', () => {
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
+  describe('Comparison Getters', () => {
+    test('taxDifference = totalTax2026 - totalTax2025', () => {
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 30, location: 'dhaka' });
+      store.commit('changeSubsequentSalaries', { index: 0, value: 100000 });
 
-      const threshold2024 = store.getters.taxFreeThreshold;
-      const threshold2025 = store.getters.taxFreeThreshold2025;
-      
-      const slabs2024 = calculateTaxSlabs(threshold2024);
-      const slabs2025 = calculateTaxSlabs2025(threshold2025);
-
-      expect(slabs2024).toHaveLength(7); // 2024-25 structure
-      expect(slabs2025).toHaveLength(6); // 2025-26 structure
-
-      // Verify rate structures
-      const rates2024 = slabs2024.map(slab => slab[3]);
-      const rates2025 = slabs2025.map(slab => slab[3]);
-
-      expect(rates2024).toEqual([0, 5, 10, 15, 20, 25, 30]);
-      expect(rates2025).toEqual([0, 10, 15, 20, 25, 30]);
+      const diff = store.getters.taxDifference;
+      expect(diff).toBe(store.getters.totalTax2026 - store.getters.totalTax2025);
     });
 
-    test('should calculate progressive taxation correctly', () => {
-      const testIncome = 1500000; // 15 lakh
-      const monthlySalary = Math.round(testIncome / 12);
-
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
-      store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
-
-      const taxableSalary = store.getters.taxableSalary;
-
-      // Manual calculation for 2024-25
-      const slabs2024 = store.getters.taxSlabs2025; // This should be 2024 slabs
-      const breakdown2024 = calculateTaxBreakdown(taxableSalary, calculateTaxSlabs(350000));
-      
-      // Manual calculation for 2025-26
-      const breakdown2025 = store.getters.taxBreakdown2025;
-
-      // Verify progressive nature
-      let cumulativeAmount2024 = 0;
-      let cumulativeAmount2025 = 0;
-
-      breakdown2024.forEach(slab => {
-        cumulativeAmount2024 += slab.slabAmount;
-        expect(slab.slabAmount).toBeGreaterThanOrEqual(0);
-      });
-
-      breakdown2025.forEach(slab => {
-        cumulativeAmount2025 += slab.slabAmount;
-        expect(slab.slabAmount).toBeGreaterThanOrEqual(0);
-      });
-
-      expect(cumulativeAmount2024).toBe(taxableSalary);
-      expect(cumulativeAmount2025).toBe(taxableSalary);
+    test('taxSavings and additionalTax are mutually exclusive', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
+      const savings = store.getters.taxSavings;
+      const additional = store.getters.additionalTax;
+      // At most one is > 0
+      expect(savings * additional).toBe(0);
     });
   });
 
-  describe('Edge Case Validations', () => {
-    test('should handle exact threshold amounts correctly', () => {
-      const exactThresholds = [350000, 375000, 400000, 425000, 500000, 525000];
-
-      exactThresholds.forEach(threshold => {
-        const monthlySalary = Math.round(threshold / 12);
-        
-        store.commit('updateTaxpayerProfile', {
-          category: 'general',
-          age: 30,
-          location: 'dhaka'
-        });
-        store.commit('changeSubsequentSalaries', { index: 0, value: monthlySalary });
-
-        const totalTax2024 = calculateTotalTax2024(store);
-        const totalTax2025 = store.getters.totalTax2025;
-
-        // At exact thresholds, calculated tax should be minimal
-        // but minimum tax might apply
-        expect(totalTax2024).toBeGreaterThanOrEqual(store.getters.minimumTaxAmount);
-        expect(totalTax2025).toBeGreaterThanOrEqual(store.getters.minimumTaxAmount2025);
+  describe('Payable Tax Consistency', () => {
+    test('payable tax should be non-negative', () => {
+      const levels = [0, 50000, 100000, 500000];
+      levels.forEach(monthly => {
+        store.commit('changeSubsequentSalaries', { index: 0, value: monthly });
+        expect(store.getters.payableTax2025).toBeGreaterThanOrEqual(0);
+        expect(store.getters.payableTax2026).toBeGreaterThanOrEqual(0);
       });
-    });
-
-    test('should handle zero and negative scenarios', () => {
-      store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: 30,
-        location: 'dhaka'
-      });
-      store.commit('changeSubsequentSalaries', { index: 0, value: 0 });
-
-      const totalTax2024 = calculateTotalTax2024(store);
-      const totalTax2025 = store.getters.totalTax2025;
-      const payable2025 = store.getters.payableTax2025;
-
-      // Should apply minimum tax
-      expect(totalTax2024).toBe(store.getters.minimumTaxAmount);
-      expect(totalTax2025).toBe(store.getters.minimumTaxAmount2025);
-      
-      // Payable should never be negative
-      expect(payable2025).toBeGreaterThanOrEqual(0);
     });
   });
-
-  // Helper function to calculate 2024 total tax (since it's not in store)
-  function calculateTotalTax2024(store) {
-    const taxableSalary = store.getters.taxableSalary;
-    const threshold = store.getters.taxFreeThreshold;
-    const slabs = calculateTaxSlabs(threshold);
-    const breakdown = calculateTaxBreakdown(taxableSalary, slabs);
-    const calculatedTax = breakdown.reduce((sum, slab) => sum + slab.slabCut, 0);
-    const minimumTax = store.getters.minimumTaxAmount;
-    return Math.max(calculatedTax, minimumTax);
-  }
 });

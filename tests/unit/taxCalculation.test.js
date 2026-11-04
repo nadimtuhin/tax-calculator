@@ -14,6 +14,8 @@ describe('Tax Calculation Tests', () => {
         }
       }
     });
+    // These tests cover FY 2024-25 rules via the shared taxFreeThreshold getter
+    store.commit('setCurrentYear', '2024-25');
   });
 
   describe('Tax-Free Threshold Calculations', () => {

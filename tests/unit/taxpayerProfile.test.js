@@ -45,7 +45,7 @@ describe('TaxpayerProfile Component', () => {
       expect(options.at(2).text()).toBe('Senior Citizen (65+)');
       expect(options.at(3).text()).toBe('Disabled Person');
       expect(options.at(4).text()).toBe('Parent of Disabled Child');
-      expect(options.at(5).text()).toBe('War-wounded Freedom Fighter');
+      expect(options.at(5).text()).toBe('War-wounded Freedom Fighter / July Warrior');
       expect(options.at(6).text()).toBe('Third Gender');
     });
 
@@ -83,47 +83,48 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should calculate correct threshold for different categories', async () => {
+      // Default fiscal year is 2025-26; thresholds are +25k vs 2024-25
       // Test general category
       wrapper.vm.selectedCategory = 'general';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(350000);
-      
+      expect(wrapper.vm.threshold).toBe(375000);
+
       // Test female category
       wrapper.vm.selectedCategory = 'female';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(400000);
-      
+      expect(wrapper.vm.threshold).toBe(425000);
+
       // Test senior category
       wrapper.vm.selectedCategory = 'senior';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(400000);
-      
+      expect(wrapper.vm.threshold).toBe(425000);
+
       // Test disabled category
       wrapper.vm.selectedCategory = 'disabled';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(475000);
-      
+      expect(wrapper.vm.threshold).toBe(500000);
+
       // Test parent of disabled child
       wrapper.vm.selectedCategory = 'parent_disabled';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(400000); // 350000 + 50000
-      
+      expect(wrapper.vm.threshold).toBe(425000); // 375000 + 50000
+
       // Test freedom fighter
       wrapper.vm.selectedCategory = 'freedom_fighter';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(500000);
-      
+      expect(wrapper.vm.threshold).toBe(525000);
+
       // Test third gender
       wrapper.vm.selectedCategory = 'third_gender';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(475000);
+      expect(wrapper.vm.threshold).toBe(500000);
     });
 
     test('should calculate correct minimum tax for different locations', async () => {
@@ -143,13 +144,13 @@ describe('TaxpayerProfile Component', () => {
       wrapper.vm.selectedLocation = 'other_city';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.minimumTax).toBe(4000);
-      
+      expect(wrapper.vm.minimumTax).toBe(5000);
+
       // Test district towns
       wrapper.vm.selectedLocation = 'district';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.minimumTax).toBe(3000);
+      expect(wrapper.vm.minimumTax).toBe(5000);
     });
 
     test('should display correct category name', async () => {
@@ -223,9 +224,10 @@ describe('TaxpayerProfile Component', () => {
     test('should display formatted threshold amount', async () => {
       wrapper.vm.selectedCategory = 'general';
       await wrapper.vm.$nextTick();
-      
+
       const thresholdAmount = wrapper.find('.threshold-amount');
-      expect(thresholdAmount.text()).toBe('BDT 350,000');
+      // Default fiscal year is 2025-26 (general threshold = 375,000)
+      expect(thresholdAmount.text()).toBe('BDT 375,000');
     });
 
     test('should display formatted minimum tax amount', async () => {
@@ -238,16 +240,16 @@ describe('TaxpayerProfile Component', () => {
 
     test('should update threshold display when category changes', async () => {
       const thresholdAmount = wrapper.find('.threshold-amount');
-      
-      // Start with general category
-      expect(thresholdAmount.text()).toBe('BDT 350,000');
-      
+
+      // Start with general category — default is now 2025-26, so 375,000
+      expect(thresholdAmount.text()).toBe('BDT 375,000');
+
       // Change to female category
       wrapper.vm.selectedCategory = 'female';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      
-      expect(thresholdAmount.text()).toBe('BDT 400,000');
+
+      expect(thresholdAmount.text()).toBe('BDT 425,000');
     });
   });
 
@@ -255,7 +257,8 @@ describe('TaxpayerProfile Component', () => {
     test('should handle invalid category gracefully', async () => {
       wrapper.vm.selectedCategory = 'invalid_category';
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(350000); // Should default to general
+      // Default year is 2025-26, so general threshold is 375,000
+      expect(wrapper.vm.threshold).toBe(375000); // Should default to general
       expect(wrapper.vm.categoryName).toBe('General');
     });
 

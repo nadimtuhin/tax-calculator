@@ -11,7 +11,7 @@
           <option value="senior">Senior Citizen (65+)</option>
           <option value="disabled">Disabled Person</option>
           <option value="parent_disabled">Parent of Disabled Child</option>
-          <option value="freedom_fighter">War-wounded Freedom Fighter</option>
+          <option value="freedom_fighter">War-wounded Freedom Fighter / July Warrior</option>
           <option value="third_gender">Third Gender</option>
         </select>
       </div>
@@ -82,7 +82,7 @@ export default {
       age: 30,
       selectedCategory: 'general',
       selectedLocation: 'dhaka',
-      selectedFiscalYear: '2024-25',
+      selectedFiscalYear: '2025-26',
     };
   },
 
