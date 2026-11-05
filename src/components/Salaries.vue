@@ -216,7 +216,7 @@ export default {
 
 .salary-grid th,
 .salary-grid td {
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-1);
   text-align: left;
   white-space: nowrap;
   border-bottom: 1px solid var(--border);
@@ -229,6 +229,11 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.salary-grid .row-label {
+  white-space: normal;
+  min-width: 7rem;
 }
 
 .salary-grid tr:last-child td {
@@ -248,7 +253,7 @@ export default {
 }
 
 .salary-grid input {
-  width: 104px;
+  width: 74px;
   min-height: 36px;
   padding: 0 var(--space-2);
   border: 1px solid var(--border-strong);
@@ -283,6 +288,7 @@ export default {
 }
 
 .money input {
+  width: 88px;
   padding-left: calc(var(--space-2) + 1.1em);
 }
 
