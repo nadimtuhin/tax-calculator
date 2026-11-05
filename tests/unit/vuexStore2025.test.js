@@ -159,11 +159,13 @@ describe('Vuex Store 2025 Getters', () => {
       });
 
       // Explicit investment rebate formula preservation across all three getters
-      store.commit('changeSubsequentSalaries', { index: 0, value: 300000 }); // 3.6M taxable
-      store.commit('changeInvestment', { index: 0, value: 500000 }); // 5L investment
-      expect(store.getters.investmentRebate).toBe(75000);     // min(108k, 15% of 5L = 75k, 10L)
-      expect(store.getters.investmentRebate2025).toBe(75000); // min(108k, 15% of 5L = 75k, 10L)
-      expect(store.getters.investmentRebate2026).toBe(50000); // min(108k, 10% of 5L = 50k, 7.5L)
+      // Gross 3.6M -> Para 27 exempt 5L -> 3.1M taxable (3% = 93k)
+      // Put 5L into Mutual fund (index 4: uncapped in 2025-26/2026-27 -> 10% of 5L = 50k)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 300000 });
+      store.commit('changeInvestment', { index: 4, value: 500000 });
+      expect(store.getters.investmentRebate).toBe(50000);
+      expect(store.getters.investmentRebate2025).toBe(50000);
+      expect(store.getters.investmentRebate2026).toBe(50000);
     });
   });
 
@@ -267,15 +269,15 @@ describe('Vuex Store 2025 Getters', () => {
       expect(rebate).toBeGreaterThanOrEqual(0);
     });
 
-    test('should calculate investment rebate correctly (FY 2025-26: min of 3%/15%/10L)', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // ~1M annually
-      store.commit('changeInvestment', { index: 0, value: 100000 });
+    test('should calculate investment rebate correctly (FY 2025-26: min of 3%/10%/7.5L)', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // ~1M gross -> ~667k taxable
+      store.commit('changeInvestment', { index: 0, value: 100000 }); // DPS <= 120k
 
       const taxable = store.getters.taxableSalary;
-      const totalInv = store.getters.totalInvestment;
+      const eligibleInv = store.getters.eligibleInvestment2025;
       const rebate = store.getters.investmentRebate2025;
 
-      const expected = Math.round(Math.max(0, Math.min(taxable * 0.03, totalInv * 0.15, 1000000)));
+      const expected = Math.round(Math.max(0, Math.min(taxable * 0.03, eligibleInv * 0.10, 750000)));
       expect(rebate).toBe(expected);
     });
   });
@@ -290,43 +292,40 @@ describe('Vuex Store 2025 Getters', () => {
     });
 
     test('should calculate tax breakdown correctly', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
-      
+      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 }); // 900K gross -> 600K taxable
+
       const taxBreakdown = store.getters.taxBreakdown2025;
       expect(taxBreakdown).toHaveLength(6);
-      
-      // Should have some tax in the 10% bracket
       expect(taxBreakdown[1].slabCut).toBeGreaterThan(0);
     });
 
     test('should calculate total tax correctly', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 }); // 600K annually
-      
+      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 }); // 900K gross -> 600K taxable
+
       const calculatedTax = store.getters.calculatedTax2025;
       const totalTax = store.getters.totalTax2025;
       const minimumTax = store.getters.minimumTaxAmount2025;
-      
+
       expect(totalTax).toBe(Math.max(calculatedTax, minimumTax));
     });
 
-    test('should detect when minimum tax is applied', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // 360K annually (low income)
-      
+    test('should detect when minimum tax is applied above threshold', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 51000 }); // 612K gross -> 408K taxable (> 400K)
+
       const isMinimumTaxApplied = store.getters.isMinimumTaxApplied2025;
       expect(isMinimumTaxApplied).toBe(true);
     });
 
-    test('should calculate payable tax correctly', () => {
-      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M annually
+    test('should calculate payable tax correctly per IT-11GA order', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 83334 }); // 1M gross
       store.commit('changeSubsequentTds', { index: 0, value: 5000 }); // TDS
-      store.commit('changeInvestment', { index: 0, value: 100000 }); // Investment
-      
+      store.commit('changeInvestment', { index: 0, value: 100000 }); // DPS
+
       const totalTax = store.getters.totalTax2025;
       const totalTds = store.getters.totalTds;
-      const investmentRebate = store.getters.investmentRebate2025;
       const payableTax = store.getters.payableTax2025;
-      
-      expect(payableTax).toBe(Math.max(0, totalTax - totalTds - investmentRebate));
+
+      expect(payableTax).toBe(Math.max(0, totalTax - totalTds));
     });
   });
 
@@ -384,9 +383,8 @@ describe('Vuex Store 2025 Getters', () => {
         age: 30,
         location: 'dhaka'
       });
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
+      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 }); // 900K gross -> 600K taxable
 
-      // Both year calculations should work independently
       const threshold2025 = store.getters.taxFreeThreshold2025;
       const threshold2026 = store.getters.taxFreeThreshold2026;
       const totalTax2025 = store.getters.totalTax2025;
@@ -394,7 +392,7 @@ describe('Vuex Store 2025 Getters', () => {
 
       expect(threshold2025).toBe(400000);
       expect(threshold2026).toBe(400000);
-      expect(threshold2026).toBe(threshold2025); // Both AY 2026-27 and AY 2027-28 share 400k-family thresholds
+      expect(threshold2026).toBe(threshold2025);
       expect(totalTax2025).toBeGreaterThan(0);
       expect(totalTax2026).toBeGreaterThan(0);
     });
@@ -464,7 +462,8 @@ describe('Vuex Store 2025 Getters', () => {
       const totalTax = store.getters.totalTax2025;
       const minimumTax = store.getters.minimumTaxAmount2025;
       
-      expect(totalTax).toBe(minimumTax); // Should apply minimum tax
+      expect(totalTax).toBe(0); // Zero income -> zero tax (minimum tax applies only above threshold)
+      expect(minimumTax).toBe(5000);
     });
 
     test('should handle very high income', () => {

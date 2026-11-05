@@ -250,8 +250,9 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
 
-      expect(calculation2025.vm.totalTax).toBe(calculation2025.vm.minimumTaxAmount);
-      expect(calculation2026.vm.totalTax).toBe(calculation2026.vm.minimumTaxAmount);
+      // Zero income -> zero tax (minimum tax applies only when taxable income > threshold)
+      expect(calculation2025.vm.totalTax).toBe(0);
+      expect(calculation2026.vm.totalTax).toBe(0);
       expect(taxComparison.vm.taxDifference).toBeDefined();
     });
 
@@ -309,12 +310,22 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       expect(calculation2025.vm.totalTax).toBeDefined();
       expect(calculation2026.vm.totalTax).toBeDefined();
 
-      // But they should react to same store changes
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
+      // Gross 900k (75k/mo) -> 600k taxable (> 400k threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 });
       await wrapper.vm.$nextTick();
 
       expect(calculation2025.vm.totalTax).toBeGreaterThan(0);
       expect(calculation2026.vm.totalTax).toBeGreaterThan(0);
+    });
+    test('switches side-by-side invoice components dynamically when Mobbin period dropdowns change', async () => {
+      expect(wrapper.findComponent({ name: 'calculation-2025' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'calculation-2026' }).exists()).toBe(true);
+
+      await wrapper.find('#compare-from-year').setValue('2024-25');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findComponent({ name: 'calculation-2024' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'calculation-2026' }).exists()).toBe(true);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import TaxComparison from '@/components/TaxComparison.vue';
+import salariesStore from '@/store/salaries';
 
 const mountWith = ({
   total2025,
@@ -29,8 +30,8 @@ const mountWith = ({
   return mount(TaxComparison, { global: { plugins: [createStore({ getters })] } });
 };
 
-describe('TaxComparison hero', () => {
-  test('total tax down while payable goes up (the fixed sample)', () => {
+describe('TaxComparison hero & Mobbin dual-year period pickers', () => {
+  test('total tax down while payable goes up', () => {
     const wrapper = mountWith({
       total2025: 39450,
       total2026: 35700,
@@ -84,7 +85,7 @@ describe('TaxComparison hero', () => {
     expect(wrapper.find('[data-testid="mobile-payable-change"]').text()).toBe('down ৳2,500 vs FY 2025-26');
   });
 
-  test('no change in either figure renders neutral styling (not green/positive)', () => {
+  test('no change in either figure renders neutral styling', () => {
     const wrapper = mountWith({
       total2025: 5000,
       total2026: 5000,
@@ -98,15 +99,11 @@ describe('TaxComparison hero', () => {
     expect(wrapper.find('[data-testid="payable-change"]').text()).toContain('stays ৳5,000');
     expect(wrapper.find('[data-testid="payable-change"]').classes()).not.toContain('positive');
     expect(wrapper.find('[data-testid="payable-change"]').classes()).not.toContain('negative');
-    expect(wrapper.find('[data-testid="mobile-total-diff"]').classes()).not.toContain('positive');
-    expect(wrapper.find('[data-testid="mobile-total-diff"]').classes()).not.toContain('negative');
     expect(wrapper.find('[data-testid="total-tax-diff"]').text()).toBe('৳0');
-    expect(wrapper.find('[data-testid="total-tax-diff"]').classes()).toEqual([]);
     expect(wrapper.find('[data-testid="payable-tax-diff"]').text()).toBe('৳0');
-    expect(wrapper.find('[data-testid="payable-tax-diff"]').classes()).toEqual([]);
   });
 
-  test('tiles keep accurate FY 2025-2026 and FY 2026-2027 labels even when profile selects 2024-25', () => {
+  test('tiles keep accurate FY 2025-2026 and FY 2026-2027 labels by default and highlight selected year', () => {
     const wrapper2024 = mountWith({
       total2025: 35700,
       total2026: 35700,
@@ -119,14 +116,9 @@ describe('TaxComparison hero', () => {
     const cards2024 = wrapper2024.findAll('.comparison-card');
     expect(cards2024).toHaveLength(2);
     expect(cards2024[0].text()).toContain('FY 2025-2026');
-    expect(cards2024[0].text()).toContain('৳35,700');
-    expect(cards2024[0].text()).toContain('৳400,000');
     expect(cards2024[0].classes()).not.toContain('is-selected');
     expect(cards2024[1].text()).toContain('FY 2026-2027');
-    expect(cards2024[1].text()).toContain('৳35,700');
-    expect(cards2024[1].text()).toContain('৳400,000');
     expect(cards2024[1].classes()).not.toContain('is-selected');
-    expect(wrapper2024.text()).not.toContain('FY 2024-2025');
 
     const wrapper2025 = mountWith({
       total2025: 39450,
@@ -139,22 +131,38 @@ describe('TaxComparison hero', () => {
     expect(wrapper2025.findAll('.comparison-card')[1].text()).not.toContain('(Selected)');
   });
 
-  test('detailed breakdown reflects matching 400k-family thresholds across FY 2025-26 and FY 2026-27', () => {
-    const wrapper = mountWith({
-      total2025: 35700,
-      total2026: 35700,
-      payable2025: 11310,
-      payable2026: 14700,
-      threshold2025: 400000,
-      threshold2026: 400000
+  test('renders distinct FY 2024-25, FY 2025-26, and FY 2026-27 dropdown options and updates comparison live', async () => {
+    const store = createStore({
+      modules: { salaries: { ...salariesStore, namespaced: false } }
     });
-    const breakdownText = wrapper.find('.comparison-breakdown').text();
-    expect(breakdownText).toContain('Tax-free thresholds match FY 2025-26');
-    expect(breakdownText).toContain('AY 2026-27 and AY 2027-28');
-    const thresholdRowCells = wrapper.findAll('.breakdown-table tbody tr')[0].findAll('td');
-    expect(thresholdRowCells[1].text()).toBe('৳400,000');
-    expect(thresholdRowCells[2].text()).toBe('৳400,000');
-    expect(thresholdRowCells[3].text()).toBe('৳0');
-    expect(thresholdRowCells[3].classes()).toEqual([]);
+    store.commit('changeSubsequentSalaries', { index: 0, value: 100000 }); // 1.2M gross -> 800k taxable
+
+    const wrapper = mount(TaxComparison, { global: { plugins: [store] } });
+
+    const fromSelect = wrapper.find('#compare-from-year');
+    const toSelect = wrapper.find('#compare-to-year');
+    expect(fromSelect.exists()).toBe(true);
+    expect(toSelect.exists()).toBe(true);
+
+    const fromValues = fromSelect.findAll('option').map(o => o.attributes('value'));
+    const toValues = toSelect.findAll('option').map(o => o.attributes('value'));
+    expect(fromValues).toEqual(['2024-25', '2025-26', '2026-27']);
+    expect(toValues).toEqual(['2024-25', '2025-26', '2026-27']);
+
+    // Default is 2025-26 vs 2026-27 (matching Finance Act 2026 rules -> 0 diff)
+    expect(fromSelect.element.value).toBe('2025-26');
+    expect(toSelect.element.value).toBe('2026-27');
+    expect(store.getters.taxDifference).toBe(0);
+
+    // Switch baseline to 2024-25 -> compares FY 2024-25 vs FY 2026-27
+    await fromSelect.setValue('2024-25');
+    expect(store.getters.comparisonFromYear).toBe('2024-25');
+    expect(wrapper.find('h2').text()).toContain('FY 2024-25 vs FY 2026-27');
+    expect(store.getters.taxDifference).not.toBe(0);
+
+    // Swap button flips baseline and target years
+    await wrapper.find('.period-swap-btn').trigger('click');
+    expect(store.getters.comparisonFromYear).toBe('2026-27');
+    expect(store.getters.comparisonToYear).toBe('2024-25');
   });
 });

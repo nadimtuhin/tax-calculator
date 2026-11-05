@@ -46,7 +46,7 @@ describe('Calculation-2024 Component', () => {
       
       const headers = table.findAll('td strong');
       expect(headers.at(0).text()).toBe('Income (per year)');
-      expect(headers.at(1).text()).toBe('Proposed rate [%]');
+      expect(headers.at(1).text()).toBe('Rate [%]');
       expect(headers.at(2).text()).toBe('Tax (BDT)');
     });
 
@@ -218,8 +218,9 @@ describe('Calculation-2024 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const minimumTax = store.getters.minimumTaxAmount;
       
-      // Should apply minimum tax
-      expect(totalTax).toBe(minimumTax);
+      // Income below threshold -> zero minimum tax and zero total tax
+      expect(totalTax).toBe(0);
+      expect(minimumTax).toBe(5000);
     });
 
     test('should calculate correct tax for income in first bracket', () => {
@@ -230,8 +231,8 @@ describe('Calculation-2024 Component', () => {
         location: 'dhaka'
       });
       
-      // Set salary to 400k (50k above 350k threshold)
-      store.commit('changeSubsequentSalaries', { index: 0, value: 33334 });
+      // Gross 600k -> 1/3 exempt (200k) -> 400k taxable (50k above 350k threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
 
       wrapper = mount(Calculation2024, {
         global: {
@@ -257,8 +258,8 @@ describe('Calculation-2024 Component', () => {
         location: 'district'
       });
       
-      // Set low salary that generates minimal tax
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // 360k annually
+      // Gross 540k -> 180k exempt -> 360k taxable (10k above 350k -> 500 slab tax < 3000 district min tax)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 45000 });
 
       wrapper = mount(Calculation2024, {
         global: {
@@ -327,7 +328,8 @@ describe('Calculation-2024 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 });
+      // Gross 540k -> 360k taxable (> 350k threshold, slab tax 500 < 5000 min tax)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 45000 });
 
       wrapper = mount(Calculation2024, {
         global: {
@@ -335,7 +337,7 @@ describe('Calculation-2024 Component', () => {
         }
       });
 
-      const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
+      const minimumTaxNotice = wrapper.find('small.min-tax-notice');
       expect(minimumTaxNotice.exists()).toBe(true);
       expect(minimumTaxNotice.text()).toContain('Minimum tax applied');
     });
@@ -356,7 +358,7 @@ describe('Calculation-2024 Component', () => {
         }
       });
 
-      const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
+      const minimumTaxNotice = wrapper.find('small.min-tax-notice');
       expect(minimumTaxNotice.exists()).toBe(false);
     });
 
@@ -387,7 +389,7 @@ describe('Calculation-2024 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const totalTds = store.getters.totalTds;
       const investmentRebate = store.getters.investmentRebate;
-      const expectedPayable = Math.max(0, totalTax - totalTds - investmentRebate);
+      const expectedPayable = Math.max(0, totalTax - totalTds);
       
       const payableCell = payableRow.findAll('td').at(2);
       expect(payableCell.text().trim()).toBe(expectedPayable.toString());
@@ -466,7 +468,8 @@ describe('Calculation-2024 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 29167 }); // Exactly 350k annually
+      // Gross 525k -> 175k exempt -> exactly 350k taxable (at threshold -> 0 tax, no min tax)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 43750 });
 
       wrapper = mount(Calculation2024, {
         global: {
@@ -476,10 +479,9 @@ describe('Calculation-2024 Component', () => {
 
       const taxBreakdown = wrapper.vm.taxBreakdown;
       const totalTax = wrapper.vm.totalTax;
-      
-      // Should have no calculated tax, only minimum tax applies
+
       expect(taxBreakdown[0].slabCut).toBe(0);
-      expect(totalTax).toBe(5000); // Dhaka minimum tax
+      expect(totalTax).toBe(0);
     });
 
     test('should handle tax calculation just above threshold', () => {
@@ -490,7 +492,8 @@ describe('Calculation-2024 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 35000 }); // 420,000 annually
+      // Gross 630k -> 210k exempt -> 420,000 taxable (20k above 400k female threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 52500 });
 
       wrapper = mount(Calculation2024, {
         global: {
@@ -513,7 +516,8 @@ describe('Calculation-2024 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 60000 }); // 720k annually
+      // Gross 1,080,000 -> 360k exempt -> 720k taxable (220k above 500k freedom fighter threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 90000 });
 
       wrapper = mount(Calculation2024, {
         global: {

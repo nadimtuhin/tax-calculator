@@ -173,8 +173,8 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
     });
   });
 
-  describe('calculateFinalTax2025', () => {
-    test('should apply minimum tax when calculated tax is lower', () => {
+  describe('calculateFinalTax2025 (IT-11GA2023 Lines 12-16 order)', () => {
+    test('should apply rebate before minimum-tax floor and deduct TDS after Line 16', () => {
       const calculatedTax = 3000;
       const minimumTax = 5000;
       const totalTds = 1000;
@@ -182,15 +182,16 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
 
       const result = calculateFinalTax2025(calculatedTax, minimumTax, totalTds, investmentRebate);
 
-      expect(result.totalTax).toBe(5000);
+      expect(result.taxAfterRebate).toBe(2500);
+      expect(result.totalTax).toBe(5000); // Rebate cannot push below 5000 minimum tax
       expect(result.isMinimumTaxApplied).toBe(true);
       expect(result.minimumTaxAmount).toBe(5000);
-      expect(result.payable).toBe(3500); // 5000 - 1000 - 500
+      expect(result.payable).toBe(4000); // 5000 - 1000 TDS
       expect(result.totalTds).toBe(1000);
       expect(result.investmentRebate).toBe(500);
     });
 
-    test('should use calculated tax when higher than minimum', () => {
+    test('should use taxAfterRebate when higher than minimum tax', () => {
       const calculatedTax = 8000;
       const minimumTax = 5000;
       const totalTds = 1000;
@@ -198,41 +199,40 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
 
       const result = calculateFinalTax2025(calculatedTax, minimumTax, totalTds, investmentRebate);
 
-      expect(result.totalTax).toBe(8000);
+      expect(result.taxAfterRebate).toBe(7500);
+      expect(result.totalTax).toBe(7500); // 8000 - 500 rebate >= 5000 min tax
       expect(result.isMinimumTaxApplied).toBe(false);
       expect(result.minimumTaxAmount).toBe(5000);
-      expect(result.payable).toBe(6500); // 8000 - 1000 - 500
+      expect(result.payable).toBe(6500); // 7500 - 1000 TDS
     });
 
-    test('should never have negative payable amount', () => {
-      const calculatedTax = 5000;
-      const minimumTax = 5000;
-      const totalTds = 3000;
-      const investmentRebate = 3000; // TDS + rebate > tax
+    test('should never have negative payable amount when TDS exceeds minimum tax', () => {
+      const result = calculateFinalTax2025(5000, 5000, 6000, 3000);
 
-      const result = calculateFinalTax2025(calculatedTax, minimumTax, totalTds, investmentRebate);
-
-      expect(result.payable).toBe(0); // Should not be negative
+      expect(result.totalTax).toBe(5000); // Line 16 floored at 5000
+      expect(result.payable).toBe(0); // 5000 - 6000 TDS -> 0
     });
 
-    test('should handle zero values correctly', () => {
+    test('should return zero minimum tax and zero payable at or below threshold', () => {
       const result = calculateFinalTax2025(0, 5000, 0, 0);
 
-      expect(result.totalTax).toBe(5000); // Minimum tax applied
-      expect(result.isMinimumTaxApplied).toBe(true);
-      expect(result.payable).toBe(5000);
+      expect(result.totalTax).toBe(0);
+      expect(result.minimumTaxAmount).toBe(0);
+      expect(result.isMinimumTaxApplied).toBe(false);
+      expect(result.payable).toBe(0);
     });
 
-    test('should handle edge case where TDS and rebate exceed tax', () => {
+    test('should floor Line 16 at minimum tax when rebate exceeds slab difference, then deduct TDS', () => {
       const calculatedTax = 10000;
       const minimumTax = 5000;
       const totalTds = 8000;
-      const investmentRebate = 5000;
+      const investmentRebate = 7000; // 10000 - 7000 = 3000 < 5000 -> Line 16 = 5000
 
       const result = calculateFinalTax2025(calculatedTax, minimumTax, totalTds, investmentRebate);
 
-      expect(result.totalTax).toBe(10000);
-      expect(result.payable).toBe(0); // 10000 - 8000 - 5000 = -3000, but capped at 0
+      expect(result.totalTax).toBe(5000);
+      expect(result.isMinimumTaxApplied).toBe(true);
+      expect(result.payable).toBe(0); // 5000 - 8000 TDS -> 0
     });
   });
 

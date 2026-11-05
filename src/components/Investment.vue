@@ -23,44 +23,77 @@
   </thead>
   <tbody>
     <tr v-for="(investment, index) in investments" :key="investment.name">
-    <td><strong>{{investment.name}}</strong></td>
-    <td>
-      <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
-        type="number"
-        :aria-label="`${investment.name} amount`"
-        :value="investments[index].amount"
-        @input="changeInvestment($event, index)"
-        step="1000"
-        min="0"
-        max="9999999"
-      /></span>
-    </td>
-    <td>
-      <span v-if="investment.maximum > 9999999999" class="unlimited">Unlimited</span>
-      <span v-else class="limited">{{investment.maximum.toLocaleString()}}</span>
-    </td>
-  </tr>
-
-  <tr>
-    <td><strong>Total Investment</strong></td>
-    <td>{{totalInvestment.toLocaleString()}}</td>
-    <td>{{maxRebateableInvestment.toLocaleString()}}</td>
-  </tr>
-
-  <tr>
-    <td><strong>Total rebateable investment</strong></td>
-    <td>{{totalRebateableInvestment.toLocaleString()}}</td>
-    <td></td>
-  </tr>
-
-  <tr>
-    <td><strong>Tax rebate percentage</strong></td>
-    <td>15%</td>
-    <td></td>
-  </tr>
+      <td>
+        <strong>{{investment.name}}</strong>
+        <div
+          v-if="isLifeInsurance(investment.name) && (investment.amount > 0 || investment.policyValue !== null)"
+          class="policy-subrow"
+        >
+          <label :for="`policy-value-${index}`" class="policy-label">Policy sum assured:</label>
+          <span class="money money-compact"><span class="money-prefix" aria-hidden="true">৳</span><input
+            :id="`policy-value-${index}`"
+            type="number"
+            aria-label="Life insurance policy value"
+            placeholder="Policy sum"
+            :value="investment.policyValue ?? ''"
+            @input="changePolicyValue($event, index)"
+            step="10000"
+            min="0"
+            max="999999999"
+          /></span>
+          <small
+            v-if="investment.amount > 0 && !(Number(investment.policyValue) > 0)"
+            class="policy-warning"
+          >
+            Enter policy sum assured to qualify for rebate (max 10% of policy value).
+          </small>
+        </div>
+      </td>
+      <td>
+        <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
+          type="number"
+          :aria-label="`${investment.name} amount`"
+          :value="investments[index].amount"
+          @input="changeInvestment($event, index)"
+          step="1000"
+          min="0"
+          max="9999999"
+        /></span>
+      </td>
+      <td>
+        <span v-if="isLifeInsurance(investment.name)" class="limited">{{ lifeInsuranceCapDisplay(investment) }}</span>
+        <span v-else-if="getCapForRow(investment.name) === null" class="unlimited">Unlimited</span>
+        <span v-else class="limited">{{getCapForRow(investment.name).toLocaleString()}}</span>
+      </td>
+    </tr>
 
     <tr>
-      <td><strong>Totat rebate on investment</strong></td>
+      <td><strong>Total Investment</strong></td>
+      <td>{{totalInvestment.toLocaleString()}}</td>
+      <td>{{maxRebateableInvestment.toLocaleString()}}</td>
+    </tr>
+
+    <tr>
+      <td>
+        <strong>Total rebateable investment</strong>
+      </td>
+      <td>{{eligibleInvestment.toLocaleString()}}</td>
+      <td></td>
+    </tr>
+
+    <tr>
+      <td>
+        <strong>Tax rebate percentage</strong>
+        <small class="formula-hint">
+          Lower of 3% of taxable income, {{rebatePercentage}}% of eligible investment, or ৳{{rebateMaxCap.toLocaleString()}}
+        </small>
+      </td>
+      <td>{{rebatePercentage}}%</td>
+      <td></td>
+    </tr>
+
+    <tr>
+      <td><strong>Total rebate on investment</strong></td>
       <td>{{ investmentRebate.toLocaleString() }}</td>
       <td></td>
     </tr>
@@ -73,12 +106,29 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
+import { getInvestmentCapForType, LIFE_INSURANCE_POLICY_RATE } from "../utils/taxEngine";
 
 export default {
   name: "investment",
   methods: {
     changeInvestment($event, index) {
       this.$store.commit('changeInvestment', { index, value: $event.target.value });
+    },
+    changePolicyValue($event, index) {
+      this.$store.commit('changeInvestmentPolicyValue', { index, value: $event.target.value });
+    },
+    isLifeInsurance(name) {
+      return String(name || '').toLowerCase().startsWith('life insurance');
+    },
+    lifeInsuranceCapDisplay(investment) {
+      if (investment.policyValue !== null && investment.policyValue !== undefined && investment.policyValue !== '') {
+        const cap = Math.round((Number(investment.policyValue) || 0) * LIFE_INSURANCE_POLICY_RATE);
+        return `${cap.toLocaleString()} (10% of policy)`;
+      }
+      return '10% of policy value';
+    },
+    getCapForRow(name) {
+      return getInvestmentCapForType(name, this.currentYear);
     },
   },
   computed: {
@@ -89,18 +139,20 @@ export default {
       bonus: state => state.salaries.bonus,
       others: state => state.salaries.others,
       investments: state => state.salaries.investments,
+      currentYear: state => state.salaries.currentYear,
     }),
     ...mapGetters({
       totalInvestment: 'totalInvestment',
+      eligibleInvestment: 'eligibleInvestment',
       totalRebateableInvestment: 'totalRebateableInvestment',
       maxRebateableInvestment: 'maxRebateableInvestment',
       rebatePercentage: 'rebatePercentage',
+      rebateMaxCap: 'rebateMaxCap',
       investmentRebate: 'investmentRebate',
 
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',
-      totalLfa: 'totalLfa',
       totalMedical: 'totalMedical',
       totalTransport: 'totalTransport',
       totalBasic: 'totalBasic',
@@ -164,6 +216,34 @@ export default {
   font-weight: 700;
 }
 
+.policy-subrow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.policy-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.policy-warning {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: var(--warn);
+}
+
+.formula-hint {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
 .money {
   display: inline-flex;
   align-items: center;
@@ -188,6 +268,12 @@ export default {
   font: inherit;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.money-compact input {
+  width: 124px;
+  min-height: 32px;
+  font-size: 0.75rem;
 }
 
 .money input:focus {

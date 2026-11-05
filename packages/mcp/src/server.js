@@ -67,19 +67,26 @@ const incomeSchema = z
       .nonnegative()
       .optional()
       .describe(
-        'Unitemized salary in BDT (mutually exclusive with basic/house/medical/transport/lfa/others). No component exemptions are deducted unless use_standard_breakdown is true.'
+        'Unitemized gross employment salary in BDT (mutually exclusive with basic/house/medical/transport/lfa/employer_rpf/others). Receives the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool exemption min(1/3 of gross, cap) unless apply_exemption is false.'
       ),
     use_standard_breakdown: z
       .boolean()
       .optional()
       .describe(
-        'When true alongside gross_salary, splits salary into 60% basic, 25% house, 10% medical, 5% transport before applying statutory component exemptions.'
+        'When true alongside gross_salary, populates illustrative 60% basic, 25% house, 10% medical, 5% transport components.'
       ),
-    basic: z.number().nonnegative().optional().describe('Basic salary in BDT (fully taxable; sets house/medical exemption ceilings).'),
-    house: z.number().nonnegative().optional().describe('House rent allowance in BDT (exempt up to min(50% of basic, BDT 300,000/yr)).'),
-    medical: z.number().nonnegative().optional().describe('Medical allowance in BDT (exempt up to min(10% of basic, BDT 120,000/yr)).'),
-    transport: z.number().nonnegative().optional().describe('Conveyance/transport allowance in BDT (exempt up to BDT 30,000/yr).'),
-    lfa: z.number().nonnegative().optional().describe('Leave fare assistance in BDT (no exemption modeled).'),
+    apply_exemption: z
+      .boolean()
+      .optional()
+      .describe(
+        'When true (default), deducts the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool employment exemption min(1/3 of gross employment income, BDT 500,000; BDT 450,000 in FY 2023-24).'
+      ),
+    basic: z.number().nonnegative().optional().describe('Basic salary in BDT (part of gross employment income pool).'),
+    house: z.number().nonnegative().optional().describe('House rent allowance in BDT (part of gross employment income pool).'),
+    medical: z.number().nonnegative().optional().describe('Medical allowance in BDT (part of gross employment income pool).'),
+    transport: z.number().nonnegative().optional().describe('Conveyance/transport allowance in BDT (part of gross employment income pool).'),
+    lfa: z.number().nonnegative().optional().describe('Leave fare assistance in BDT (part of gross employment income pool).'),
+    employer_rpf: z.number().nonnegative().optional().describe('Employer contribution to Recognized Provident Fund (RPF) in BDT (part of gross employment income pool).'),
     others: z.number().nonnegative().optional().describe('Other recurring taxable allowances in BDT.'),
     bonus: z.number().nonnegative().optional().describe('Annual festival/performance bonus in BDT (always annual, fully taxable).'),
     bonus2: z.number().nonnegative().optional().describe('Second annual bonus in BDT (always annual, fully taxable).'),
@@ -95,16 +102,21 @@ const investmentsSchema = z
       .object({
         total: z.number().nonnegative().optional().describe('Total eligible investment in BDT (mutually exclusive with itemized fields).'),
         dps: z.number().nonnegative().optional().describe('Deposit Pension Scheme (DPS) contribution in BDT (instrument cap BDT 120,000).'),
-        life_insurance: z.number().nonnegative().optional().describe('Life insurance premium in BDT.'),
+        life_insurance: z.number().nonnegative().optional().describe('Life insurance premium in BDT (requires life_insurance_policy_value when > 0; capped at 10% of policy sum assured).'),
+        life_insurance_policy_value: z
+          .number()
+          .nonnegative()
+          .optional()
+          .describe('Total policy sum assured in BDT for life_insurance; caps eligible premium at 10% of policy sum assured per Sixth Schedule Part 3.'),
         stocks: z.number().nonnegative().optional().describe('Listed shares/stocks investment in BDT.'),
         savings_certificate: z.number().nonnegative().optional().describe('Sanchayapatra / savings certificate investment in BDT (instrument cap BDT 500,000).'),
-        mutual_fund: z.number().nonnegative().optional().describe('Mutual fund / unit certificate investment in BDT (instrument cap BDT 500,000).'),
+        mutual_fund: z.number().nonnegative().optional().describe('Mutual fund / unit certificate investment in BDT (cap BDT 500,000 through FY 2024-25; uncapped from FY 2025-26 onward per Finance Act 2026).'),
         others: z.number().nonnegative().optional().describe('Other qualifying investment in BDT.'),
         apply_instrument_caps: z
-          .boolean()
+          .literal(true)
           .optional()
           .describe(
-            'When true, caps DPS at 120,000, savings_certificate at 500,000, and mutual_fund at 500,000 before computing rebate. Defaults to false to match the web calculator store.'
+            'Statutory Sixth Schedule Part 3 instrument caps are always enforced on itemized investments (DPS <= 120,000, savings_certificate <= 500,000, life_insurance <= 10% of policy value, mutual_fund <= 500,000 through FY 2024-25 and uncapped in FY 2025-26/2026-27).'
           ),
       })
       .strict(),
@@ -228,7 +240,7 @@ export function createServer() {
           first_time_filer: z
             .boolean()
             .optional()
-            .describe('True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2026-27).'),
+            .describe('True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2025-26 and FY 2026-27 when above threshold).'),
           taxable_income: z
             .number()
             .nonnegative()
@@ -280,7 +292,7 @@ export function createServer() {
           first_time_filer: z
             .boolean()
             .optional()
-            .describe('True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2026-27).'),
+            .describe('True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2025-26 and FY 2026-27 when above threshold).'),
           taxable_income: z
             .number()
             .nonnegative()

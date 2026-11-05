@@ -92,8 +92,13 @@ describe('calculateFinalTax2026', () => {
     expect(result.payable).toBe(22000); // 30000 - 5000 - 3000
   });
 
-  test('payable never negative', () => {
-    const result = calculateFinalTax2026(5000, 5000, 4000, 4000);
-    expect(result.payable).toBe(0);
+  test('rebate cannot reduce liability below minimum tax floor, but TDS reduces payable to zero', () => {
+    const floorHit = calculateFinalTax2026(5000, 5000, 4000, 4000);
+    expect(floorHit.totalTax).toBe(5000);
+    expect(floorHit.isMinimumTaxApplied).toBe(true);
+    expect(floorHit.payable).toBe(1000); // 5000 min tax - 4000 TDS
+
+    const fullyCoveredByTds = calculateFinalTax2026(5000, 5000, 6000, 4000);
+    expect(fullyCoveredByTds.payable).toBe(0);
   });
 });

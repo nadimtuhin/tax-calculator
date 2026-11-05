@@ -22,24 +22,24 @@ const formatRange = (from, to) => {
  */
 export function calculateTaxSlabs2025(taxFreeThreshold) {
   const thresholdInLakh = taxFreeThreshold / LAKH;
-  
+
   // Build all slab amounts including threshold
   const allSlabAmounts = [thresholdInLakh, ...TAX_SLAB_AMOUNTS_2025];
-  
+
   let cumulative = 0;
   const slabs = [];
-  
+
   // Create each slab progressively
   allSlabAmounts.forEach((amount, index) => {
     const from = cumulative * LAKH;
     const to = (cumulative + amount) * LAKH;
     const slabType = index === 0 ? 'First' : 'Next';
     const description = `${slabType} Tk${formatLakh(amount)} lakh ${formatRange(from, to)}`;
-    
+
     slabs.push([description, from, to, TAX_RATES_2025[index]]);
     cumulative += amount;
   });
-  
+
   // Add final "Above" slab
   const finalFrom = cumulative * LAKH;
   slabs.push([
@@ -48,7 +48,7 @@ export function calculateTaxSlabs2025(taxFreeThreshold) {
     Infinity,
     TAX_RATES_2025[TAX_RATES_2025.length - 1]
   ]);
-  
+
   return slabs;
 }
 
@@ -75,7 +75,7 @@ export const TAX_FREE_THRESHOLDS_2025 = {
 export const PARENT_OF_DISABLED_ALLOWANCE_2025 = 50000;
 
 /**
- * Get minimum tax amounts for FY 2025-2026
+ * Statutory minimum tax amounts for FY 2025-2026 (applicable only when taxable income > threshold)
  * Unified minimum tax of 5,000 BDT across all locations
  */
 export const MINIMUM_TAX_2025 = {
@@ -84,6 +84,11 @@ export const MINIMUM_TAX_2025 = {
   other_city: 5000,
   district: 5000
 };
+
+/**
+ * Reduced minimum tax for first-time individual return filers (ITA 2023 s.163 / FA 2026)
+ */
+export const MINIMUM_TAX_FIRST_TIME_2025 = 1000;
 
 /**
  * Calculate tax-free threshold for FY 2025-2026 based on taxpayer profile.
@@ -112,36 +117,50 @@ export function getTaxFreeThreshold2025(taxpayerProfile) {
 }
 
 /**
- * Get minimum tax amount for FY 2025-2026 based on location
+ * Get statutory minimum tax amount for FY 2025-2026 based on location and first-time filer status
  * @param {string} location - Taxpayer location
+ * @param {boolean} isFirstTime - True if taxpayer is a first-time return filer
  * @returns {number} Minimum tax amount in BDT
  */
-export function getMinimumTax2025(location) {
+export function getMinimumTax2025(location, isFirstTime = false) {
+  if (isFirstTime) return MINIMUM_TAX_FIRST_TIME_2025;
   return MINIMUM_TAX_2025[location] || MINIMUM_TAX_2025.district;
 }
 
 /**
- * Get rebate percentage for investments in FY 2025-2026
- * Investment rebate rates remain same as FY 2024-2025
- * @param {number} taxableIncome - Taxable income in BDT
- * @returns {number} Rebate percentage
+ * Get Section 78 investment rebate percentage for FY 2025-2026 (AY 2026-27)
+ * Enacted Finance Act 2026 (effective 1 July 2026 for AY 2026-27): 10% of eligible investment.
+ * @returns {number} Rebate percentage (10)
  */
-export function getRebatePercentage2025(taxableIncome) {
-  if (taxableIncome <= 500000) return 10;
-  if (taxableIncome <= 700000) return 12.5;
-  if (taxableIncome <= 1100000) return 15;
-  if (taxableIncome <= 1600000) return 17.5;
-  return 20;
+export function getRebatePercentage2025() {
+  return 10;
 }
 
 /**
- * Calculate maximum rebateable investment for FY 2025-2026
- * Remains 20% of taxable income or BDT 10 lakh, whichever is lower
+ * Calculate optimal eligible investment ceiling for FY 2025-2026 (AY 2026-27)
+ * Under Section 78 `min(3% taxable income, 10% eligible investment, BDT 750,000)`,
+ * optimal investment is `min(30% of taxable income, BDT 7,500,000)`.
  * @param {number} taxableIncome - Taxable income in BDT
- * @returns {number} Maximum rebateable investment in BDT
+ * @returns {number} Optimal rebate-yielding investment in BDT
  */
 export function getMaxRebateableInvestment2025(taxableIncome) {
-  const twentyPercentOfIncome = Math.round(taxableIncome / 5);
-  const maxCap = 1000000; // 10 lakh BDT
-  return Math.min(twentyPercentOfIncome, maxCap);
+  const safeIncome = Math.max(0, Number(taxableIncome) || 0);
+  const thirtyPercentOfIncome = Math.round(safeIncome * 0.3);
+  const maxCap = 7500000; // 75 lakh BDT (750k / 10%)
+  return Math.min(thirtyPercentOfIncome, maxCap);
+}
+
+/**
+ * Calculate statutory Section 78 investment rebate for FY 2025-2026 (AY 2026-27):
+ * min(3% of taxableIncome, 10% of totalEligibleInvestment, BDT 7,50,000).
+ * @param {number} taxableIncome - Taxable income in BDT
+ * @param {number} totalEligibleInvestment - Eligible investment after Sixth Schedule Part 3 caps
+ * @returns {number} Investment rebate in BDT
+ */
+export function calculateInvestmentRebate2025Statutory(taxableIncome, totalEligibleInvestment) {
+  if (taxableIncome <= 0 || totalEligibleInvestment <= 0) return 0;
+  const threePercentOfIncome = 0.03 * taxableIncome;
+  const tenPercentOfInvestment = 0.10 * totalEligibleInvestment;
+  const statutoryCap = 750000;
+  return Math.round(Math.min(threePercentOfIncome, tenPercentOfInvestment, statutoryCap));
 }

@@ -111,6 +111,11 @@ describe('Tax Slabs 2025 Utility Functions', () => {
     test('should default to district minimum for unknown locations', () => {
       expect(getMinimumTax2025('unknown')).toBe(5000);
     });
+
+    test('should return 1000 for first-time individual return filers', () => {
+      expect(getMinimumTax2025('dhaka', true)).toBe(1000);
+      expect(getMinimumTax2025('district', true)).toBe(1000);
+    });
   });
 
   describe('calculateTaxSlabs2025', () => {
@@ -193,45 +198,29 @@ describe('Tax Slabs 2025 Utility Functions', () => {
   });
 
   describe('getRebatePercentage2025', () => {
-    test('should return correct rebate percentages for different income levels', () => {
-      expect(getRebatePercentage2025(400000)).toBe(10);   // <= 500k
-      expect(getRebatePercentage2025(600000)).toBe(12.5); // <= 700k
-      expect(getRebatePercentage2025(900000)).toBe(15);   // <= 1100k
-      expect(getRebatePercentage2025(1400000)).toBe(17.5); // <= 1600k
-      expect(getRebatePercentage2025(2000000)).toBe(20);  // > 1600k
-    });
-
-    test('should handle boundary values correctly', () => {
-      expect(getRebatePercentage2025(500000)).toBe(10);   // exactly 500k
-      expect(getRebatePercentage2025(500001)).toBe(12.5); // just above 500k
-      expect(getRebatePercentage2025(700000)).toBe(12.5); // exactly 700k
-      expect(getRebatePercentage2025(700001)).toBe(15);   // just above 700k
-      expect(getRebatePercentage2025(1100000)).toBe(15);  // exactly 1100k
-      expect(getRebatePercentage2025(1100001)).toBe(17.5); // just above 1100k
-      expect(getRebatePercentage2025(1600000)).toBe(17.5); // exactly 1600k
-      expect(getRebatePercentage2025(1600001)).toBe(20);  // just above 1600k
+    test('should return flat 10% Section 78 investment rebate rate per Finance Act 2026', () => {
+      expect(getRebatePercentage2025(400000)).toBe(10);
+      expect(getRebatePercentage2025(900000)).toBe(10);
+      expect(getRebatePercentage2025(2000000)).toBe(10);
     });
   });
 
   describe('getMaxRebateableInvestment2025', () => {
-    test('should return 20% of taxable income', () => {
-      expect(getMaxRebateableInvestment2025(500000)).toBe(100000);
-      expect(getMaxRebateableInvestment2025(1000000)).toBe(200000);
-      expect(getMaxRebateableInvestment2025(2000000)).toBe(400000);
+    test('should return 30% of taxable income (3% income cap / 10% rebate rate)', () => {
+      expect(getMaxRebateableInvestment2025(500000)).toBe(150000);
+      expect(getMaxRebateableInvestment2025(1000000)).toBe(300000);
+      expect(getMaxRebateableInvestment2025(2000000)).toBe(600000);
     });
 
-    test('should be capped at 10 lakh BDT', () => {
-      expect(getMaxRebateableInvestment2025(6000000)).toBe(1000000); // 20% would be 1.2M, but capped at 1M
-      expect(getMaxRebateableInvestment2025(10000000)).toBe(1000000); // 20% would be 2M, but capped at 1M
+    test('should be capped at 75 lakh BDT (7.5L max rebate / 10%)', () => {
+      expect(getMaxRebateableInvestment2025(30000000)).toBe(7500000);
+      expect(getMaxRebateableInvestment2025(50000000)).toBe(7500000);
     });
 
-    test('should handle edge cases', () => {
+    test('should handle edge cases and rounding', () => {
       expect(getMaxRebateableInvestment2025(0)).toBe(0);
-      expect(getMaxRebateableInvestment2025(100000)).toBe(20000);
-    });
-
-    test('should round correctly', () => {
-      expect(getMaxRebateableInvestment2025(333333)).toBe(66667); // 333333/5 = 66666.6, rounded to 66667
+      expect(getMaxRebateableInvestment2025(100000)).toBe(30000);
+      expect(getMaxRebateableInvestment2025(333333)).toBe(100000);
     });
   });
 

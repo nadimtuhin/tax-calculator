@@ -58,25 +58,25 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     await page.locator('#profile-fiscal-year').selectOption('2024-25');
     await expect(page.locator('.threshold-amount')).toHaveText('BDT 350,000');
 
-    // Switch back to FY 2025-26 and verify exact 400,000 annual income (33,000 * 12 + 4,000 bonus = 400,000)
+    // Switch back to FY 2025-26 and verify exact 400,000 taxable income (Gross 50,000 * 12 = 600,000 -> Para 27 1/3 exempt = 200,000 -> 400,000 taxable)
     await page.locator('#profile-fiscal-year').selectOption('2025-26');
     await expect(page.locator('.threshold-amount')).toHaveText('BDT 400,000');
 
     const basicInput = page.getByLabel('July basic');
     const bonusInput = page.getByLabel('Bonus', { exact: true });
-    await basicInput.fill('33000');
-    await bonusInput.fill('4000');
+    await basicInput.fill('50000');
+    await bonusInput.fill('0');
     await page.waitForTimeout(300);
 
-    // Exact 400,000 taxable salary: both columns show 0 slab tax and 5,000 minimum tax
+    // Exact 400,000 taxable salary: at threshold -> 0 tax (minimum tax applies only above threshold)
     const cols = page.locator('.comparison-col');
-    await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026 5000');
+    await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026 0');
     await expect(cols.nth(0)).toContainText('First Tk4 lakh [0-4 lakh]');
-    await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027 5000');
+    await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027 0');
     await expect(cols.nth(1)).toContainText('First Tk4 lakh [0-4 lakh]');
 
-    // Step above threshold to 460,000 (33,000 * 12 + 64,000 = 460,000 -> 60,000 @ 10% = 6,000 > minimum tax)
-    await bonusInput.fill('64000');
+    // Step above threshold: +90,000 bonus -> Gross 690,000 -> exempt 230,000 -> taxable 460,000 -> 60,000 @ 10% = 6,000 tax
+    await bonusInput.fill('90000');
     await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026 6000');
     await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027 6000');
   });
@@ -388,24 +388,24 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   test('should handle exact slab amount boundaries', async ({ page }) => {
     // Test incomes that exactly hit slab boundaries
     const exactBoundaryTests = [
-      { 
+      {
         category: 'general',
-        monthly: 58000,
-        bonus: 4000, // Exactly 700,000 taxable annually (58,000 * 12 + 4,000 = 400K threshold + 300K @ 10% = 30,000 tax)
+        monthly: 87500,
+        bonus: 0, // Gross 1,050,000 -> Para 27 exempt 350,000 -> 700,000 taxable (400K + 300K @ 10% = 30,000)
         expectedSlabRow: 'Next Tk3 lakh [4-7 lakh]',
         expectedTax: 30000
       },
       {
-        category: 'female', 
-        monthly: 62500,
-        bonus: 0, // Exactly 750,000 taxable annually (62,500 * 12 = 450K threshold + 300K @ 10% = 30,000 tax)
+        category: 'female',
+        monthly: 93750,
+        bonus: 0, // Gross 1,125,000 -> Para 27 exempt 375,000 -> 750,000 taxable (450K + 300K @ 10% = 30,000)
         expectedSlabRow: 'Next Tk3 lakh [4.5-7.5 lakh]',
         expectedTax: 30000
       },
       {
         category: 'disabled',
-        monthly: 68000,
-        bonus: 9000, // Exactly 825,000 taxable annually (68,000 * 12 + 9,000 = 525K threshold + 300K @ 10% = 30,000 tax)
+        monthly: 103125,
+        bonus: 0, // Gross 1,237,500 -> Para 27 exempt 412,500 -> 825,000 taxable (525K + 300K @ 10% = 30,000)
         expectedSlabRow: 'Next Tk3 lakh [5.25-8.25 lakh]',
         expectedTax: 30000
       }
