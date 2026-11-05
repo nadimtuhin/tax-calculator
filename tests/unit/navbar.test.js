@@ -127,7 +127,8 @@ describe('Navbar Component', () => {
       const brand = wrapper.find('.navbar-brand');
       expect(brand.exists()).toBe(true);
       expect(brand.text()).toContain('BD Tax Calculator');
-      expect(brand.find('.brand-icon').text()).toBe('🇧🇩');
+      expect(brand.find('.brand-icon svg.brand-mark').exists()).toBe(true);
+      expect(brand.find('.brand-icon').attributes('aria-hidden')).toBe('true');
     });
 
     test('should render GitHub link with correct attributes', () => {

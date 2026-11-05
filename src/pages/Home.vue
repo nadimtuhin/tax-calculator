@@ -1,6 +1,20 @@
 <template>
   <div id="home-page">
     <div class="main-content">
+      <header class="page-hero">
+        <div class="hero-copy">
+          <span class="hero-eyebrow">Bangladesh Income Tax · Finance Act 2026</span>
+          <h1>Salaried Income Tax Calculator</h1>
+          <p class="hero-subtitle">
+            Estimate and compare your FY 2025–26 and FY 2026–27 tax slabs, salary exemptions, monthly TDS, and Section 78 investment rebate in ৳ BDT.
+          </p>
+        </div>
+        <div class="hero-meta" aria-label="Calculator highlights">
+          <span class="section-pill"><strong>AY 2026–27 &amp; 2027–28</strong> Schedule 1</span>
+          <span class="section-pill"><strong>100% Local</strong> Browser-only</span>
+        </div>
+      </header>
+
       <div class="inputs-column">
         <div class="content-section">
           <TaxpayerProfile />
@@ -70,7 +84,7 @@ export default {
   background-color: var(--bg);
 }
 
-/* Desktop splits into left inputs stack (<=772px) + right sticky hero (380px),
+/* Desktop splits into top page hero + left inputs stack (<=772px) + right sticky verdict (380px),
    with the two full-year invoice tables side-by-side underneath. */
 .main-content {
   display: grid;
@@ -78,8 +92,60 @@ export default {
   gap: var(--space-4);
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-4) var(--space-4) 112px;
+  padding: var(--space-5) var(--space-4) 112px;
   width: 100%;
+}
+
+.page-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 680px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.page-hero h1 {
+  font-size: clamp(1.5rem, 3vw, 2.05rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.hero-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 620px;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .inputs-column,
@@ -107,8 +173,13 @@ export default {
   margin-bottom: var(--space-4);
   font-size: var(--text-lg);
   font-weight: 650;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   text-align: left;
+}
+
+.content-section :deep(.section-header h2),
+.content-section :deep(.calc-card-header h2) {
+  margin-bottom: 0;
 }
 
 .comparison-row {
@@ -128,16 +199,24 @@ export default {
     padding-bottom: var(--space-6);
   }
 
+  .page-hero {
+    grid-column: 1 / -1;
+  }
+
   .inputs-column {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
   }
 
   .hero-column {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 2;
+    align-self: stretch;
+  }
+
+  .hero-column > :deep(*) {
     position: sticky;
-    top: 72px;
+    top: 76px;
   }
 
   .tax-comparison-section {
@@ -150,8 +229,16 @@ export default {
 }
 
 @media (max-width: 600px) {
+  .main-content {
+    padding-top: var(--space-4);
+  }
+
   .content-section {
     padding: var(--space-4);
+  }
+
+  .hero-meta {
+    display: none;
   }
 }
 </style>

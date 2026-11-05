@@ -1,6 +1,12 @@
 <template>
 <div>
-<h2>Tax rebate on investment</h2>
+<header class="section-header">
+  <div class="section-heading-group">
+    <span class="section-eyebrow">Step 04 · Section 78 Credit</span>
+    <h2>Tax rebate on investment</h2>
+  </div>
+  <span class="section-pill section-pill-accent amount">Rebate <strong>৳{{ Number(investmentRebate || 0).toLocaleString() }}</strong></span>
+</header>
 
 <p v-if="totalInvestment === 0" class="empty-state">
   No investments yet. Enter an amount below to see your tax rebate.

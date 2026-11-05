@@ -1,6 +1,12 @@
 <template>
 <div>
-  <h2>Enter salary information</h2>
+  <header class="section-header">
+    <div class="section-heading-group">
+      <span class="section-eyebrow">Step 02 · Monthly Earnings &amp; TDS</span>
+      <h2>Enter salary information</h2>
+    </div>
+    <span class="section-pill amount">Gross <strong>৳{{ Number(totalSalary || 0).toLocaleString() }}</strong></span>
+  </header>
   <p class="unit-note">All amounts in ৳ (BDT). Scroll the grid sideways on small screens.</p>
   <div class="grid-scroll" tabindex="0" role="region" aria-label="Monthly salary grid">
   <table class="salary-grid">
@@ -197,7 +203,7 @@ export default {
 
 <style scoped>
 .unit-note {
-  margin: calc(-1 * var(--space-2)) 0 var(--space-3);
+  margin: 0 0 var(--space-3);
   font-size: var(--text-sm);
   color: var(--text-muted);
 }

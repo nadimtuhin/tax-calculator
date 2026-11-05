@@ -1,6 +1,10 @@
 <template>
   <div class="tax-comparison-summary">
     <div class="comparison-header">
+      <div class="comparison-header-top">
+        <span class="section-eyebrow">Live Verdict</span>
+        <span class="section-pill">2-Year Delta</span>
+      </div>
       <h3>Tax Year Comparison (FY 2025-26 vs FY 2026-27)</h3>
     </div>
 
@@ -211,13 +215,26 @@ export default {
   padding: var(--space-5);
 }
 
+.comparison-header {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
 .comparison-header h3 {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 650;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .verdict {
