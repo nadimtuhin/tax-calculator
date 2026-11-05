@@ -31,7 +31,9 @@
       </div>
 
       <aside class="hero-column">
-        <tax-comparison />
+        <div class="hero-sticky">
+          <tax-comparison />
+        </div>
       </aside>
 
       <div class="tax-comparison-section">
@@ -214,7 +216,7 @@ export default {
     align-self: stretch;
   }
 
-  .hero-column > :deep(*) {
+  .hero-sticky {
     position: sticky;
     top: 76px;
   }

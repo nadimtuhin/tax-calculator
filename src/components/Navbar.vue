@@ -398,8 +398,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 40px;
-  min-width: 40px;
+  min-height: 44px;
+  min-width: 44px;
   justify-content: center;
   padding: 0 var(--space-3);
   background: transparent;
@@ -488,11 +488,11 @@ export default {
 @media (max-width: 389px) {
   .navbar-container {
     gap: var(--space-1);
-    padding: 0 var(--space-2);
+    padding: 0 var(--space-1);
   }
 
   .navbar-brand {
-    padding: 2px;
+    padding: 0;
   }
 
   .brand-mark {
@@ -502,12 +502,17 @@ export default {
 
   .action-buttons,
   .data-actions {
-    gap: 2px;
+    gap: 0;
+  }
+
+  .data-actions {
+    padding-right: 0;
+    border-right: 0;
   }
 
   .action-btn {
-    min-width: 38px;
-    min-height: 40px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
   }
 }

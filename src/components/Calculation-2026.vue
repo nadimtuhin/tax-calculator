@@ -84,40 +84,6 @@ export default {
 </script>
 
 <style scoped>
-.calc-card-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: var(--space-3);
-  margin-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border);
-}
-
-.calc-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin: 0;
-}
-
-.calc-heading-amount {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: var(--text-sm);
-  font-weight: 700;
-}
-
-.calc-heading-amount::before {
-  content: "৳";
-  margin-right: 2px;
-}
-
 .invoice {
   width: 100%;
   border-collapse: collapse;
