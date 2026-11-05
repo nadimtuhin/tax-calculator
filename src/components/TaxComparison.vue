@@ -8,33 +8,35 @@
       <div v-if="taxSavings > 0" class="verdict verdict-savings">
         <div class="verdict-amount amount" aria-hidden="true">৳{{taxSavings.toLocaleString()}}</div>
         <div class="result-badge badge-savings">
-          <strong>You will SAVE ৳{{taxSavings.toLocaleString()}}</strong>
+          <strong>You will save ৳{{taxSavings.toLocaleString()}} in total tax</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, you will pay ৳{{taxSavings.toLocaleString()}} less in taxes.
+          Under the new tax structure, your total tax is ৳{{taxSavings.toLocaleString()}} lower.
         </div>
       </div>
 
       <div v-else-if="additionalTax > 0" class="verdict verdict-increase">
         <div class="verdict-amount amount" aria-hidden="true">৳{{additionalTax.toLocaleString()}}</div>
         <div class="result-badge badge-increase">
-          <strong>You will pay ৳{{additionalTax.toLocaleString()}} MORE</strong>
+          <strong>You will pay ৳{{additionalTax.toLocaleString()}} more in total tax</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, you will pay ৳{{additionalTax.toLocaleString()}} more in taxes.
+          Under the new tax structure, your total tax is ৳{{additionalTax.toLocaleString()}} higher.
         </div>
       </div>
 
       <div v-else class="verdict verdict-neutral">
         <div class="verdict-amount amount" aria-hidden="true">৳0</div>
         <div class="result-badge badge-neutral">
-          <strong>No change in tax amount</strong>
+          <strong>No change in total tax</strong>
         </div>
         <div class="result-text">
-          Your tax liability remains the same under both tax structures.
+          Your total tax remains the same under both tax structures.
         </div>
       </div>
     </div>
+
+    <p class="payable-change" :class="payableChangeClass" data-testid="payable-change">{{payableChangeText}}</p>
 
     <div class="comparison-cards">
       <div class="comparison-card">
@@ -110,6 +112,7 @@
       <div>
         <span class="bar-label">Payable FY 2026-27</span>
         <strong class="amount">৳{{payableTax2026.toLocaleString()}}</strong>
+        <span class="bar-label" :class="payableChangeClass">{{payableChangeShort}}</span>
       </div>
       <div class="bar-diff" :class="taxDifference > 0 ? 'negative' : 'positive'">
         <span class="bar-label">Total tax change</span>
@@ -145,6 +148,31 @@ export default {
       currentYear: 'currentYear',
       fiscalYearOptions: 'fiscalYearOptions'
     }),
+
+    payableChange() {
+      return this.payableTax2026 - this.payableTax2025;
+    },
+
+    payableChangeClass() {
+      if (this.payableChange === 0) return '';
+      return this.payableChange > 0 ? 'negative' : 'positive';
+    },
+
+    payableChangeText() {
+      const amount = Math.abs(this.payableChange).toLocaleString();
+      const from = this.payableTax2025.toLocaleString();
+      const to = this.payableTax2026.toLocaleString();
+      if (this.payableChange > 0) return `Payable after rebate and TDS goes up by ৳${amount} (৳${from} to ৳${to}).`;
+      if (this.payableChange < 0) return `Payable after rebate and TDS goes down by ৳${amount} (৳${from} to ৳${to}).`;
+      return `Payable after rebate and TDS stays ৳${to}.`;
+    },
+
+    payableChangeShort() {
+      const amount = Math.abs(this.payableChange).toLocaleString();
+      if (this.payableChange > 0) return `up ৳${amount} vs FY 2025-26`;
+      if (this.payableChange < 0) return `down ৳${amount} vs FY 2025-26`;
+      return 'same as FY 2025-26';
+    },
 
     currentYearLabel() {
       const option = this.fiscalYearOptions.find(opt => opt.value === this.currentYear);
@@ -228,6 +256,14 @@ export default {
 .result-text {
   margin-top: var(--space-1);
   font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.payable-change {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
   color: var(--text-muted);
 }
 
