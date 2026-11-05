@@ -5,7 +5,6 @@ import {
   validateHostHeader,
   validateOriginHeader,
   localhostAllowedHostnames,
-  localhostAllowedOrigins,
 } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import {
@@ -416,6 +415,26 @@ async function writeWebResponseToNode(webRes, res) {
   }
 }
 
+function normalizeAllowedHostname(entry) {
+  const trimmed = String(entry).trim();
+  if (!trimmed) return '';
+  const candidate = trimmed.includes('://')
+    ? trimmed
+    : trimmed.split(':').length > 2 && !trimmed.startsWith('[')
+      ? `http://[${trimmed}]`
+      : `http://${trimmed}`;
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error(`Invalid allowed host/origin entry: "${entry}"`);
+  }
+  if (!parsed.hostname || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) {
+    throw new Error(`Invalid allowed host/origin entry: "${entry}"`);
+  }
+  return parsed.hostname;
+}
+
 function sendJsonRpcError(res, statusCode, code, message) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(
@@ -443,7 +462,10 @@ export async function startHttpServer({
 
   const isLoopback = LOOPBACK_HOSTS.has(host);
   const explicitHosts = Array.isArray(allowedHostnames)
-    ? allowedHostnames.map((h) => h.trim()).filter(Boolean)
+    ? allowedHostnames.map(normalizeAllowedHostname).filter(Boolean)
+    : [];
+  const explicitOriginHostnames = Array.isArray(allowedOrigins)
+    ? allowedOrigins.map(normalizeAllowedHostname).filter(Boolean)
     : [];
 
   if (!isLoopback && explicitHosts.length === 0) {
@@ -452,14 +474,17 @@ export async function startHttpServer({
     );
   }
 
+  // Note: @modelcontextprotocol/server validateHostHeader and validateOriginHeader
+  // both compare parsed URL hostnames (e.g. "example.local" or "[::1]"), so normalizing
+  // origins/host:port inputs to canonical hostnames satisfies both checks cleanly.
   const effectiveAllowedHosts =
     explicitHosts.length > 0 ? explicitHosts : localhostAllowedHostnames();
-  const effectiveAllowedOrigins =
-    Array.isArray(allowedOrigins) && allowedOrigins.length > 0
-      ? allowedOrigins
+  const effectiveAllowedOriginHostnames =
+    explicitOriginHostnames.length > 0
+      ? explicitOriginHostnames
       : explicitHosts.length > 0
         ? explicitHosts
-        : localhostAllowedOrigins();
+        : localhostAllowedHostnames();
 
   const mcpHandler = createHttpHandler();
 
@@ -477,16 +502,18 @@ export async function startHttpServer({
         const rawOrigin = Array.isArray(req.headers.origin)
           ? req.headers.origin[0]
           : req.headers.origin;
-        const originCheck = validateOriginHeader(rawOrigin ?? null, effectiveAllowedOrigins);
+        const originCheck = validateOriginHeader(rawOrigin ?? null, effectiveAllowedOriginHostnames);
         if (!originCheck.ok) {
           sendJsonRpcError(res, 403, -32000, originCheck.message);
           return;
         }
       }
 
-      const authorityHost = effectiveAllowedHosts[0].includes(':')
-        ? `[${effectiveAllowedHosts[0]}]`
-        : effectiveAllowedHosts[0];
+      const firstHost = effectiveAllowedHosts[0];
+      const authorityHost =
+        firstHost.includes(':') && !firstHost.startsWith('[')
+          ? `[${firstHost}]`
+          : firstHost;
       const trustedBaseOrigin = `http://${authorityHost}:${boundPort}`;
 
       const hasBody = req.method !== 'GET' && req.method !== 'HEAD';

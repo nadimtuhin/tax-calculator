@@ -310,6 +310,13 @@ test('Streamable HTTP server serves MCP requests, health check, and localhost Ho
   const healthJson = await healthRes.json();
   assert.equal(healthJson.status, 'ok');
 
+
+  // Default loopback server accepts valid localhost Origin header
+  const defaultOriginOk = await fetch(`http://127.0.0.1:${running.port}/health`, {
+    headers: { Origin: 'http://localhost:3000' },
+  });
+  assert.equal(defaultOriginOk.status, 200);
+
   // Spoofed Host header rejected with 403
   const spoofedStatus = await new Promise((resolve, reject) => {
     import('node:http').then(({ default: http }) => {
@@ -469,4 +476,49 @@ test('Security & input hardening: rejects unguarded non-loopback bind, malformed
       }),
     /exceeds maximum safe BDT amount/
   );
+});
+
+
+test('Custom allowedHostnames/allowedOrigins accepts matching Origin URL and rejects foreign Origin', async (t) => {
+  const custom = await startHttpServer({
+    port: 0,
+    host: '127.0.0.1',
+    endpoint: '/mcp',
+    allowedHostnames: ['http://tax.internal:8080', '127.0.0.1'],
+  });
+  t.after(async () => {
+    await custom.close();
+  });
+
+  const okOriginRes = await fetch(`http://127.0.0.1:${custom.port}/health`, {
+    headers: { Origin: 'http://tax.internal:8080' },
+  });
+  assert.equal(okOriginRes.status, 200);
+
+  const badOriginRes = await fetch(`http://127.0.0.1:${custom.port}/health`, {
+    headers: { Origin: 'http://attacker.example.com' },
+  });
+  assert.equal(badOriginRes.status, 403);
+});
+
+
+test('IPv6 loopback (::1) HTTP bind handles bracketed Host and Origin cleanly without double-bracketing', async (t) => {
+  let ipv6Server;
+  try {
+    ipv6Server = await startHttpServer({ port: 0, host: '::1', endpoint: '/mcp' });
+  } catch (err) {
+    if (err && (err.code === 'EADDRNOTAVAIL' || err.code === 'EAFNOSUPPORT')) {
+      t.skip('IPv6 loopback not available on this host');
+      return;
+    }
+    throw err;
+  }
+  t.after(async () => {
+    await ipv6Server.close();
+  });
+
+  const res = await fetch(`http://[::1]:${ipv6Server.port}/health`, {
+    headers: { Origin: `http://[::1]:${ipv6Server.port}` },
+  });
+  assert.equal(res.status, 200);
 });
