@@ -133,7 +133,7 @@ describe('Navbar Component', () => {
     test('should render GitHub link with correct attributes', () => {
       const githubLink = wrapper.find('.github-btn');
       expect(githubLink.exists()).toBe(true);
-      expect(githubLink.attributes('href')).toBe('https://github.com/nadimtuhin/pathao-tax-calculator');
+      expect(githubLink.attributes('href')).toBe('https://github.com/nadimtuhin/tax-calculator');
       expect(githubLink.attributes('target')).toBe('_blank');
       expect(githubLink.attributes('rel')).toBe('noopener noreferrer');
     });

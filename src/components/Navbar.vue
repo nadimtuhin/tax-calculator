@@ -81,7 +81,7 @@
           
           <!-- GitHub link -->
           <a 
-            href="https://github.com/nadimtuhin/pathao-tax-calculator" 
+            href="https://github.com/nadimtuhin/tax-calculator" 
             target="_blank" 
             rel="noopener noreferrer"
             class="action-btn github-btn" 
