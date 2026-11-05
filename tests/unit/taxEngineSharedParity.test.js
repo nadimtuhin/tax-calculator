@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import salariesStore from '@/store/salaries';
+import { migratePersistedState } from '@/store/index';
 import {
   listSupportedYears,
   getRulesForYear,
@@ -116,7 +117,8 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       monthlyParts: { basic: 60000, house: 28000, medical: 7000, transport: 4000, others: 3000 },
       bonus: 120000,
       others: 20000,
-      investments: [150000, 80000, 0, 600000, 700000, 0], // tests DPS, Sanchaypatra, and MF year-aware caps!
+      investments: [150000, 80000, 0, 600000, 700000, 0],
+      lifePolicyValue: 1000000,
       monthlyTds: 3000,
     },
     {
@@ -126,6 +128,7 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       bonus: 400000,
       others: 0,
       investments: [120000, 500000, 400000, 0, 800000, 0],
+      lifePolicyValue: 3000000,
       monthlyTds: 25000,
     },
     {
@@ -144,6 +147,7 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       bonus: 200000,
       others: 50000,
       investments: [100000, 200000, 0, 0, 0, 0],
+      lifePolicyValue: 2500000,
       monthlyTds: 5000,
     },
   ])('matches Vuex store getters across 2024-25, 2025-26, and 2026-27: $name', (scenario) => {
@@ -156,12 +160,16 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
     scenario.investments.forEach((value, index) => {
       store.commit('changeInvestment', { index, value });
     });
+    if (scenario.lifePolicyValue !== undefined) {
+      store.commit('changeInvestmentPolicyValue', { index: 1, value: scenario.lifePolicyValue });
+    }
     store.commit('changeSubsequentTds', { index: 0, value: scenario.monthlyTds });
 
     const totalTds = scenario.monthlyTds * 12;
     const itemizedInvestments = {
       dps: scenario.investments[0] || 0,
       life_insurance: scenario.investments[1] || 0,
+      ...(scenario.lifePolicyValue !== undefined ? { life_insurance_policy_value: scenario.lifePolicyValue } : {}),
       stocks: scenario.investments[2] || 0,
       savings_certificate: scenario.investments[3] || 0,
       mutual_fund: scenario.investments[4] || 0,
@@ -251,6 +259,88 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       calculateTaxForYear({ year: '2026-27', category: 'general', age: 70, taxable_income: 500000 })
         .tax_free_threshold_bdt
     ).toBe(450000);
+  });
+
+  test('migratePersistedState preserves v0.8 saved user amounts while adding new defaults', () => {
+    const legacySaved = {
+      salaries: {
+        taxpayerProfile: { category: 'female', age: 38, location: 'chittagong', parentOfDisabled: true },
+        currentYear: '2025-26',
+        bonus: 150000,
+        months: Array.from({ length: 12 }, (_, idx) => ({
+          id: `M${idx}`,
+          salary: 80000,
+          tds: 3000,
+          breakdown: { basic: 48000, house: 20000, medical: 8000, transport: 4000, lfa: 0 },
+        })),
+        investments: [
+          { name: 'DPS', amount: 110000, maximum: 120000 },
+          { name: 'Life insurance premium', amount: 45000, maximum: 999999999 },
+        ],
+      },
+    };
+    const migrated = migratePersistedState(legacySaved);
+    expect(migrated.salaries.taxpayerProfile).toEqual({
+      category: 'female',
+      age: 38,
+      location: 'chittagong',
+      parentOfDisabled: true,
+      firstTimeFiler: false,
+    });
+    expect(migrated.salaries.comparisonFromYear).toBe('2025-26');
+    expect(migrated.salaries.comparisonToYear).toBe('2026-27');
+    expect(migrated.salaries.months[0].salary).toBe(80000);
+    expect(migrated.salaries.months[0].tds).toBe(3000);
+    expect(migrated.salaries.months[0].breakdown.others).toBe(0);
+    expect(migrated.salaries.investments[0].amount).toBe(110000);
+    expect(migrated.salaries.investments[1].amount).toBe(45000);
+    expect(migrated.salaries.investments[1].policyValue).toBeNull();
+  });
+
+  test('enforces mandatory Part 3 caps and life_insurance 10% policy value cap across engine and store', () => {
+    expect(() =>
+      calculateTaxForYear({
+        year: '2025-26',
+        taxable_income: 1500000,
+        investments: { dps: 1000000, apply_instrument_caps: false },
+      })
+    ).toThrow(/mandatory/);
+
+    const lifeCapped = calculateTaxForYear({
+      year: '2025-26',
+      taxable_income: 1500000,
+      investments: {
+        life_insurance: 500000,
+        life_insurance_policy_value: 1000000, // 10% cap = 100,000 -> 10% rebate = 10,000
+      },
+    });
+    expect(lifeCapped.investment_summary.eligible_investment_bdt).toBe(100000);
+    expect(lifeCapped.rebate_bdt).toBe(10000);
+
+    // Missing policy sum on positive life_insurance is rejected in MCP/engine and yields 0 eligible in store
+    expect(() =>
+      calculateTaxForYear({
+        year: '2025-26',
+        taxable_income: 1500000,
+        investments: { life_insurance: 500000 },
+      })
+    ).toThrow(/life_insurance_policy_value/);
+
+    const zeroPolicy = calculateTaxForYear({
+      year: '2025-26',
+      taxable_income: 1500000,
+      investments: { life_insurance: 500000, life_insurance_policy_value: 0 },
+    });
+    expect(zeroPolicy.investment_summary.eligible_investment_bdt).toBe(0);
+    expect(zeroPolicy.rebate_bdt).toBe(0);
+
+    store.commit('changeInvestment', { index: 1, value: 500000 });
+    expect(store.getters.totalInvestment).toBe(500000);
+    expect(store.getters.eligibleInvestment).toBe(0); // Unverified without policy sum
+    store.commit('changeInvestmentPolicyValue', { index: 1, value: 0 });
+    expect(store.getters.eligibleInvestment).toBe(0); // Zero sum -> 0 eligible
+    store.commit('changeInvestmentPolicyValue', { index: 1, value: 1000000 });
+    expect(store.getters.eligibleInvestment).toBe(100000); // 10% of 10L
   });
 
   test('resetSalaries resets breakdown.others to 0 so totalOthersBreakdown never becomes NaN', () => {

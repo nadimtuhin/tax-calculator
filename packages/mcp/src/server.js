@@ -102,16 +102,21 @@ const investmentsSchema = z
       .object({
         total: z.number().nonnegative().optional().describe('Total eligible investment in BDT (mutually exclusive with itemized fields).'),
         dps: z.number().nonnegative().optional().describe('Deposit Pension Scheme (DPS) contribution in BDT (instrument cap BDT 120,000).'),
-        life_insurance: z.number().nonnegative().optional().describe('Life insurance premium in BDT.'),
+        life_insurance: z.number().nonnegative().optional().describe('Life insurance premium in BDT (requires life_insurance_policy_value when > 0; capped at 10% of policy sum assured).'),
+        life_insurance_policy_value: z
+          .number()
+          .nonnegative()
+          .optional()
+          .describe('Total policy sum assured in BDT for life_insurance; caps eligible premium at 10% of policy sum assured per Sixth Schedule Part 3.'),
         stocks: z.number().nonnegative().optional().describe('Listed shares/stocks investment in BDT.'),
         savings_certificate: z.number().nonnegative().optional().describe('Sanchayapatra / savings certificate investment in BDT (instrument cap BDT 500,000).'),
         mutual_fund: z.number().nonnegative().optional().describe('Mutual fund / unit certificate investment in BDT (cap BDT 500,000 through FY 2024-25; uncapped from FY 2025-26 onward per Finance Act 2026).'),
         others: z.number().nonnegative().optional().describe('Other qualifying investment in BDT.'),
         apply_instrument_caps: z
-          .boolean()
+          .literal(true)
           .optional()
           .describe(
-            'When true (default), enforces year-aware Sixth Schedule Part 3 caps (DPS <= 120,000, savings_certificate <= 500,000, mutual_fund <= 500,000 through FY 2024-25 and uncapped in FY 2025-26/2026-27).'
+            'Statutory Sixth Schedule Part 3 instrument caps are always enforced on itemized investments (DPS <= 120,000, savings_certificate <= 500,000, life_insurance <= 10% of policy value, mutual_fund <= 500,000 through FY 2024-25 and uncapped in FY 2025-26/2026-27).'
           ),
       })
       .strict(),

@@ -63,7 +63,11 @@ describe('Investment Component', () => {
     test('displays Unlimited for Mutual fund in FY 2025-26/2026-27 and 500,000 in FY 2024-25', async () => {
       wrapper = mount(Investment, { global: { plugins: [store] } });
 
-      // Default FY 2025-26: DPS (120,000) & Savings certificate (500,000) limited; Mutual fund Unlimited
+      // Default FY 2025-26: Life insurance shows "10% of policy value" (never Unlimited); Mutual fund Unlimited
+      const lifeRow = wrapper.findAll('tbody tr').find(r => r.text().includes('Life insurance premium'));
+      expect(lifeRow.text()).toContain('10% of policy value');
+      expect(lifeRow.text()).not.toContain('Unlimited');
+
       let mfRow = wrapper.findAll('tbody tr').find(r => r.text().includes('Mutual fund'));
       expect(mfRow.text()).toContain('Unlimited');
       expect(wrapper.text()).toContain('10%');
@@ -95,6 +99,27 @@ describe('Investment Component', () => {
       await wrapper.vm.$nextTick();
       expect(store.getters.eligibleInvestment).toBe(620000);
       expect(store.getters.investmentRebate).toBe(93000);
+    });
+
+    test('caps Life insurance premium at 10% of policy sum assured when policy value is entered', async () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 166667 }); // ~2M gross -> 1.5M taxable (3% = 45,000)
+      store.commit('changeInvestment', { index: 1, value: 500000 }); // 5L premium
+
+      wrapper = mount(Investment, { global: { plugins: [store] } });
+
+      // Before entering policy sum assured: warning shown and eligible investment is 0 (never uncapped)
+      expect(store.getters.eligibleInvestment).toBe(0);
+      expect(wrapper.find('.policy-warning').exists()).toBe(true);
+
+      const policyInput = wrapper.find('[aria-label="Life insurance policy value"]');
+      expect(policyInput.exists()).toBe(true);
+      await policyInput.setValue('1000000'); // 10L policy -> 10% cap = 100,000
+      await policyInput.trigger('input');
+
+      expect(store.getters.eligibleInvestment).toBe(100000);
+      expect(store.getters.investmentRebate).toBe(10000); // 10% of 100k = 10k (not 45k)
+      expect(wrapper.find('.policy-warning').exists()).toBe(false);
+      expect(wrapper.text()).toContain('100,000 (10% of policy)');
     });
   });
 

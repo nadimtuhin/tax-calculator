@@ -59,7 +59,7 @@ const salaries = {
     fiscalYearOptions: FISCAL_YEAR_OPTIONS.map((opt) => ({ ...opt })),
     investments: [
       { name: 'DPS', amount: 0, maximum: capOrInfinity(defaultCaps.dps) },
-      { name: 'Life insurance premium', amount: 0, maximum: capOrInfinity(defaultCaps.life_insurance) },
+      { name: 'Life insurance premium', amount: 0, policyValue: null, maximum: capOrInfinity(defaultCaps.life_insurance) },
       { name: 'Stocks', amount: 0, maximum: capOrInfinity(defaultCaps.stocks) },
       { name: 'Savings certificate', amount: 0, maximum: capOrInfinity(defaultCaps.savings_certificate) },
       { name: 'Mutual fund', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
@@ -110,10 +110,15 @@ const salaries = {
       state.investments = state.investments.map((investment) => ({
         ...investment,
         amount: 0,
+        ...(Object.prototype.hasOwnProperty.call(investment, 'policyValue') ? { policyValue: null } : {}),
       }));
     },
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
+    },
+    changeInvestmentPolicyValue(state, { index, value }) {
+      const cleaned = value === '' || value === null || value === undefined ? null : Math.max(0, +value || 0);
+      state.investments[index].policyValue = cleaned;
     },
     updateTaxpayerProfile(state, profile) {
       state.taxpayerProfile = {

@@ -267,7 +267,8 @@ describe('Tax Calculation Tests', () => {
       
       // Set up investments
       store.commit('changeInvestment', { index: 0, value: 120000 }); // DPS full
-      store.commit('changeInvestment', { index: 1, value: 100000 }); // Life insurance
+      store.commit('changeInvestment', { index: 1, value: 100000 });
+      store.commit('changeInvestmentPolicyValue', { index: 1, value: 1000000 });
       
       const totalRebateableInvestment = store.getters.totalRebateableInvestment;
       const investmentRebate = store.getters.investmentRebate;
@@ -293,7 +294,8 @@ describe('Tax Calculation Tests', () => {
       
       // Set up large investments (more than 20% of taxable income)
       store.commit('changeInvestment', { index: 0, value: 120000 }); // DPS
-      store.commit('changeInvestment', { index: 1, value: 200000 }); // Life insurance
+      store.commit('changeInvestment', { index: 1, value: 200000 });
+      store.commit('changeInvestmentPolicyValue', { index: 1, value: 2000000 });
       
       const taxableSalary = store.getters.taxableSalary;
       const maxRebateableInvestment = store.getters.maxRebateableInvestment;
@@ -402,7 +404,8 @@ describe('Tax Calculation Tests', () => {
       
       // Set up investments
       store.commit('changeInvestment', { index: 0, value: 120000 }); // DPS
-      store.commit('changeInvestment', { index: 1, value: 80000 }); // Life insurance
+      store.commit('changeInvestment', { index: 1, value: 80000 });
+      store.commit('changeInvestmentPolicyValue', { index: 1, value: 800000 });
       
       // Set up TDS
       store.commit('changeSubsequentTds', { index: 0, value: 5000 });

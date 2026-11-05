@@ -171,6 +171,8 @@ export const INVESTMENT_INSTRUMENT_CAPS_BY_YEAR = {
 };
 
 export const INVESTMENT_INSTRUMENT_CAPS = INVESTMENT_INSTRUMENT_CAPS_BY_YEAR[DEFAULT_FISCAL_YEAR];
+export const LIFE_INSURANCE_POLICY_RATE = 0.10;
+export const LIFE_INSURANCE_CAP_RULE = '10% of policy sum assured';
 
 export const TAX_FREE_THRESHOLDS_BY_YEAR = {
   '2023-24': {
@@ -427,18 +429,32 @@ export function calculateCappedInvestmentFromList(investmentsList = [], year = D
     mutual_fund: 0,
     others: 0,
   };
+  let lifePolicyValue = null;
 
   for (const item of investmentsList) {
     if (!item) continue;
     const key = normalizeInvestmentTypeKey(item.name || item.type);
     const amount = Math.max(0, Number(item.amount) || 0);
     rawByKey[key] = (rawByKey[key] || 0) + amount;
+    if (
+      key === 'life_insurance' &&
+      item.policyValue !== null &&
+      item.policyValue !== undefined &&
+      item.policyValue !== ''
+    ) {
+      const pv = Math.max(0, Number(item.policyValue) || 0);
+      lifePolicyValue = (lifePolicyValue ?? 0) + pv;
+    }
   }
 
   let eligible = 0;
   for (const key of Object.keys(rawByKey)) {
     const raw = Math.round(rawByKey[key]);
-    const cap = caps[key];
+    let cap = caps[key];
+    if (key === 'life_insurance') {
+      // Statutory Sixth Schedule Part 3 cap is 10% of policy sum assured; unverified premium without policy sum is 0 eligible.
+      cap = Math.round((lifePolicyValue ?? 0) * LIFE_INSURANCE_POLICY_RATE);
+    }
     eligible += cap === null ? raw : Math.min(raw, cap);
   }
   return eligible;
@@ -914,6 +930,38 @@ export function resolveInvestmentInputs(
     };
   }
 
+  if (investments.apply_instrument_caps === false) {
+    throw new Error(
+      'Statutory Sixth Schedule Part 3 instrument caps are mandatory for itemized investments; remove "apply_instrument_caps: false".'
+    );
+  }
+
+  const rawLifeInsurance = investments.life_insurance ?? 0;
+  assertSafeAmount(rawLifeInsurance, 'investments.life_insurance');
+  if (
+    rawLifeInsurance > 0 &&
+    (investments.life_insurance_policy_value === undefined ||
+      investments.life_insurance_policy_value === null)
+  ) {
+    throw new Error(
+      'Provide "investments.life_insurance_policy_value" (policy sum assured in BDT) when "investments.life_insurance" > 0 so the statutory 10% cap can be enforced.'
+    );
+  }
+
+  let lifePolicyCap = 0;
+  if (
+    investments.life_insurance_policy_value !== undefined &&
+    investments.life_insurance_policy_value !== null
+  ) {
+    assertSafeAmount(
+      investments.life_insurance_policy_value,
+      'investments.life_insurance_policy_value'
+    );
+    lifePolicyCap = Math.round(
+      investments.life_insurance_policy_value * LIFE_INSURANCE_POLICY_RATE
+    );
+  }
+
   const breakdown = {};
   let rawTotal = 0;
   let cappedTotal = 0;
@@ -923,22 +971,22 @@ export function resolveInvestmentInputs(
     assertSafeAmount(val, `investments.${key}`);
     breakdown[key] = val;
     rawTotal += val;
-    const cap = caps[key];
+    const cap = key === 'life_insurance' ? lifePolicyCap : caps[key];
     cappedTotal += cap === null ? val : Math.min(val, cap);
   });
 
   assertSafeAmount(rawTotal, 'total_investment_bdt');
   assertSafeAmount(cappedTotal, 'instrument_capped_investment_bdt');
 
-  const applyCaps = investments.apply_instrument_caps !== false;
-  const eligible = applyCaps ? cappedTotal : rawTotal;
-
   return {
     total_investment_bdt: rawTotal,
     instrument_capped_investment_bdt: cappedTotal,
-    eligible_investment_bdt: eligible,
+    eligible_investment_bdt: cappedTotal,
     max_rebateable_investment_bdt: optimalCeiling,
-    apply_instrument_caps: applyCaps,
+    apply_instrument_caps: true,
+    life_insurance_policy_value_bdt:
+      investments.life_insurance_policy_value ?? null,
+    life_insurance_cap_bdt: lifePolicyCap,
     breakdown_bdt: breakdown,
   };
 }
@@ -983,6 +1031,7 @@ export function listSupportedYears() {
         salary_exemption_cap_bdt: exemptionRule.maxAmount,
         rebate_formula: rebate.formula,
         investment_instrument_caps_bdt: instrumentCaps,
+        life_insurance_cap_rule: LIFE_INSURANCE_CAP_RULE,
         minimum_tax_bdt: minTax,
         first_time_filer_minimum_tax_bdt:
           fy === '2026-27'
@@ -1003,6 +1052,7 @@ export function listSupportedYears() {
     legacy_category_aliases: ['parent_disabled'],
     locations: LOCATIONS,
     salary_exemption_caps: SALARY_EXEMPTION_CAPS,
+    life_insurance_cap_rule: LIFE_INSURANCE_CAP_RULE,
     investment_instrument_caps_by_year_bdt: INVESTMENT_INSTRUMENT_CAPS_BY_YEAR,
     investment_instrument_caps_bdt: INVESTMENT_INSTRUMENT_CAPS,
   };

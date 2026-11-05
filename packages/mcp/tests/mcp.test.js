@@ -268,6 +268,35 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   assert.equal(ayErr.isError, true);
   assert.match(parseToolJson(ayErr).error, /Assessment Year/);
 
+  // Life insurance 10% of policy sum assured cap via MCP
+  const lifeCapRes = await client.callTool({
+    name: 'calculate_tax',
+    arguments: {
+      year: '2025-26',
+      category: 'general',
+      taxable_income: 1500000,
+      investments: {
+        life_insurance: 500000,
+        life_insurance_policy_value: 1000000,
+      },
+    },
+  });
+  assert.ok(!lifeCapRes.isError);
+  const lifeCap = parseToolJson(lifeCapRes);
+  assert.equal(lifeCap.investment_summary.eligible_investment_bdt, 100000);
+  assert.equal(lifeCap.rebate_bdt, 10000);
+
+  const missingPolicyErr = await client.callTool({
+    name: 'calculate_tax',
+    arguments: {
+      year: '2025-26',
+      taxable_income: 1500000,
+      investments: { life_insurance: 500000 },
+    },
+  });
+  assert.equal(missingPolicyErr.isError, true);
+  assert.match(parseToolJson(missingPolicyErr).error, /life_insurance_policy_value/);
+
   const bothIncomeErr = await client.callTool({
     name: 'calculate_tax',
     arguments: {
