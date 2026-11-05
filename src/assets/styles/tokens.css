@@ -1,0 +1,102 @@
+:root {
+  --bg: #f3f2ee;
+  --surface: #ffffff;
+  --surface-muted: #f7f6f2;
+  --border: #e3e1d9;
+  --border-strong: #c9c6ba;
+  --text: #17201b;
+  --text-muted: #55605a;
+
+  --accent: #0a5c3a;
+  --accent-hover: #07492e;
+  --accent-soft: #e1f0e8;
+  --on-accent: #ffffff;
+
+  --good: #0a6b3d;
+  --good-soft: #e1f0e8;
+  --warn: #7a4300;
+  --warn-soft: #fdeccd;
+  --bad: #b3261e;
+  --bad-soft: #fbe4e1;
+  --info: #1d5fa8;
+
+  --focus-ring: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent);
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow: 0 1px 2px rgba(23, 32, 27, 0.06), 0 4px 16px rgba(23, 32, 27, 0.05);
+  --shadow-lg: 0 8px 32px rgba(23, 32, 27, 0.14);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", "Bangla Sangam MN", "Nirmala UI", sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-hero: clamp(2.25rem, 7vw, 3.5rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1411;
+    --surface: #17201b;
+    --surface-muted: #1c2721;
+    --border: #2a362f;
+    --border-strong: #3d4c43;
+    --text: #e8eee9;
+    --text-muted: #a3afa8;
+
+    --accent: #6fdca6;
+    --accent-hover: #8be8b9;
+    --accent-soft: #163a29;
+    --on-accent: #06140d;
+
+    --good: #6fdca6;
+    --good-soft: #163a29;
+    --warn: #f4c26b;
+    --warn-soft: #3d2c0d;
+    --bad: #ff9c92;
+    --bad-soft: #4a1a16;
+    --info: #8ab8ee;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.amount,
+td,
+th {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

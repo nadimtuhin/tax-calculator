@@ -485,28 +485,74 @@ describe('TaxableIncome Component', () => {
     });
   });
 
-  describe('Console Logging', () => {
+  describe('Tooltip Modal Accessibility', () => {
     beforeEach(() => {
-      // Mock console.log to test logging
-      jest.spyOn(console, 'log').mockImplementation(() => {});
-      
       wrapper = mount(TaxableIncome, {
+        attachTo: document.body,
         global: {
           plugins: [store]
         }
       });
     });
 
-    afterEach(() => {
-      console.log.mockRestore();
+    test('moves initial focus to close button and exposes dialog semantics', async () => {
+      const trigger = wrapper.find('[aria-label="About house rent exemption"]');
+      await trigger.trigger('click');
+      await wrapper.vm.$nextTick();
+
+      const modal = wrapper.find('.tooltip-modal');
+      const closeBtn = wrapper.find('.tooltip-close');
+      expect(modal.attributes('role')).toBe('dialog');
+      expect(modal.attributes('aria-modal')).toBe('true');
+      expect(document.activeElement).toBe(closeBtn.element);
     });
 
-    test('should log tooltip toggle actions', () => {
-      wrapper.vm.toggleTooltip('house');
-      
-      expect(console.log).toHaveBeenCalledWith(
-        'Toggling tooltip:', 'house', 'Current:', null
-      );
+    test('traps forward Tab and backward Shift+Tab inside the open modal', async () => {
+      await wrapper.find('[aria-label="About medical allowance exemption"]').trigger('click');
+      await wrapper.vm.$nextTick();
+
+      const closeBtn = wrapper.find('.tooltip-close');
+      expect(document.activeElement).toBe(closeBtn.element);
+
+      const forwardTab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      window.dispatchEvent(forwardTab);
+      expect(forwardTab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(closeBtn.element);
+
+      const backwardTab = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+      window.dispatchEvent(backwardTab);
+      expect(backwardTab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(closeBtn.element);
+    });
+
+    test('closes on Escape and restores focus to the trigger button', async () => {
+      const trigger = wrapper.find('[aria-label="About transport allowance exemption"]');
+      trigger.element.focus();
+      await trigger.trigger('click');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.tooltip-modal').exists()).toBe(true);
+
+      const esc = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      window.dispatchEvent(esc);
+      await wrapper.vm.$nextTick();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('.tooltip-modal').exists()).toBe(false);
+      expect(document.activeElement).toBe(trigger.element);
+    });
+
+    test('closes on overlay backdrop click and restores focus to the trigger button', async () => {
+      const trigger = wrapper.find('[aria-label="About house rent exemption"]');
+      trigger.element.focus();
+      await trigger.trigger('click');
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('.tooltip-overlay').trigger('click');
+      await wrapper.vm.$nextTick();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('.tooltip-modal').exists()).toBe(false);
+      expect(document.activeElement).toBe(trigger.element);
     });
   });
 });

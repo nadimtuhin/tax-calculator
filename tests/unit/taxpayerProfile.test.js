@@ -35,17 +35,22 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should render all taxpayer categories', () => {
-      const categorySelects = wrapper.findAll('select');
-      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
-      const options = categorySelect.findAll('option');
-      
-      expect(options).toHaveLength(6);
-      expect(options.at(0).text()).toBe('General (Male)');
-      expect(options.at(1).text()).toBe('Female');
-      expect(options.at(2).text()).toBe('Senior Citizen (65+)');
-      expect(options.at(3).text()).toBe('Disabled Person');
-      expect(options.at(4).text()).toBe('War-wounded Freedom Fighter / July Warrior');
-      expect(options.at(5).text()).toBe('Third Gender');
+      const radios = wrapper.findAll('input[type="radio"][name="taxpayer-category"]');
+      const labels = radios.map(radio => wrapper.find(`label[for="${radio.attributes('id')}"]`).text());
+
+      expect(radios).toHaveLength(6);
+      expect(radios.map(radio => radio.attributes('value'))).toEqual([
+        'general', 'female', 'senior', 'disabled', 'freedom_fighter', 'third_gender',
+      ]);
+      expect(labels).toEqual([
+        'General (Male)',
+        'Female',
+        'Senior Citizen (65+)',
+        'Disabled Person',
+        'War-wounded Freedom Fighter / July Warrior',
+        'Third Gender',
+      ]);
+      expect(wrapper.find('select option[value="general"]').exists()).toBe(false);
     });
 
     test('should render parent-of-disabled checkbox that combines with category', async () => {
@@ -199,9 +204,7 @@ describe('TaxpayerProfile Component', () => {
 
   describe('User Interactions', () => {
     test('should update store when category changes', async () => {
-      const categorySelects = wrapper.findAll('select');
-      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
-      await categorySelect.setValue('female');
+      await wrapper.find('input[type="radio"][value="female"]').setValue();
       
       const storeProfile = store.state.salaries.taxpayerProfile;
       expect(storeProfile.category).toBe('female');

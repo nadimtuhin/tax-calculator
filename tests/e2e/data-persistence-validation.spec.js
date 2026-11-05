@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory, selectedCategory } from './helpers/category.js';
 
 test.describe('Data Persistence and Validation', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,7 +14,7 @@ test.describe('Data Persistence and Validation', () => {
       const profileSelect = page.locator('select, input[value="female"]').first();
       if (await profileSelect.count() > 0) {
         if (await profileSelect.evaluate(el => el.tagName.toLowerCase()) === 'select') {
-          await profileSelect.selectOption('female');
+          await selectCategory(page, 'female');
         } else {
           await profileSelect.click();
         }
@@ -35,9 +36,9 @@ test.describe('Data Persistence and Validation', () => {
       await page.waitForTimeout(1000);
 
       // Verify profile persisted
-      const persistedProfileSelect = page.locator('select').first();
+      const persistedProfileSelect = categoryRadios(page).first();
       if (await persistedProfileSelect.count() > 0) {
-        const selectedValue = await persistedProfileSelect.inputValue();
+        const selectedValue = await selectedCategory(page);
         expect(selectedValue).toBe('female');
       }
     });
@@ -159,9 +160,9 @@ test.describe('Data Persistence and Validation', () => {
       await page.waitForTimeout(500);
 
       // Set taxpayer profile
-      const profileSelect = page.locator('select').first();
+      const profileSelect = categoryRadios(page).first();
       if (await profileSelect.count() > 0) {
-        await profileSelect.selectOption('senior');
+        await selectCategory(page, 'senior');
         await page.waitForTimeout(500);
       }
 

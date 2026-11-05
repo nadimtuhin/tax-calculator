@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="tax-app">
     <Navbar />
     <main id="main-content" tabindex="-1">
       <router-view></router-view>
@@ -29,44 +29,36 @@ export default {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #ffffff;
-  color: rgba(41, 41, 41, 1);
 }
 
-#app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: rgba(41, 41, 41, 1);
-  line-height: 1.4;
+#tax-app {
+  font-family: var(--font);
+  color: var(--text);
+  line-height: 1.5;
 }
 
-.router-link-active {
-  font-weight: 500;
-}
-
-/* Medium-style typography base */
 h1, h2, h3, h4, h5, h6 {
-  font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: rgba(41, 41, 41, 1);
-  line-height: 1.22;
+  font-family: var(--font);
+  color: var(--text);
+  line-height: 1.25;
   margin: 0;
 }
 
 p {
-  font-family: charter, Georgia, Cambria, "Times New Roman", Times, serif;
-  line-height: 1.58;
-  color: rgba(41, 41, 41, 1);
+  font-family: var(--font);
+  line-height: 1.55;
+  color: var(--text);
   margin: 0;
 }
 
 a {
-  color: rgba(41, 41, 41, 1);
+  color: var(--accent);
   text-decoration: none;
 }
 
 a:hover {
-  color: rgba(25, 25, 25, 1);
+  color: var(--accent-hover);
 }
 </style>

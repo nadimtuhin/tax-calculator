@@ -12,11 +12,6 @@
         </router-link>
       </div>
       
-      <!-- Main navigation -->
-      <ul class="navbar-nav" role="menubar">
-        <!-- No navigation items for now -->
-      </ul>
-      
       <!-- Action buttons -->
       <div class="navbar-actions">
         <div class="action-buttons">
@@ -27,7 +22,7 @@
               aria-label="Fill with random sample data"
               title="Random Data"
             >
-              <span class="btn-icon">🎲</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/><circle cx="12" cy="12" r="1"/></svg>
               <span class="btn-text">Random</span>
             </button>
             <button 
@@ -36,7 +31,7 @@
               aria-label="Export your tax data"
               title="Export Data"
             >
-              <span class="btn-icon">📤</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
               <span class="btn-text">Export</span>
             </button>
             <button 
@@ -45,7 +40,7 @@
               aria-label="Import tax data from file"
               title="Import Data"
             >
-              <span class="btn-icon">📥</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>
               <span class="btn-text">Import</span>
             </button>
             <button 
@@ -54,7 +49,7 @@
               aria-label="Reset all tax data"
               title="Reset Data"
             >
-              <span class="btn-icon">🔄</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/></svg>
               <span class="btn-text">Reset</span>
             </button>
             <input 
@@ -75,20 +70,20 @@
             aria-label="Open star modal"
             title="Open Star Modal"
           >
-            <span class="btn-icon">⭐</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
             <span class="btn-text">Star</span>
           </button>
           
           <!-- GitHub link -->
           <a 
-            href="https://github.com/nadimtuhin/pathao-tax-calculator" 
+            href="https://github.com/nadimtuhin/tax-calculator" 
             target="_blank" 
             rel="noopener noreferrer"
             class="action-btn github-btn" 
             aria-label="View source code on GitHub"
             title="GitHub Repository"
           >
-            <span class="btn-icon">🐙</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.7 11.7 0 0 0-6.2 0C6.6 2.8 5.600 3.100 5.600 3.100a4.200 4.200 0 0 0-.1 3.200A4.600 4.600 0 0 0 4.200 9.500c0 4.600 2.700 5.700 5.500 6-.6.6-.6 1.200-.5 2V21"/></svg>
             <span class="btn-text">GitHub</span>
           </a>
         </div>
@@ -258,314 +253,135 @@ export default {
 </script>
 
 <style scoped>
-/* Skip link for accessibility */
 .skip-link {
   position: absolute;
-  top: -40px;
-  left: 6px;
-  background: #000;
-  color: #fff;
-  padding: 8px;
-  text-decoration: none;
-  border-radius: 4px;
+  top: -48px;
+  left: var(--space-3);
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   z-index: 9999;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .skip-link:focus {
-  top: 6px;
+  top: var(--space-2);
 }
 
-/* Main navbar */
 .navbar {
-  background: #ffffff;
-  border-bottom: 2px solid #e1e5e9;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-container {
-  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
   display: flex;
   align-items: center;
-  min-height: 64px;
-}
-
-/* Brand section */
-.navbar-brand-section {
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 56px;
 }
 
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 20px;
+  gap: var(--space-2);
   font-weight: 700;
-  color: #1a365d;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  padding: 8px 12px;
-  border-radius: 6px;
+  font-size: var(--text-lg);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
 }
 
 .navbar-brand:hover {
-  color: #2c5282;
-  background-color: #f7fafc;
-  transform: translateY(-1px);
-}
-
-.navbar-brand:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
+  color: var(--accent-hover);
 }
 
 .brand-icon {
-  font-size: 24px;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-.brand-text {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Navigation */
-.navbar-nav {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 8px;
-  margin-left: 40px;
-}
-
-.nav-link {
-  color: #4a5568;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 12px 32px;
-  transition: all 0.2s ease;
-  border-radius: 6px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  min-width: 120px;
-  justify-content: center;
-}
-
-.nav-link:hover {
-  color: #2d3748;
-  background-color: #edf2f7;
-}
-
-.nav-link:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
-}
-
-.nav-link.router-link-active {
-  color: #2c5282;
-  background-color: #bee3f8;
-  font-weight: 600;
-}
-
-/* Action buttons */
-.navbar-actions {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
+.action-buttons,
 .data-actions {
   display: flex;
-  gap: 8px;
-  margin-right: 8px;
-  padding-right: 8px;
-  border-right: 1px solid #e2e8f0;
-}
-
-.github-btn {
-  background-color: #2d3748;
-  color: #ffffff;
-}
-
-.github-btn:hover {
-  background-color: #1a202c;
-  color: #ffffff;
-}
-
-.star-btn {
-  background-color: #ffd700;
-  color: #744210;
-}
-
-.star-btn:hover {
-  background-color: #ffc107;
-  color: #533011;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  background: #f7fafc;
-  color: #4a5568;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  gap: var(--space-2);
   min-height: 44px;
   min-width: 44px;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .action-btn:hover {
-  background-color: #edf2f7;
-  color: #2d3748;
-}
-
-.action-btn:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
-}
-
-.action-btn:active {
-  transform: translateY(0);
-}
-
-.action-btn-danger {
-  background-color: #fed7d7;
-  color: #c53030;
+  background: var(--surface-muted);
+  color: var(--text);
 }
 
 .action-btn-danger:hover {
-  background-color: #feb2b2;
-  color: #9b2c2c;
-}
-
-.action-btn-random {
-  background-color: #e0f2fe;
-  color: #0277bd;
-}
-
-.action-btn-random:hover {
-  background-color: #b3e5fc;
-  color: #01579b;
+  background: var(--bad-soft);
+  color: var(--bad);
 }
 
 .btn-icon {
-  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.btn-text {
-  display: inline;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .navbar-container {
-    padding: 0 16px;
-    min-height: 56px;
-  }
-  
-  .navbar-brand {
-    font-size: 18px;
-    padding: 6px 8px;
-  }
-  
-  .brand-icon {
-    font-size: 20px;
-  }
-  
-  .navbar-nav {
-    display: none;
-  }
-  
-  .action-buttons {
-    gap: 4px;
-  }
-  
-  .action-btn {
-    padding: 6px 8px;
-    font-size: 12px;
-    min-height: 40px;
-    min-width: 40px;
-  }
-  
+@media (max-width: 767px) {
   .btn-text {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
-  
-  .btn-icon {
-    font-size: 14px;
-  }
-}
 
-@media (max-width: 480px) {
-  .navbar-container {
-    padding: 0 12px;
-  }
-  
-  .navbar-brand {
-    font-size: 16px;
-  }
-  
   .brand-text {
-    display: none;
-  }
-  
-  .action-buttons {
-    gap: 2px;
-  }
-  
-  .data-actions {
-    margin-right: 2px;
-    padding-right: 2px;
-  }
-  
-  .action-btn {
-    padding: 4px 6px;
-    min-height: 36px;
-    min-width: 36px;
+    font-size: var(--text-base);
   }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .navbar {
-    border-bottom-width: 3px;
-    border-bottom-color: #000;
+@media (max-width: 479px) {
+  .brand-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
-  
-  .navbar-brand {
-    color: #000;
-  }
-  
-  .nav-link {
-    color: #000;
-  }
-  
-  .action-btn {
-    border-color: #000;
-    color: #000;
-  }
-}
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .navbar-brand,
-  .nav-link,
+  .navbar-container {
+    padding: 0 var(--space-2);
+  }
+
   .action-btn {
-    transition: none;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
   }
 }
 </style>

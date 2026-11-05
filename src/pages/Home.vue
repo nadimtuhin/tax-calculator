@@ -1,28 +1,25 @@
 <template>
   <div id="home-page">
     <div class="main-content">
-      <div class="profile-container">
+      <div class="inputs-column">
         <div class="content-section">
           <TaxpayerProfile />
         </div>
-      </div>
-      <div class="content-section">
-        <Salaries />
-      </div>
-      <div class="content-row">
-        <div class="content-col-half">
-          <div class="content-section">
-            <taxable-income />
-          </div>
+        <div class="content-section">
+          <Salaries />
         </div>
-        <div class="content-col-half">
-          <div class="content-section">
-            <investment />
-          </div>
+        <div class="content-section">
+          <taxable-income />
+        </div>
+        <div class="content-section">
+          <investment />
         </div>
       </div>
-      
-      <!-- Tax Calculation Comparison Section - Moved to bottom -->
+
+      <aside class="hero-column">
+        <tax-comparison />
+      </aside>
+
       <div class="tax-comparison-section">
         <div class="comparison-row">
           <div class="comparison-col">
@@ -37,11 +34,6 @@
           </div>
         </div>
       </div>
-      
-      <!-- Tax Comparison Summary - Now at the bottom -->
-      <div class="content-section">
-        <tax-comparison />
-      </div>
     </div>
   </div>
 </template>
@@ -51,7 +43,6 @@
 import Calculation2025 from "../components/Calculation-2025";
 import Calculation2026 from "../components/Calculation-2026";
 import TaxComparison from "../components/TaxComparison";
-import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
@@ -72,168 +63,95 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #home-page {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: var(--text);
   min-height: 100vh;
-  background-color: #f5f6fa;
+  background-color: var(--bg);
 }
 
-
+/* Desktop splits into left inputs stack (<=772px) + right sticky hero (380px),
+   with the two full-year invoice tables side-by-side underneath. */
 .main-content {
-  padding: 30px;
-  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) 112px;
   width: 100%;
 }
 
-.content-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.content-col-half {
-  flex: 1;
+.inputs-column,
+.hero-column,
+.tax-comparison-section {
   min-width: 0;
-}
-
-.profile-container {
-  margin: 0 auto 20px auto;
 }
 
 .content-section {
-  background-color: white;
-  border-radius: 8px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--space-4);
 }
 
-.content-section h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
+.comparison-row .content-section,
+.inputs-column > .content-section:last-child {
+  margin-bottom: 0;
+}
+
+.content-section :deep(h2) {
+  color: var(--text);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 650;
+  letter-spacing: -0.01em;
   text-align: left;
-}
-
-table {
-  width: 100%;
-}
-
-table th {
-  background-color: #f8f9fa;
-  color: #495057;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  padding: 12px;
-  text-align: left;
-}
-
-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-table tr:last-child td {
-  border-bottom: none;
-}
-
-input[type="number"], select {
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 6px 10px;
-  transition: border-color 0.3s;
-}
-
-input[type="number"]:focus, select:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-}
-
-
-/* Tax Comparison Layout */
-.tax-comparison-section {
-  margin-top: 20px;
 }
 
 .comparison-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }
 
 .comparison-col {
-  flex: 1;
   min-width: 0;
 }
 
-/* Tax Difference Highlighting */
-.tax-highlight-savings {
-  background-color: #ffffff;
-  border: 2px solid #000000;
-  color: #000000;
-  font-weight: 600;
-}
-
-.tax-highlight-increase {
-  background-color: #000000;
-  border: 2px solid #000000;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.tax-comparison-badge {
-  font-size: 0.875rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  margin-left: 8px;
-}
-
-.badge-savings {
-  background-color: #ffffff;
-  color: #000000;
-  border: 2px solid #000000;
-  font-weight: 700;
-}
-
-.badge-increase {
-  background-color: #000000;
-  color: #ffffff;
-  border: 2px solid #000000;
-  font-weight: 700;
-}
-
-@media (max-width: 768px) {
+@media (min-width: 1024px) {
   .main-content {
-    padding: 15px;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+    padding-bottom: var(--space-6);
   }
 
-  .content-row {
-    flex-direction: column;
-    gap: 15px;
+  .inputs-column {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .hero-column {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: 72px;
+  }
+
+  .tax-comparison-section {
+    grid-column: 1 / -1;
   }
 
   .comparison-row {
-    flex-direction: column;
-    gap: 15px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media (max-width: 600px) {
   .content-section {
-    padding: 15px;
-  }
-
-  table {
-    font-size: 0.875rem;
-  }
-
-  table input {
-    width: 100px !important;
+    padding: var(--space-4);
   }
 }
 </style>

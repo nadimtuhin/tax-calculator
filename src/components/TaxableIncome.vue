@@ -1,7 +1,8 @@
 <template>
 <div>
 <h2>Taxable income breakdown</h2>
-<table class="table">
+<div class="table-scroll">
+<table class="income-table">
   <thead>
     <tr>
       <th></th>
@@ -20,12 +21,10 @@
     <tr>
       <td>
         <strong>House</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('house')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
+        <button type="button" class="help-btn" ref="triggerHouse" aria-label="About house rent exemption" :aria-expanded="showTooltip === 'house'" @click="toggleTooltip('house')">?</button>
+        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="closeTooltip('house')">
+          <div ref="modalHouse" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="House Rent Exemption" tabindex="-1" @click.stop>
+            <button ref="closeHouse" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('house')">&times;</button>
             <strong>House Rent Exemption:</strong><br>
             • 50% of basic salary OR actual house allowance<br>
             • Whichever is lower<br>
@@ -40,12 +39,10 @@
     <tr>
       <td>
         <strong>Medical</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('medical')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
+        <button type="button" class="help-btn" ref="triggerMedical" aria-label="About medical allowance exemption" :aria-expanded="showTooltip === 'medical'" @click="toggleTooltip('medical')">?</button>
+        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="closeTooltip('medical')">
+          <div ref="modalMedical" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Medical Allowance Exemption" tabindex="-1" @click.stop>
+            <button ref="closeMedical" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('medical')">&times;</button>
             <strong>Medical Allowance Exemption:</strong><br>
             • 10% of basic salary OR actual medical allowance<br>
             • Whichever is lower<br>
@@ -60,12 +57,10 @@
     <tr>
       <td>
         <strong>Transport</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('transport')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
+        <button type="button" class="help-btn" ref="triggerTransport" aria-label="About transport allowance exemption" :aria-expanded="showTooltip === 'transport'" @click="toggleTooltip('transport')">?</button>
+        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="closeTooltip('transport')">
+          <div ref="modalTransport" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Transport Allowance Exemption" tabindex="-1" @click.stop>
+            <button ref="closeTransport" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('transport')">&times;</button>
             <strong>Transport Allowance Exemption:</strong><br>
             • Actual transport allowance received<br>
             • Maximum: ৳30,000 per year
@@ -109,6 +104,7 @@
   </tbody>
 </table>
 </div>
+</div>
 </template>
 
 <script>
@@ -121,10 +117,68 @@ export default {
       showTooltip: null
     }
   },
+  mounted() {
+    window.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleKeydown);
+  },
   methods: {
+    capitalize(type) {
+      return `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
+    },
     toggleTooltip(type) {
-      console.log('Toggling tooltip:', type, 'Current:', this.showTooltip);
-      this.showTooltip = this.showTooltip === type ? null : type;
+      if (this.showTooltip === type) {
+        this.closeTooltip(type);
+        return;
+      }
+      this.showTooltip = type;
+      this.$nextTick(() => {
+        const refKey = `close${this.capitalize(type)}`;
+        this.$refs[refKey]?.focus?.();
+      });
+    },
+    closeTooltip(type) {
+      const active = type || this.showTooltip;
+      this.showTooltip = null;
+      if (active) {
+        this.$nextTick(() => {
+          const refKey = `trigger${this.capitalize(active)}`;
+          this.$refs[refKey]?.focus?.();
+        });
+      }
+    },
+    handleKeydown(event) {
+      if (!this.showTooltip) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.closeTooltip(this.showTooltip);
+        return;
+      }
+      if (event.key === 'Tab') {
+        const modal = this.$refs[`modal${this.capitalize(this.showTooltip)}`];
+        if (!modal) return;
+        const focusables = Array.from(
+          modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        ).filter(el => !el.disabled);
+        if (focusables.length === 0) {
+          event.preventDefault();
+          modal.focus?.();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement;
+        if (event.shiftKey) {
+          if (activeEl === first || !modal.contains(activeEl)) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (activeEl === last || !modal.contains(activeEl)) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
   },
   computed: {
@@ -155,46 +209,69 @@ export default {
 </script>
 
 <style scoped>
-.tooltip {
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
+.table-scroll {
+  overflow-x: auto;
+}
+
+.income-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.income-table th {
+  padding: var(--space-2) var(--space-3);
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.income-table td {
+  padding: var(--space-3);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.income-table th:first-child,
+.income-table td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.income-table tr:last-child td {
+  border-bottom: 0;
+  background: var(--surface-muted);
+  font-weight: 700;
+}
+
+.help-btn {
+  width: 24px;
+  height: 24px;
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--info);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
 
-.tooltip-icon {
-  font-size: 14px;
-  font-weight: bold;
-  opacity: 0.8;
-  transition: all 0.2s;
-  background: #e3f2fd;
-  padding: 4px 6px;
-  border-radius: 50%;
-  border: 1px solid #90caf9;
-  display: inline-block;
-  min-width: 20px;
-  text-align: center;
-  color: #1976d2;
-}
-
-.tooltip-icon:hover {
-  opacity: 1;
-  background: #bbdefb;
-  transform: scale(1.1);
-}
-
-.tooltip-icon.active {
-  background: #2196f3;
-  color: white;
-  border-color: #1976d2;
+.help-btn:hover {
+  background: var(--surface-muted);
 }
 
 .tooltip-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -203,85 +280,37 @@ export default {
 }
 
 .tooltip-modal {
-  background: #2d3748;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 320px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: var(--space-5);
+  border-radius: var(--radius);
+  max-width: min(360px, 90vw);
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+  line-height: 1.6;
+  text-align: left;
+  font-weight: 400;
+  white-space: normal;
 }
 
 .tooltip-close {
   position: absolute;
-  top: 8px;
-  right: 12px;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
-  color: #cbd5e0;
-  font-size: 20px;
+  color: var(--text-muted);
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tooltip-close:hover {
-  color: white;
-}
-
-.tooltip-content {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #2d3748;
-  color: white;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.4;
-  white-space: nowrap;
-  z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin-bottom: 8px;
-  min-width: 250px;
-}
-
-.tooltip-content::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #2d3748 transparent transparent transparent;
-}
-
-.tooltip-content strong {
-  color: #ffd700;
-  display: block;
-  margin-bottom: 4px;
-}
-
-@media (max-width: 768px) {
-  .tooltip-content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-width: 280px;
-    max-width: 90vw;
-    white-space: normal;
-  }
-  
-  .tooltip-content::after {
-    display: none;
-  }
+  color: var(--text);
 }
 </style>

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory } from './helpers/category.js';
 
 test.describe('Dual Tax Calculation Workflow (2024-25 vs 2025-26)', () => {
   test.beforeEach(async ({ page }) => {
@@ -82,9 +83,9 @@ test.describe('Dual Tax Calculation Workflow (2024-25 vs 2025-26)', () => {
     const initialH2Texts = await getH2Texts();
     
     // Change taxpayer profile
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('female');
+      await selectCategory(page, 'female');
       await page.waitForTimeout(1000);
       
       // Get new h2 texts
@@ -129,9 +130,9 @@ test.describe('Dual Tax Calculation Workflow (2024-25 vs 2025-26)', () => {
     
     for (const category of categories) {
       // Set taxpayer category
-      const categorySelect = page.locator('select').first();
+      const categorySelect = categoryRadios(page).first();
       if (await categorySelect.count() > 0) {
-        await categorySelect.selectOption(category);
+        await selectCategory(page, category);
         await page.waitForTimeout(500);
         
         // Set salary
