@@ -465,7 +465,7 @@ export default {
   }
 }
 
-@media (max-width: 479px) {
+@media (max-width: 559px) {
   .brand-text {
     position: absolute;
     width: 1px;
@@ -482,6 +482,33 @@ export default {
   .data-actions {
     padding-right: var(--space-1);
     margin-right: 0;
+  }
+}
+
+@media (max-width: 389px) {
+  .navbar-container {
+    gap: var(--space-1);
+    padding: 0 var(--space-2);
+  }
+
+  .navbar-brand {
+    padding: 2px;
+  }
+
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
+  .action-buttons,
+  .data-actions {
+    gap: 2px;
+  }
+
+  .action-btn {
+    min-width: 38px;
+    min-height: 40px;
+    padding: 0;
   }
 }
 </style>
