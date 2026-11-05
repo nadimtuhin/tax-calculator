@@ -22,8 +22,8 @@
       <td>
         <strong>House</strong>
         <button type="button" class="help-btn" ref="triggerHouse" aria-label="About house rent exemption" :aria-expanded="showTooltip === 'house'" @click="toggleTooltip('house')">?</button>
-        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="House Rent Exemption" tabindex="-1" @click.stop>
+        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="closeTooltip('house')">
+          <div ref="modalHouse" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="House Rent Exemption" tabindex="-1" @click.stop>
             <button ref="closeHouse" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('house')">&times;</button>
             <strong>House Rent Exemption:</strong><br>
             • 50% of basic salary OR actual house allowance<br>
@@ -40,8 +40,8 @@
       <td>
         <strong>Medical</strong>
         <button type="button" class="help-btn" ref="triggerMedical" aria-label="About medical allowance exemption" :aria-expanded="showTooltip === 'medical'" @click="toggleTooltip('medical')">?</button>
-        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Medical Allowance Exemption" tabindex="-1" @click.stop>
+        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="closeTooltip('medical')">
+          <div ref="modalMedical" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Medical Allowance Exemption" tabindex="-1" @click.stop>
             <button ref="closeMedical" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('medical')">&times;</button>
             <strong>Medical Allowance Exemption:</strong><br>
             • 10% of basic salary OR actual medical allowance<br>
@@ -58,8 +58,8 @@
       <td>
         <strong>Transport</strong>
         <button type="button" class="help-btn" ref="triggerTransport" aria-label="About transport allowance exemption" :aria-expanded="showTooltip === 'transport'" @click="toggleTooltip('transport')">?</button>
-        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Transport Allowance Exemption" tabindex="-1" @click.stop>
+        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="closeTooltip('transport')">
+          <div ref="modalTransport" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Transport Allowance Exemption" tabindex="-1" @click.stop>
             <button ref="closeTransport" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('transport')">&times;</button>
             <strong>Transport Allowance Exemption:</strong><br>
             • Actual transport allowance received<br>
@@ -124,30 +124,60 @@ export default {
     window.removeEventListener('keydown', this.handleKeydown);
   },
   methods: {
+    capitalize(type) {
+      return `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
+    },
     toggleTooltip(type) {
-      console.log('Toggling tooltip:', type, 'Current:', this.showTooltip);
-      const next = this.showTooltip === type ? null : type;
-      this.showTooltip = next;
-      if (next) {
-        this.$nextTick(() => {
-          const refKey = `close${next.charAt(0).toUpperCase()}${next.slice(1)}`;
-          this.$refs[refKey]?.focus?.();
-        });
+      if (this.showTooltip === type) {
+        this.closeTooltip(type);
+        return;
       }
+      this.showTooltip = type;
+      this.$nextTick(() => {
+        const refKey = `close${this.capitalize(type)}`;
+        this.$refs[refKey]?.focus?.();
+      });
     },
     closeTooltip(type) {
       const active = type || this.showTooltip;
       this.showTooltip = null;
       if (active) {
         this.$nextTick(() => {
-          const refKey = `trigger${active.charAt(0).toUpperCase()}${active.slice(1)}`;
+          const refKey = `trigger${this.capitalize(active)}`;
           this.$refs[refKey]?.focus?.();
         });
       }
     },
     handleKeydown(event) {
-      if (event.key === 'Escape' && this.showTooltip) {
+      if (!this.showTooltip) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
         this.closeTooltip(this.showTooltip);
+        return;
+      }
+      if (event.key === 'Tab') {
+        const modal = this.$refs[`modal${this.capitalize(this.showTooltip)}`];
+        if (!modal) return;
+        const focusables = Array.from(
+          modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        ).filter(el => !el.disabled);
+        if (focusables.length === 0) {
+          event.preventDefault();
+          modal.focus?.();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement;
+        if (event.shiftKey) {
+          if (activeEl === first || !modal.contains(activeEl)) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (activeEl === last || !modal.contains(activeEl)) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     }
   },

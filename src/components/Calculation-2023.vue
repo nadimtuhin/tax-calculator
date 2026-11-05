@@ -1,7 +1,7 @@
 <template>
 <div>
   <h2>Total Tax Current (2023) ৳{{totalTax.toLocaleString()}}</h2>
-  <table class="table table-bordered">
+  <table class="table">
     <tbody>
       <tr>
         <td>

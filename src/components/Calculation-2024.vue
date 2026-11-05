@@ -1,7 +1,7 @@
 <template>
 <div>
   <h2>Tax for {{currentYearLabel}} {{totalTax}}</h2>
-  <table class="table table-bordered">
+  <table class="table">
     <tbody>
       <tr>
         <td>
