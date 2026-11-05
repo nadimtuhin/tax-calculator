@@ -41,7 +41,7 @@
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td> <strong>{{payableTax}}</strong> </td>
       </tr>
     </tbody>
   </table>

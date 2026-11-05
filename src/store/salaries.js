@@ -334,16 +334,19 @@ const salaries = {
       const { category, parentOfDisabled } = state.taxpayerProfile;
       const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
       const isLegacyParent = category === 'parent_disabled';
-      
+      const parentExtra = Number(thresholds.parent_disabled) || 0;
+
       let baseThreshold = isLegacyParent
         ? thresholds.general
         : (thresholds[category] || thresholds.general);
-      
-      // Parent of disabled child: additional amount on top of own category
+
+      // Parent of disabled child: additional amount on top of own category.
+      // parent_disabled in taxFreeThresholds is always the additive delta (Tk 50,000),
+      // never a flat threshold, for every supported fiscal year including 2023-24.
       if (parentOfDisabled || isLegacyParent) {
-        baseThreshold += thresholds.parent_disabled;
+        baseThreshold += parentExtra;
       }
-      
+
       return baseThreshold;
     },
     

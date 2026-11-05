@@ -399,7 +399,7 @@ describe('Calculation-2025 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const totalTds = wrapper.vm.totalTds;
       const investmentRebate = wrapper.vm.investmentRebate;
-      const expectedPayable = totalTax - totalTds - investmentRebate;
+      const expectedPayable = Math.max(0, totalTax - totalTds - investmentRebate);
       
       const payableCell = payableRow.findAll('td').at(2);
       expect(payableCell.text().trim()).toBe(expectedPayable.toString());

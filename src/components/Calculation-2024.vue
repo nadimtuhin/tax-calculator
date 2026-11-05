@@ -41,7 +41,7 @@
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td> <strong>{{payableTax}}</strong> </td>
       </tr>
     </tbody>
   </table>
@@ -84,6 +84,9 @@ export default {
     isMinimumTaxApplied() {
       const calculatedTax = Math.round(this.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
       return calculatedTax < this.minimumTaxAmount;
+    },
+    payableTax() {
+      return Math.max(0, this.totalTax - this.totalTds - this.investmentRebate);
     }
   }
 };
