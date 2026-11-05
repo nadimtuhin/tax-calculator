@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory } from './helpers/category.js';
 
 test.describe('Performance Testing - Dual Tax Calculator', () => {
   test.beforeEach(async ({ page }) => {
@@ -103,7 +104,7 @@ test.describe('Performance Testing - Dual Tax Calculator', () => {
   });
 
   test('should handle taxpayer profile changes efficiently', async ({ page }) => {
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     
     if (await categorySelect.count() > 0) {
       // Set initial salary
@@ -118,7 +119,7 @@ test.describe('Performance Testing - Dual Tax Calculator', () => {
       for (const category of categories) {
         const startTime = Date.now();
         
-        await categorySelect.selectOption(category);
+        await selectCategory(page, category);
         
         // Wait for calculations to update
         await page.waitForFunction((cat) => {
@@ -244,13 +245,13 @@ test.describe('Performance Testing - Dual Tax Calculator', () => {
   test('should handle complex scenarios without performance issues', async ({ page }) => {
     // Test complex scenario with multiple inputs changing
     const salaryInput = page.locator('input[type="number"]').first();
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     
     const startTime = Date.now();
     
     // Complex scenario: change category, salary, and investment
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('female');
+      await selectCategory(page, 'female');
       await page.waitForTimeout(100);
     }
     

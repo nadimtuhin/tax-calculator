@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory } from './helpers/category.js';
 
 test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   test.beforeEach(async ({ page }) => {
@@ -20,9 +21,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
 
   test('should handle zero income correctly', async ({ page }) => {
     // Set taxpayer profile
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('general');
+      await selectCategory(page, 'general');
       await page.waitForTimeout(500);
     }
     
@@ -57,9 +58,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     ];
     
     // Set general taxpayer
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('general');
+      await selectCategory(page, 'general');
       await page.waitForTimeout(500);
     }
     
@@ -111,9 +112,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     
     for (const test of categoryTests) {
       // Set taxpayer category
-      const categorySelect = page.locator('select').first();
+      const categorySelect = categoryRadios(page).first();
       if (await categorySelect.count() > 0) {
-        await categorySelect.selectOption(test.category);
+        await selectCategory(page, test.category);
         await page.waitForTimeout(500);
       }
       
@@ -143,9 +144,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
 
   test('should handle very high income correctly', async ({ page }) => {
     // Set general taxpayer
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('general');
+      await selectCategory(page, 'general');
       await page.waitForTimeout(500);
     }
     
@@ -259,9 +260,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
 
   test('should handle tax slab boundary values', async ({ page }) => {
     // Set general taxpayer
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('general');
+      await selectCategory(page, 'general');
       await page.waitForTimeout(500);
     }
     
@@ -405,9 +406,9 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     
     for (const test of exactBoundaryTests) {
       // Set taxpayer category
-      const categorySelect = page.locator('select').first();
+      const categorySelect = categoryRadios(page).first();
       if (await categorySelect.count() > 0) {
-        await categorySelect.selectOption(test.category);
+        await selectCategory(page, test.category);
         await page.waitForTimeout(500);
       }
       
