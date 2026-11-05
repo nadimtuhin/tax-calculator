@@ -7,7 +7,7 @@ const mountWith = ({
   total2026,
   payable2025,
   payable2026,
-  threshold2025 = 375000,
+  threshold2025 = 400000,
   threshold2026 = 400000,
   taxDiff = total2026 - total2025,
   savings = Math.max(total2025 - total2026, 0),
@@ -108,19 +108,19 @@ describe('TaxComparison hero', () => {
 
   test('tiles keep accurate FY 2025-2026 and FY 2026-2027 labels even when profile selects 2024-25', () => {
     const wrapper2024 = mountWith({
-      total2025: 39450,
+      total2025: 35700,
       total2026: 35700,
       payable2025: 11310,
       payable2026: 14700,
-      threshold2025: 375000,
+      threshold2025: 400000,
       threshold2026: 400000,
       currentYear: '2024-25'
     });
     const cards2024 = wrapper2024.findAll('.comparison-card');
     expect(cards2024).toHaveLength(2);
     expect(cards2024[0].text()).toContain('FY 2025-2026');
-    expect(cards2024[0].text()).toContain('৳39,450');
-    expect(cards2024[0].text()).toContain('৳375,000');
+    expect(cards2024[0].text()).toContain('৳35,700');
+    expect(cards2024[0].text()).toContain('৳400,000');
     expect(cards2024[0].classes()).not.toContain('is-selected');
     expect(cards2024[1].text()).toContain('FY 2026-2027');
     expect(cards2024[1].text()).toContain('৳35,700');
@@ -137,5 +137,24 @@ describe('TaxComparison hero', () => {
     });
     expect(wrapper2025.findAll('.comparison-card')[0].text()).toContain('FY 2025-2026 (Selected)');
     expect(wrapper2025.findAll('.comparison-card')[1].text()).not.toContain('(Selected)');
+  });
+
+  test('detailed breakdown reflects matching 400k-family thresholds across FY 2025-26 and FY 2026-27', () => {
+    const wrapper = mountWith({
+      total2025: 35700,
+      total2026: 35700,
+      payable2025: 11310,
+      payable2026: 14700,
+      threshold2025: 400000,
+      threshold2026: 400000
+    });
+    const breakdownText = wrapper.find('.comparison-breakdown').text();
+    expect(breakdownText).toContain('Tax-free thresholds match FY 2025-26');
+    expect(breakdownText).toContain('AY 2026-27 and AY 2027-28');
+    const thresholdRowCells = wrapper.findAll('.breakdown-table tbody tr')[0].findAll('td');
+    expect(thresholdRowCells[1].text()).toBe('৳400,000');
+    expect(thresholdRowCells[2].text()).toBe('৳400,000');
+    expect(thresholdRowCells[3].text()).toBe('৳0');
+    expect(thresholdRowCells[3].classes()).toEqual([]);
   });
 });

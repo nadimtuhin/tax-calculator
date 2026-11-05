@@ -57,18 +57,18 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         expect(totalTax2025).toBe(store.getters.totalTax2025);
         expect(totalTax2026).toBe(store.getters.totalTax2026);
 
-        // 2026-27 threshold is 25k higher
-        expect(threshold2026 - threshold2025).toBe(25000);
+        // Finance Act 2026 Schedule 1 sets matching 400k-family thresholds for both AY 2026-27 and AY 2027-28
+        expect(threshold2026 - threshold2025).toBe(0);
       });
     });
 
     test('should have correct threshold differences for all categories', () => {
       const categories = [
-        { category: 'general', threshold2025: 375000, threshold2026: 400000 },
-        { category: 'female', threshold2025: 425000, threshold2026: 450000 },
-        { category: 'disabled', threshold2025: 500000, threshold2026: 525000 },
-        { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 550000 },
-        { category: 'third_gender', threshold2025: 500000, threshold2026: 525000 }
+        { category: 'general', threshold2025: 400000, threshold2026: 400000 },
+        { category: 'female', threshold2025: 450000, threshold2026: 450000 },
+        { category: 'disabled', threshold2025: 525000, threshold2026: 525000 },
+        { category: 'freedom_fighter', threshold2025: 550000, threshold2026: 550000 },
+        { category: 'third_gender', threshold2025: 525000, threshold2026: 525000 }
       ];
 
       categories.forEach(({ category, threshold2025, threshold2026 }) => {
@@ -161,27 +161,27 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
     const categoryTests = [
       {
         category: 'general',
-        threshold2025: 375000,
+        threshold2025: 400000,
         threshold2026: 400000
       },
       {
         category: 'female',
-        threshold2025: 425000,
+        threshold2025: 450000,
         threshold2026: 450000
       },
       {
         category: 'disabled',
-        threshold2025: 500000,
+        threshold2025: 525000,
         threshold2026: 525000
       },
       {
         category: 'freedom_fighter',
-        threshold2025: 525000,
+        threshold2025: 550000,
         threshold2026: 550000
       },
       {
         category: 'third_gender',
-        threshold2025: 500000,
+        threshold2025: 525000,
         threshold2026: 525000
       }
     ];
@@ -202,7 +202,7 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
 
         expect(actualThreshold2025).toBe(threshold2025);
         expect(actualThreshold2026).toBe(threshold2026);
-        expect(actualThreshold2026 - actualThreshold2025).toBe(25000);
+        expect(actualThreshold2026 - actualThreshold2025).toBe(0);
 
         // Taxes should be non-negative
         expect(totalTax2025).toBeGreaterThan(0);

@@ -54,7 +54,7 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     // Test exact threshold amounts
     const thresholdTests = [
       { salary: 29167, annual: 350000, description: '2024-25 exact threshold' }, // 350K/12
-      { salary: 31250, annual: 375000, description: '2025-26 exact threshold' }  // 375K/12
+      { salary: 33333, annual: 400000, description: '2025-26 exact threshold' }  // 400K/12
     ];
     
     // Set general taxpayer
@@ -73,9 +73,8 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
       // but minimum tax might apply
       const pageContent = await page.textContent('body');
       
-      // Should show threshold amounts in the calculations
-      expect(pageContent).toContain('3.5'); // 350K for 2024-25
-      expect(pageContent).toContain('3.75'); // 375K for 2025-26
+      // Should show 400K (Tk4 lakh) threshold in the FY 2025-26 & FY 2026-27 calculations
+      expect(pageContent).toContain('First Tk4 lakh');
       
       // Both years should show some tax (likely minimum tax)
       const h2Elements = page.locator('h2');
@@ -90,23 +89,23 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
       { 
         category: 'female', 
         threshold2024: 400000, 
-        threshold2025: 425000,
+        threshold2025: 450000,
         monthlyThreshold2024: 33334,
-        monthlyThreshold2025: 35417
+        monthlyThreshold2025: 37500
       },
       { 
         category: 'disabled', 
         threshold2024: 475000, 
-        threshold2025: 500000,
+        threshold2025: 525000,
         monthlyThreshold2024: 39583,
-        monthlyThreshold2025: 41667
+        monthlyThreshold2025: 43750
       },
       { 
         category: 'freedom_fighter', 
         threshold2024: 500000, 
-        threshold2025: 525000,
+        threshold2025: 550000,
         monthlyThreshold2024: 41667,
-        monthlyThreshold2025: 43750
+        monthlyThreshold2025: 45834
       }
     ];
     
@@ -394,12 +393,12 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     const exactBoundaryTests = [
       { 
         category: 'general',
-        monthly: 56250, // Exactly 675K annually (375K threshold + 300K first bracket)
+        monthly: 58333, // ~700K annually (400K threshold + 300K first bracket)
         description: 'Exact end of 10% bracket in 2025-26'
       },
       {
         category: 'female', 
-        monthly: 60417, // Exactly 725K annually (425K threshold + 300K first bracket)
+        monthly: 62500, // Exactly 750K annually (450K threshold + 300K first bracket)
         description: 'Exact end of 10% bracket for female in 2025-26'
       }
     ];

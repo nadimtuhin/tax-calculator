@@ -64,9 +64,8 @@ test.describe('Dual Tax Calculation Workflow (2024-25 vs 2025-26)', () => {
     // Look for threshold indicators in the page
     const pageContent = await page.textContent('body');
     
-    // Should show different threshold amounts
-    expect(pageContent).toContain('3.5'); // 350K threshold for 2024-25
-    expect(pageContent).toContain('3.75'); // 375K threshold for 2025-26
+    // Both FY 2025-26 (AY 2026-27) and FY 2026-27 (AY 2027-28) show Tk4 lakh general threshold
+    expect(pageContent).toContain('First Tk4 lakh');
   });
 
   test('should update both calculations when taxpayer profile changes', async ({ page }) => {

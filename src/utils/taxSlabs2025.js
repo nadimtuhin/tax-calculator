@@ -53,22 +53,24 @@ export function calculateTaxSlabs2025(taxFreeThreshold) {
 }
 
 /**
- * Get tax-free thresholds for FY 2025-2026
- * Updated thresholds: +25,000 BDT across all categories
+ * Tax-free thresholds for FY 2025-2026 (Income Year 2025-26 / Assessment Year 2026-27).
+ * Enacted Finance Act 2026 (Schedule 1, passed 29 June 2026, effective 1 July 2026)
+ * superseded Finance Ordinance 2025's prospective 375K-family proposal and set the
+ * 400K-family thresholds for both AY 2026-27 and AY 2027-28 (+50,000 BDT vs FY 2024-25).
  */
 export const TAX_FREE_THRESHOLDS_2025 = {
-  general: 375000,        // +25K from 350K
-  female: 425000,         // +25K from 400K
-  senior: 425000,         // +25K from 400K (65+ years)
-  disabled: 500000,       // +25K from 475K
-  third_gender: 500000,   // +25K from 475K
-  freedom_fighter: 525000  // +25K from 500K
+  general: 400000,         // +50K from FY 2024-25 (350K); supersedes FO 2025 proposed 375K
+  female: 450000,          // +50K from FY 2024-25 (400K)
+  senior: 450000,          // +50K from FY 2024-25 (400K, 65+ years)
+  disabled: 525000,        // +50K from FY 2024-25 (475K)
+  third_gender: 525000,    // +50K from FY 2024-25 (475K)
+  freedom_fighter: 550000  // +50K from FY 2024-25 (500K; war-wounded FF & gazetted July Warriors)
 };
 
 /**
  * Additional allowance for a parent / legal guardian of a person with disability.
  * Added ON TOP of the taxpayer's own category threshold (one parent only),
- * e.g. general 375K -> 425K, female/65+ 425K -> 475K, freedom fighter 525K -> 575K.
+ * e.g. general 400K -> 450K, female/65+ 450K -> 500K, freedom fighter 550K -> 600K.
  */
 export const PARENT_OF_DISABLED_ALLOWANCE_2025 = 50000;
 
