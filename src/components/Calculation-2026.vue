@@ -73,7 +73,8 @@ export default {
       fiscalYearOptions: 'fiscalYearOptions'
     }),
     otherYearLabel() {
-      return this.currentYear === '2025-26' ? 'FY 2026-2027' : 'FY 2025-2026';
+      // This component always shows FY 2026-27 data
+      return 'FY 2026-2027';
     }
   }
 };

@@ -77,3 +77,30 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table td {
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  vertical-align: top;
+}
+
+.table td:not(:first-child) {
+  text-align: right;
+}
+
+.table tr:first-child td {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom-color: var(--border-strong);
+}
+</style>

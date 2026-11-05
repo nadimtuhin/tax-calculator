@@ -208,6 +208,11 @@ export default {
   border-radius: var(--radius-sm);
 }
 
+.grid-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .salary-grid {
   width: 100%;
   border-collapse: collapse;

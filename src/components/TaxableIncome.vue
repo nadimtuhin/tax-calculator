@@ -21,10 +21,10 @@
     <tr>
       <td>
         <strong>House</strong>
-        <button type="button" class="help-btn" aria-label="About house rent exemption" :aria-expanded="showTooltip === 'house'" @click="toggleTooltip('house')">?</button>
+        <button type="button" class="help-btn" ref="triggerHouse" aria-label="About house rent exemption" :aria-expanded="showTooltip === 'house'" @click="toggleTooltip('house')">?</button>
         <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" type="button" aria-label="Close" @click="showTooltip = null">&times;</button>
+          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="House Rent Exemption" tabindex="-1" @click.stop>
+            <button ref="closeHouse" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('house')">&times;</button>
             <strong>House Rent Exemption:</strong><br>
             • 50% of basic salary OR actual house allowance<br>
             • Whichever is lower<br>
@@ -39,10 +39,10 @@
     <tr>
       <td>
         <strong>Medical</strong>
-        <button type="button" class="help-btn" aria-label="About medical allowance exemption" :aria-expanded="showTooltip === 'medical'" @click="toggleTooltip('medical')">?</button>
+        <button type="button" class="help-btn" ref="triggerMedical" aria-label="About medical allowance exemption" :aria-expanded="showTooltip === 'medical'" @click="toggleTooltip('medical')">?</button>
         <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" type="button" aria-label="Close" @click="showTooltip = null">&times;</button>
+          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Medical Allowance Exemption" tabindex="-1" @click.stop>
+            <button ref="closeMedical" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('medical')">&times;</button>
             <strong>Medical Allowance Exemption:</strong><br>
             • 10% of basic salary OR actual medical allowance<br>
             • Whichever is lower<br>
@@ -57,10 +57,10 @@
     <tr>
       <td>
         <strong>Transport</strong>
-        <button type="button" class="help-btn" aria-label="About transport allowance exemption" :aria-expanded="showTooltip === 'transport'" @click="toggleTooltip('transport')">?</button>
+        <button type="button" class="help-btn" ref="triggerTransport" aria-label="About transport allowance exemption" :aria-expanded="showTooltip === 'transport'" @click="toggleTooltip('transport')">?</button>
         <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" type="button" aria-label="Close" @click="showTooltip = null">&times;</button>
+          <div class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Transport Allowance Exemption" tabindex="-1" @click.stop>
+            <button ref="closeTransport" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('transport')">&times;</button>
             <strong>Transport Allowance Exemption:</strong><br>
             • Actual transport allowance received<br>
             • Maximum: ৳30,000 per year
@@ -117,10 +117,38 @@ export default {
       showTooltip: null
     }
   },
+  mounted() {
+    window.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleKeydown);
+  },
   methods: {
     toggleTooltip(type) {
       console.log('Toggling tooltip:', type, 'Current:', this.showTooltip);
-      this.showTooltip = this.showTooltip === type ? null : type;
+      const next = this.showTooltip === type ? null : type;
+      this.showTooltip = next;
+      if (next) {
+        this.$nextTick(() => {
+          const refKey = `close${next.charAt(0).toUpperCase()}${next.slice(1)}`;
+          this.$refs[refKey]?.focus?.();
+        });
+      }
+    },
+    closeTooltip(type) {
+      const active = type || this.showTooltip;
+      this.showTooltip = null;
+      if (active) {
+        this.$nextTick(() => {
+          const refKey = `trigger${active.charAt(0).toUpperCase()}${active.slice(1)}`;
+          this.$refs[refKey]?.focus?.();
+        });
+      }
+    },
+    handleKeydown(event) {
+      if (event.key === 'Escape' && this.showTooltip) {
+        this.closeTooltip(this.showTooltip);
+      }
     }
   },
   computed: {

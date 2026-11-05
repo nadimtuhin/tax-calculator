@@ -25,6 +25,7 @@
         id="parent-of-disabled"
         class="switch-input"
         type="checkbox"
+        role="switch"
         v-model="parentOfDisabled"
         @change="updateProfile"
       >

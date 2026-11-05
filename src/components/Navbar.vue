@@ -12,11 +12,6 @@
         </router-link>
       </div>
       
-      <!-- Main navigation -->
-      <ul class="navbar-nav" role="menubar">
-        <!-- No navigation items for now -->
-      </ul>
-      
       <!-- Action buttons -->
       <div class="navbar-actions">
         <div class="action-buttons">
@@ -293,10 +288,6 @@ export default {
   min-height: 56px;
 }
 
-.navbar-nav {
-  display: none;
-}
-
 .navbar-brand {
   display: flex;
   align-items: center;
@@ -328,8 +319,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 40px;
-  min-width: 40px;
+  min-height: 44px;
+  min-width: 44px;
   justify-content: center;
   padding: 0 var(--space-3);
   background: transparent;
@@ -388,10 +379,8 @@ export default {
   }
 
   .action-btn {
-    min-width: 36px;
-  }
-
-  .action-btn {
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
   }
 }

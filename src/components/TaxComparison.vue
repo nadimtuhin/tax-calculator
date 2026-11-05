@@ -1,7 +1,7 @@
 <template>
   <div class="tax-comparison-summary">
     <div class="comparison-header">
-      <h3>Tax Year Comparison</h3>
+      <h3>Tax Year Comparison (FY 2025-26 vs FY 2026-27)</h3>
     </div>
 
     <div class="comparison-result">
@@ -11,7 +11,7 @@
           <strong>You will save ৳{{taxSavings.toLocaleString()}} in total tax</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, your total tax is ৳{{taxSavings.toLocaleString()}} lower.
+          Under FY 2026-27 rules, your total tax is ৳{{taxSavings.toLocaleString()}} lower than FY 2025-26.
         </div>
       </div>
 
@@ -21,7 +21,7 @@
           <strong>You will pay ৳{{additionalTax.toLocaleString()}} more in total tax</strong>
         </div>
         <div class="result-text">
-          Under the new tax structure, your total tax is ৳{{additionalTax.toLocaleString()}} higher.
+          Under FY 2026-27 rules, your total tax is ৳{{additionalTax.toLocaleString()}} higher than FY 2025-26.
         </div>
       </div>
 
@@ -31,7 +31,7 @@
           <strong>No change in total tax</strong>
         </div>
         <div class="result-text">
-          Your total tax remains the same under both tax structures.
+          Your total tax remains the same in FY 2025-26 and FY 2026-27.
         </div>
       </div>
     </div>
@@ -39,16 +39,16 @@
     <p class="payable-change" :class="payableChangeClass" data-testid="payable-change">{{payableChangeText}}</p>
 
     <div class="comparison-cards">
-      <div class="comparison-card">
-        <div class="tile-label">Current Year ({{currentYearLabel}})</div>
-        <div class="tax-amount amount">৳{{currentYearTax.toLocaleString()}}</div>
-        <div class="threshold-info">Tax-free: ৳{{currentYearThreshold.toLocaleString()}}</div>
+      <div class="comparison-card" :class="{ 'is-selected': currentYear === '2025-26' }">
+        <div class="tile-label">FY 2025-2026{{ currentYear === '2025-26' ? ' (Selected)' : '' }}</div>
+        <div class="tax-amount amount">৳{{totalTax2025.toLocaleString()}}</div>
+        <div class="threshold-info">Tax-free: ৳{{taxFreeThreshold2025.toLocaleString()}}</div>
       </div>
 
-      <div class="comparison-card">
-        <div class="tile-label">Other Year ({{otherYearLabel}})</div>
-        <div class="tax-amount amount">৳{{otherYearTax.toLocaleString()}}</div>
-        <div class="threshold-info">Tax-free: ৳{{otherYearThreshold.toLocaleString()}}</div>
+      <div class="comparison-card" :class="{ 'is-selected': currentYear === '2026-27' }">
+        <div class="tile-label">FY 2026-2027{{ currentYear === '2026-27' ? ' (Selected)' : '' }}</div>
+        <div class="tax-amount amount">৳{{totalTax2026.toLocaleString()}}</div>
+        <div class="threshold-info">Tax-free: ৳{{taxFreeThreshold2026.toLocaleString()}}</div>
       </div>
     </div>
 
@@ -66,57 +66,59 @@
               <li>Slab rates unchanged: 0%, 10%, 15%, 20%, 25%, 30%</li>
             </ul>
           </div>
-          
+
           <div class="breakdown-section">
             <h4>Your Tax Calculation:</h4>
-            <table class="breakdown-table">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>FY 2025-26</th>
-                  <th>FY 2026-27</th>
-                  <th>Difference</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Tax-free Threshold</td>
-                  <td>৳{{taxFreeThreshold2025.toLocaleString()}}</td>
-                  <td>৳{{taxFreeThreshold2026.toLocaleString()}}</td>
-                  <td class="positive">+৳{{(taxFreeThreshold2026 - taxFreeThreshold2025).toLocaleString()}}</td>
-                </tr>
-                <tr>
-                  <td>Total Tax</td>
-                  <td>৳{{totalTax2025.toLocaleString()}}</td>
-                  <td>৳{{totalTax2026.toLocaleString()}}</td>
-                  <td :class="taxDifference > 0 ? 'negative' : 'positive'">
-                    {{taxDifference > 0 ? '+' : ''}}৳{{taxDifference.toLocaleString()}}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Final Payable</td>
-                  <td>৳{{payableTax2025.toLocaleString()}}</td>
-                  <td>৳{{payableTax2026.toLocaleString()}}</td>
-                  <td :class="(payableTax2026 - payableTax2025) > 0 ? 'negative' : 'positive'">
-                    {{(payableTax2026 - payableTax2025) > 0 ? '+' : ''}}৳{{(payableTax2026 - payableTax2025).toLocaleString()}}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-scroll">
+              <table class="breakdown-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>FY 2025-26</th>
+                    <th>FY 2026-27</th>
+                    <th>Difference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Tax-free Threshold</td>
+                    <td>৳{{taxFreeThreshold2025.toLocaleString()}}</td>
+                    <td>৳{{taxFreeThreshold2026.toLocaleString()}}</td>
+                    <td :class="thresholdDiffClass">{{formatThresholdDiff(taxFreeThreshold2026 - taxFreeThreshold2025)}}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Tax</td>
+                    <td>৳{{totalTax2025.toLocaleString()}}</td>
+                    <td>৳{{totalTax2026.toLocaleString()}}</td>
+                    <td data-testid="total-tax-diff" :class="totalTaxDiffClass">
+                      {{formatSignedBdt(taxDifference)}}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Final Payable</td>
+                    <td>৳{{payableTax2025.toLocaleString()}}</td>
+                    <td>৳{{payableTax2026.toLocaleString()}}</td>
+                    <td data-testid="payable-tax-diff" :class="payableChangeClass">
+                      {{formatSignedBdt(payableChange)}}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </details>
     </div>
 
-    <div class="mobile-bar" role="region" aria-label="Tax summary">
+    <div class="mobile-bar" role="region" aria-label="FY 2025-26 vs FY 2026-27 tax summary">
       <div>
         <span class="bar-label">Payable FY 2026-27</span>
         <strong class="amount">৳{{payableTax2026.toLocaleString()}}</strong>
-        <span class="bar-label" :class="payableChangeClass">{{payableChangeShort}}</span>
+        <span class="bar-label" :class="payableChangeClass" data-testid="mobile-payable-change">{{payableChangeShort}}</span>
       </div>
-      <div class="bar-diff" :class="taxDifference > 0 ? 'negative' : 'positive'">
-        <span class="bar-label">Total tax change</span>
-        <strong class="amount">{{taxDifference > 0 ? '+' : ''}}৳{{taxDifference.toLocaleString()}}</strong>
+      <div class="bar-diff" :class="totalTaxDiffClass" data-testid="mobile-total-diff">
+        <span class="bar-label">Total tax vs FY 2025-26</span>
+        <strong class="amount">{{formatSignedBdt(taxDifference)}}</strong>
       </div>
     </div>
   </div>
@@ -144,18 +146,31 @@ export default {
       taxSavings: 'taxSavings',
       additionalTax: 'additionalTax',
 
-      // Current year
-      currentYear: 'currentYear',
-      fiscalYearOptions: 'fiscalYearOptions'
+      // Current year selected in profile
+      currentYear: 'currentYear'
     }),
 
     payableChange() {
       return this.payableTax2026 - this.payableTax2025;
     },
 
+    totalTaxDiffClass() {
+      if (this.taxDifference > 0) return 'negative';
+      if (this.taxDifference < 0) return 'positive';
+      return '';
+    },
+
     payableChangeClass() {
-      if (this.payableChange === 0) return '';
-      return this.payableChange > 0 ? 'negative' : 'positive';
+      if (this.payableChange > 0) return 'negative';
+      if (this.payableChange < 0) return 'positive';
+      return '';
+    },
+
+    thresholdDiffClass() {
+      const diff = this.taxFreeThreshold2026 - this.taxFreeThreshold2025;
+      if (diff > 0) return 'positive';
+      if (diff < 0) return 'negative';
+      return '';
     },
 
     payableChangeText() {
@@ -172,31 +187,16 @@ export default {
       if (this.payableChange > 0) return `up ৳${amount} vs FY 2025-26`;
       if (this.payableChange < 0) return `down ৳${amount} vs FY 2025-26`;
       return 'same as FY 2025-26';
+    }
+  },
+  methods: {
+    formatSignedBdt(value) {
+      if (value > 0) return `+৳${value.toLocaleString()}`;
+      if (value < 0) return `-৳${Math.abs(value).toLocaleString()}`;
+      return '৳0';
     },
-
-    currentYearLabel() {
-      const option = this.fiscalYearOptions.find(opt => opt.value === this.currentYear);
-      return option ? option.label : 'FY 2026-2027';
-    },
-
-    otherYearLabel() {
-      return this.currentYear === '2026-27' ? 'FY 2025-2026' : 'FY 2026-2027';
-    },
-
-    currentYearTax() {
-      return this.currentYear === '2026-27' ? this.totalTax2026 : this.totalTax2025;
-    },
-
-    currentYearThreshold() {
-      return this.currentYear === '2026-27' ? this.taxFreeThreshold2026 : this.taxFreeThreshold2025;
-    },
-
-    otherYearTax() {
-      return this.currentYear === '2026-27' ? this.totalTax2025 : this.totalTax2026;
-    },
-
-    otherYearThreshold() {
-      return this.currentYear === '2026-27' ? this.taxFreeThreshold2025 : this.taxFreeThreshold2026;
+    formatThresholdDiff(value) {
+      return this.formatSignedBdt(value);
     }
   }
 };
@@ -281,6 +281,10 @@ export default {
   padding: var(--space-4);
 }
 
+.comparison-card.is-selected {
+  border-color: var(--accent);
+}
+
 .tile-label {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -340,12 +344,14 @@ export default {
   color: var(--text-muted);
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .breakdown-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
-  display: block;
-  overflow-x: auto;
 }
 
 .breakdown-table th,
@@ -361,12 +367,14 @@ export default {
   color: var(--text-muted);
 }
 
-.positive {
+.positive,
+.payable-change.positive {
   color: var(--good);
   font-weight: 700;
 }
 
-.negative {
+.negative,
+.payable-change.negative {
   color: var(--warn);
   font-weight: 700;
 }
@@ -404,6 +412,16 @@ export default {
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--text-muted);
+  }
+
+  .bar-label.positive {
+    color: var(--good);
+    font-weight: 600;
+  }
+
+  .bar-label.negative {
+    color: var(--warn);
+    font-weight: 600;
   }
 }
 </style>

@@ -6,6 +6,7 @@
   No investments yet. Enter an amount below to see your tax rebate.
 </p>
 
+<div class="table-scroll">
 <table class="investment-list">
   <thead>
     <tr>
@@ -59,6 +60,7 @@
     </tr>
   </tbody>
 </table>
+</div>
 
 </div>
 </template>
@@ -116,6 +118,10 @@ export default {
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
+}
+
+.table-scroll {
+  overflow-x: auto;
 }
 
 .investment-list {

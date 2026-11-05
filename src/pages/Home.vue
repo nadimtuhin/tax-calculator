@@ -8,17 +8,11 @@
         <div class="content-section">
           <Salaries />
         </div>
-        <div class="content-row">
-          <div class="content-col-half">
-            <div class="content-section">
-              <taxable-income />
-            </div>
-          </div>
-          <div class="content-col-half">
-            <div class="content-section">
-              <investment />
-            </div>
-          </div>
+        <div class="content-section">
+          <taxable-income />
+        </div>
+        <div class="content-section">
+          <investment />
         </div>
       </div>
 
@@ -49,7 +43,6 @@
 import Calculation2025 from "../components/Calculation-2025";
 import Calculation2026 from "../components/Calculation-2026";
 import TaxComparison from "../components/TaxComparison";
-import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
@@ -70,13 +63,15 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #home-page {
   color: var(--text);
   min-height: 100vh;
   background-color: var(--bg);
 }
 
+/* Desktop splits into left inputs stack (<=772px) + right sticky hero (380px),
+   with the two full-year invoice tables side-by-side underneath. */
 .main-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -93,20 +88,6 @@ export default {
   min-width: 0;
 }
 
-.content-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
-}
-
-.content-col-half {
-  min-width: 0;
-}
-
-.content-col-half > .content-section {
-  height: 100%;
-}
-
 .content-section {
   background-color: var(--surface);
   border: 1px solid var(--border);
@@ -116,17 +97,12 @@ export default {
   margin-bottom: var(--space-4);
 }
 
-.content-row .content-section,
-.comparison-row .content-section {
+.comparison-row .content-section,
+.inputs-column > .content-section:last-child {
   margin-bottom: 0;
 }
 
-.inputs-column > .content-section:last-child,
-.inputs-column > .content-row:last-child {
-  margin-bottom: 0;
-}
-
-.content-section h2 {
+.content-section :deep(h2) {
   color: var(--text);
   margin-bottom: var(--space-4);
   font-size: var(--text-lg);
