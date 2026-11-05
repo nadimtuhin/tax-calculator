@@ -11,100 +11,87 @@
 <table class="income-table">
   <thead>
     <tr>
-      <th></th>
-      <th>Total</th>
-      <th>Tax exempted</th>
-      <th>Taxable</th>
+      <th>Component</th>
+      <th>Annual Total</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>Basic</strong></td>
       <td>{{totalBasic}}</td>
-      <td>0</td>
-      <td>{{totalBasic}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>House</strong>
-        <button type="button" class="help-btn" ref="triggerHouse" aria-label="About house rent exemption" :aria-expanded="showTooltip === 'house'" @click="toggleTooltip('house')">?</button>
-        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="closeTooltip('house')">
-          <div ref="modalHouse" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="House Rent Exemption" tabindex="-1" @click.stop>
-            <button ref="closeHouse" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('house')">&times;</button>
-            <strong>House Rent Exemption:</strong><br>
-            • 50% of basic salary OR actual house allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳3,00,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>House</strong></td>
       <td>{{totalHouse}}</td>
-      <td>{{houseExempt}}</td>
-      <td>{{totalHouse - houseExempt}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>Medical</strong>
-        <button type="button" class="help-btn" ref="triggerMedical" aria-label="About medical allowance exemption" :aria-expanded="showTooltip === 'medical'" @click="toggleTooltip('medical')">?</button>
-        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="closeTooltip('medical')">
-          <div ref="modalMedical" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Medical Allowance Exemption" tabindex="-1" @click.stop>
-            <button ref="closeMedical" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('medical')">&times;</button>
-            <strong>Medical Allowance Exemption:</strong><br>
-            • 10% of basic salary OR actual medical allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳1,20,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>Medical</strong></td>
       <td>{{totalMedical}}</td>
-      <td>{{medicalExempt}}</td>
-      <td>{{totalMedical - medicalExempt}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>Transport</strong>
-        <button type="button" class="help-btn" ref="triggerTransport" aria-label="About transport allowance exemption" :aria-expanded="showTooltip === 'transport'" @click="toggleTooltip('transport')">?</button>
-        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="closeTooltip('transport')">
-          <div ref="modalTransport" class="tooltip-modal" role="dialog" aria-modal="true" aria-label="Transport Allowance Exemption" tabindex="-1" @click.stop>
-            <button ref="closeTransport" class="tooltip-close" type="button" aria-label="Close" @click="closeTooltip('transport')">&times;</button>
-            <strong>Transport Allowance Exemption:</strong><br>
-            • Actual transport allowance received<br>
-            • Maximum: ৳30,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>Transport</strong></td>
       <td>{{totalTransport}}</td>
-      <td>{{transportExempt}}</td>
-      <td>{{totalTransport - transportExempt}}</td>
     </tr>
     <tr>
       <td><strong>Others (Breakdown)</strong></td>
       <td>{{totalOthersBreakdown}}</td>
-      <td>0</td>
-      <td>{{totalOthersBreakdown}}</td>
     </tr>
     <tr>
-      <td><strong>Others (Lump Sum)</strong></td>
-      <td>{{others}}</td>
-      <td>0</td>
+      <td><strong>Others (Lump Sum / LFA / Employer RPF)</strong></td>
       <td>{{others}}</td>
     </tr>
     <tr>
       <td><strong>Bonus</strong></td>
-      <td>{{bonus}}</td>
-      <td>0</td>
       <td>{{bonus}}</td>
     </tr>
     <tr v-if="bonus2 > 0">
       <td><strong>Bonus</strong></td>
       <td>{{bonus2}}</td>
-      <td>0</td>
-      <td>{{bonus2}}</td>
     </tr>
-    <tr>
+    <tr class="subtotal-row">
       <td><strong>Gross Salary</strong></td>
       <td><strong>{{totalSalary}}</strong></td>
-      <td><strong>{{totalExempt}}</strong></td>
+    </tr>
+    <tr class="exemption-row">
+      <td>
+        <strong>Statutory Exemption (1/3 of gross, max ৳{{exemptionCap.toLocaleString()}})</strong>
+        <button
+          type="button"
+          class="help-btn"
+          ref="triggerExemption"
+          aria-label="About employment income exemption"
+          :aria-expanded="showTooltip === 'exemption'"
+          @click="toggleTooltip('exemption')"
+        >?</button>
+        <div v-if="showTooltip === 'exemption'" class="tooltip-overlay" @click="closeTooltip('exemption')">
+          <div
+            ref="modalExemption"
+            class="tooltip-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Employment Income Exemption"
+            tabindex="-1"
+            @click.stop
+          >
+            <button
+              ref="closeExemption"
+              class="tooltip-close"
+              type="button"
+              aria-label="Close"
+              @click="closeTooltip('exemption')"
+            >&times;</button>
+            <strong>Employment Income Exemption (ITA 2023):</strong><br>
+            • Single pool under Sixth Schedule Part 1 Para 27<br>
+            • 1/3 of gross employment income OR ৳{{exemptionCap.toLocaleString()}} per year, whichever is lower<br>
+            • Replaces repealed ITO 1984 separate house, medical &amp; transport caps<br>
+            • Gross includes basic, house, medical, transport, bonuses, LFA &amp; employer RPF
+          </div>
+        </div>
+      </td>
+      <td>-{{totalExempt}}</td>
+    </tr>
+    <tr>
+      <td><strong>Taxable Salary</strong></td>
       <td><strong>{{taxableSalary}}</strong></td>
     </tr>
   </tbody>
@@ -207,6 +194,7 @@ export default {
       houseExempt: 'houseExempt',
       medicalExempt: 'medicalExempt',
       transportExempt: 'transportExempt',
+      exemptionCap: 'exemptionCap',
       taxableSalary: 'taxableSalary',
       totalExempt: 'totalExempt',
     }),
@@ -250,6 +238,15 @@ export default {
   white-space: nowrap;
 }
 
+.income-table .subtotal-row td {
+  border-top: 1px solid var(--border-strong);
+}
+
+.income-table .exemption-row td {
+  color: var(--good);
+  font-weight: 600;
+}
+
 .income-table tr:last-child td {
   border-bottom: 0;
   background: var(--surface-muted);
@@ -291,7 +288,7 @@ export default {
   border: 1px solid var(--border);
   padding: var(--space-5);
   border-radius: var(--radius);
-  max-width: min(360px, 90vw);
+  max-width: min(400px, 90vw);
   position: relative;
   box-shadow: var(--shadow-lg);
   line-height: 1.6;

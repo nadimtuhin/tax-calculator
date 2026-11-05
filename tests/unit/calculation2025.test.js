@@ -132,7 +132,8 @@ describe('Calculation-2025 Component', () => {
           location: location
         });
         
-        store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // Low income
+        // Gross 612K -> 408K taxable (above 400K threshold, slab tax 800 < 5000 min tax)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 51000 });
 
         wrapper = mount(Calculation2025, {
           global: {
@@ -255,7 +256,8 @@ describe('Calculation-2025 Component', () => {
       const minimumTax = wrapper.vm.minimumTaxAmount;
       
       expect(calculatedTax).toBe(0);
-      expect(totalTax).toBe(minimumTax); // Should apply minimum tax
+      expect(totalTax).toBe(0); // At/below threshold -> 0 tax (minimumTax is statutory 5000 only above threshold)
+      expect(minimumTax).toBe(5000);
     });
 
     test('should calculate correct tax for income in first bracket (10%)', () => {
@@ -265,7 +267,8 @@ describe('Calculation-2025 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 40000 }); // 480K annually
+      // Gross 720K -> 240K exempt -> 480K taxable (80K in 10% bracket)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 60000 });
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -287,7 +290,8 @@ describe('Calculation-2025 Component', () => {
         location: 'district'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 34000 }); // 408K annually
+      // Gross 612K -> 204K exempt -> 408K taxable (8K @ 10% = 800 < 5000 min tax)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 51000 });
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -399,7 +403,7 @@ describe('Calculation-2025 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const totalTds = wrapper.vm.totalTds;
       const investmentRebate = wrapper.vm.investmentRebate;
-      const expectedPayable = Math.max(0, totalTax - totalTds - investmentRebate);
+      const expectedPayable = Math.max(0, totalTax - totalTds);
       
       const payableCell = payableRow.findAll('td').at(2);
       expect(payableCell.text().trim()).toBe(expectedPayable.toString());
@@ -414,7 +418,7 @@ describe('Calculation-2025 Component', () => {
         location: 'dhaka'
       });
       
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // Low income
+      store.commit('changeSubsequentSalaries', { index: 0, value: 51000 }); // Low income
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -547,9 +551,8 @@ describe('Calculation-2025 Component', () => {
         location: 'dhaka'
       });
 
-      // Exact 400,000 taxable salary: 33,000 * 12 = 396,000 + 4,000 bonus = 400,000 (exemptions = 0)
-      store.commit('changeSubsequentSalaries', { index: 0, value: 33000 });
-      store.commit('changeBonus', 4000);
+      // Exact 400,000 taxable salary: Gross 600,000 (50,000 * 12) -> Para 27 exempt 200,000 -> 400,000 taxable
+      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -562,10 +565,10 @@ describe('Calculation-2025 Component', () => {
       expect(wrapper.vm.taxBreakdown[0].slabCut).toBe(0);
       expect(wrapper.vm.taxBreakdown[1].slabAmount).toBe(0);
       expect(wrapper.vm.calculatedTax).toBe(0);
-      expect(wrapper.vm.totalTax).toBe(wrapper.vm.minimumTaxAmount);
+      expect(wrapper.vm.totalTax).toBe(0); // At threshold -> minimum tax does NOT apply
 
-      // Immediately above threshold: 400,010 -> 10 BDT in 10% bracket -> 1 BDT calculated tax, 5,000 minimum tax
-      store.commit('changeBonus', 4010);
+      // Immediately above threshold: +15 bonus -> Gross 600,015 -> exempt 200,005 -> taxable 400,010 -> 1 BDT slab tax -> 5,000 min tax
+      store.commit('changeBonus', 15);
       expect(store.getters.taxableSalary).toBe(400010);
       expect(wrapper.vm.taxBreakdown[1].slabAmount).toBe(10);
       expect(wrapper.vm.calculatedTax).toBe(1);

@@ -6,7 +6,7 @@
           <span class="hero-eyebrow">Bangladesh Income Tax · Finance Act 2026</span>
           <h1>Salaried Income Tax Calculator</h1>
           <p class="hero-subtitle">
-            Estimate and compare your FY 2025–26 and FY 2026–27 tax slabs, salary exemptions, monthly TDS, and Section 78 investment rebate in ৳ BDT.
+            Estimate and compare your FY 2025–26 and FY 2026–27 (plus FY 2024–25) tax slabs, Sixth Schedule salary exemption, monthly TDS, and Section 78 investment rebate in ৳ BDT.
           </p>
         </div>
         <div class="hero-meta" aria-label="Calculator highlights">
@@ -40,12 +40,16 @@
         <div class="comparison-row">
           <div class="comparison-col">
             <div class="content-section">
-              <calculation-2025 />
+              <calculation-2024 v-if="comparisonFromYear === '2024-25'" />
+              <calculation-2026 v-else-if="comparisonFromYear === '2026-27'" />
+              <calculation-2025 v-else />
             </div>
           </div>
           <div class="comparison-col">
             <div class="content-section">
-              <calculation-2026 />
+              <calculation-2024 v-if="comparisonToYear === '2024-25'" />
+              <calculation-2025 v-else-if="comparisonToYear === '2025-26'" />
+              <calculation-2026 v-else />
             </div>
           </div>
         </div>
@@ -55,7 +59,8 @@
 </template>
 
 <script>
-/* eslint-disable */
+import { mapGetters } from "vuex";
+import Calculation2024 from "../components/Calculation-2024";
 import Calculation2025 from "../components/Calculation-2025";
 import Calculation2026 from "../components/Calculation-2026";
 import TaxComparison from "../components/TaxComparison";
@@ -68,6 +73,7 @@ export default {
   name: "App",
   data: () => ({}),
   components: {
+    Calculation2024,
     Calculation2025,
     Calculation2026,
     TaxComparison,
@@ -75,7 +81,10 @@ export default {
     TaxableIncome,
     Investment,
     TaxpayerProfile,
-  }
+  },
+  computed: {
+    ...mapGetters(["comparisonFromYear", "comparisonToYear"]),
+  },
 };
 </script>
 

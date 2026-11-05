@@ -194,8 +194,8 @@ describe('Tax Calculation Tests', () => {
         location: 'dhaka'
       });
       
-      // Set up salary of 400,000 (50k above 350k threshold)
-      store.commit('changeSubsequentSalaries', { index: 0, value: 33334 }); // Monthly ~33k = Annual 400k
+      // Gross 600,000 -> Para 27 single-pool exempt 200,000 -> 400,000 taxable (50k above 350k threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
       
       const taxableSalary = store.getters.taxableSalary;
       const threshold = store.getters.taxFreeThreshold;
@@ -226,8 +226,8 @@ describe('Tax Calculation Tests', () => {
         location: 'dhaka'
       });
       
-      // Set up low salary that results in tax less than minimum
-      store.commit('changeSubsequentSalaries', { index: 0, value: 30000 }); // Monthly 30k = Annual 360k
+      // Gross 540,000 -> Para 27 exempt 180,000 -> 360,000 taxable (10k above 350k threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 45000 });
       
       const taxableSalary = store.getters.taxableSalary;
       const threshold = store.getters.taxFreeThreshold;
@@ -273,8 +273,11 @@ describe('Tax Calculation Tests', () => {
       const investmentRebate = store.getters.investmentRebate;
       const rebatePercentage = store.getters.rebatePercentage;
       
+      // FY 2024-25 Section 78: min(3% of taxableSalary, 15% of eligibleInvestment, 10L)
       expect(rebatePercentage).toBe(15);
-      expect(investmentRebate).toBe(Math.round(totalRebateableInvestment * 0.15));
+      expect(investmentRebate).toBe(
+        Math.round(Math.min(store.getters.taxableSalary * 0.03, store.getters.eligibleInvestment * 0.15, 1000000))
+      );
     });
 
     test('should limit investment rebate to 20% of taxable income', () => {
@@ -301,53 +304,31 @@ describe('Tax Calculation Tests', () => {
     });
   });
 
-  describe('Salary Exemption Calculations', () => {
-    test('should calculate house rent exemption correctly', () => {
-      // Set up basic salary components
+  describe('Salary Exemption Calculations (ITA 2023 Sixth Schedule Part 1 Para 27)', () => {
+    test('replaces repealed component caps with single-pool min(1/3 gross, 500,000)', () => {
       store.commit('changeParts', { part: 'basic', index: 0, value: 50000 });
       store.commit('changeParts', { part: 'house', index: 0, value: 30000 });
-      
-      const totalBasic = store.getters.totalBasic;
-      const totalHouse = store.getters.totalHouse;
-      const houseExempt = store.getters.houseExempt;
-      
-      // House exemption is minimum of: house allowance, 50% of basic, or 300,000
-      const expectedExemption = Math.min(totalHouse, totalBasic / 2, 300000);
-      expect(houseExempt).toBe(expectedExemption);
-    });
-
-    test('should calculate medical exemption correctly', () => {
-      // Set up basic salary and medical allowance
-      store.commit('changeParts', { part: 'basic', index: 0, value: 50000 });
       store.commit('changeParts', { part: 'medical', index: 0, value: 10000 });
-      
-      const totalBasic = store.getters.totalBasic;
-      const totalMedical = store.getters.totalMedical;
-      const medicalExempt = store.getters.medicalExempt;
-      
-      // Medical exemption is minimum of: medical allowance, 10% of basic, or 120,000
-      const expectedExemption = Math.min(totalMedical, totalBasic / 10, 120000);
-      expect(medicalExempt).toBe(expectedExemption);
+      store.commit('changeParts', { part: 'transport', index: 0, value: 10000 });
+
+      // Gross = 100k * 12 = 1,200,000 -> single pool exempt = 400,000 -> taxable = 800,000
+      expect(store.getters.houseExempt).toBe(0);
+      expect(store.getters.medicalExempt).toBe(0);
+      expect(store.getters.transportExempt).toBe(0);
+      expect(store.getters.lfaExempt).toBe(0);
+      expect(store.getters.totalSalary).toBe(1200000);
+      expect(store.getters.totalExempt).toBe(400000);
+      expect(store.getters.taxableSalary).toBe(800000);
     });
 
-    test('should calculate transport exemption correctly', () => {
-      // Set up transport allowance
-      store.commit('changeParts', { part: 'transport', index: 0, value: 25000 });
-      
-      const totalTransport = store.getters.totalTransport;
-      const transportExempt = store.getters.transportExempt;
-      
-      // Transport exemption is minimum of transport allowance or 30,000
-      const expectedExemption = Math.min(totalTransport, 30000);
-      expect(transportExempt).toBe(expectedExemption);
-    });
+    test('caps single-pool exemption at 500,000 in FY 2024-25+ and 450,000 in FY 2023-24', () => {
+      store.commit('changeSubsequentSalaries', { index: 0, value: 150000 }); // 1.8M gross
+      expect(store.getters.totalExempt).toBe(500000);
+      expect(store.getters.taxableSalary).toBe(1300000);
 
-    test('should not provide exemption for LFA', () => {
-      // Set up LFA
-      store.commit('changeParts', { part: 'lfa', index: 0, value: 10000 });
-      
-      const lfaExempt = store.getters.lfaExempt;
-      expect(lfaExempt).toBe(0); // No exemption for LFA
+      store.commit('setCurrentYear', '2023-24');
+      expect(store.getters.totalExempt).toBe(450000);
+      expect(store.getters.taxableSalary).toBe(1350000);
     });
   });
 
@@ -360,8 +341,8 @@ describe('Tax Calculation Tests', () => {
         location: 'dhaka'
       });
       
-      // Set up salary of 450,000 (50k above female threshold of 400k)
-      store.commit('changeSubsequentSalaries', { index: 0, value: 37500 });
+      // Gross 675,000 -> Para 27 exempt 225,000 -> 450,000 taxable (50k above 400k female threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 56250 });
       
       const taxableSalary = store.getters.taxableSalary;
       const threshold = store.getters.taxFreeThreshold;

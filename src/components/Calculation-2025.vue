@@ -22,12 +22,22 @@
         <td>{{slab.slabPercentage}}</td>
         <td>{{slab.slabCut}}</td>
       </tr>
+      <tr>
+        <td> <strong>Slab tax (gross)</strong> </td>
+        <td> </td>
+        <td> <strong>{{calculatedTax}}</strong> </td>
+      </tr>
+      <tr>
+        <td> <strong>Tax rebate on investment</strong> </td>
+        <td> </td>
+        <td> <strong>-{{investmentRebate}}</strong> </td>
+      </tr>
       <tr class="row-total">
         <td> <strong>Total tax</strong> </td> <td> </td>
-        <td> 
+        <td>
           <strong>{{totalTax}}</strong>
           <small v-if="isMinimumTaxApplied" class="min-tax-notice">
-            (Minimum tax applied: BDT {{minimumTaxAmount}})
+            (Minimum tax applied: BDT {{effectiveMinimumTax}})
           </small>
         </td>
       </tr>
@@ -35,11 +45,6 @@
         <td> <strong>Tax deducted at source</strong> </td>
         <td> </td>
         <td> <strong>-{{totalTds}}</strong> </td>
-      </tr>
-      <tr>
-        <td> <strong>Tax rebate on investment</strong> </td>
-        <td> </td>
-        <td> <strong>-{{investmentRebate}}</strong> </td>
       </tr>
       <tr class="row-payable">
         <td> <strong>Payable</strong> </td>
@@ -49,7 +54,6 @@
     </tbody>
   </table>
 </div>
-
 </template>
 
 <script>
@@ -66,6 +70,7 @@ export default {
       investmentRebate: 'investmentRebate2025',
       taxFreeThreshold: 'taxFreeThreshold2025',
       minimumTaxAmount: 'minimumTaxAmount2025',
+      effectiveMinimumTax: 'effectiveMinimumTax2025',
       taxBreakdown: 'taxBreakdown2025',
       calculatedTax: 'calculatedTax2025',
       totalTax: 'totalTax2025',
@@ -76,7 +81,6 @@ export default {
       fiscalYearOptions: 'fiscalYearOptions'
     }),
     otherYearLabel() {
-      // This component always shows FY 2025-26 data
       return 'FY 2025-2026';
     }
   }

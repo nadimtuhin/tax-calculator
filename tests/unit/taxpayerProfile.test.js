@@ -78,6 +78,18 @@ describe('TaxpayerProfile Component', () => {
       expect(store.getters.taxFreeThreshold2026).toBe(550000);
     });
 
+    test('should support first-time return filer BDT 1,000 minimum tax toggle in FY 2025-26 and FY 2026-27', async () => {
+      const firstTimeToggle = wrapper.find('#first-time-filer');
+      expect(firstTimeToggle.exists()).toBe(true);
+
+      await firstTimeToggle.setValue(true);
+      expect(store.state.salaries.taxpayerProfile.firstTimeFiler).toBe(true);
+      expect(wrapper.vm.minimumTax).toBe(1000);
+      expect(store.getters.minimumTaxAmount2025).toBe(1000);
+      expect(store.getters.minimumTaxAmount2026).toBe(1000);
+      expect(store.getters.minimumTaxAmount2024).toBe(5000); // FY 2024-25 unaffected
+    });
+
     test('should migrate legacy parent_disabled category to general + flag', () => {
       store.commit('updateTaxpayerProfile', { category: 'parent_disabled', age: 40, location: 'dhaka' });
       const legacy = mount(TaxpayerProfile, { global: { plugins: [store] } });

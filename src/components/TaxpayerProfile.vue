@@ -38,6 +38,19 @@
       <span class="switch-track" aria-hidden="true"></span>
     </label>
 
+    <label class="switch-row" for="first-time-filer">
+      <span class="switch-text">First-time return filer (BDT 1,000 minimum tax in FY 2025–26 &amp; 2026–27)</span>
+      <input
+        id="first-time-filer"
+        class="switch-input"
+        type="checkbox"
+        role="switch"
+        v-model="firstTimeFiler"
+        @change="updateProfile"
+      >
+      <span class="switch-track" aria-hidden="true"></span>
+    </label>
+
     <div class="profile-row">
       <div class="profile-field">
         <label for="profile-age">Age</label>
@@ -91,6 +104,7 @@
       <div class="min-tax-stat">
         <span class="stat-label">Minimum Tax</span>
         <div class="readonly-value amount">BDT {{ minimumTax.toLocaleString() }}</div>
+        <small>Applies only above threshold</small>
       </div>
     </div>
   </div>
@@ -107,6 +121,7 @@ export default {
       age: 30,
       selectedCategory: 'general',
       parentOfDisabled: false,
+      firstTimeFiler: false,
       selectedLocation: 'dhaka',
       selectedFiscalYear: '2025-26',
       categoryOptions: [
@@ -158,6 +173,7 @@ export default {
     if (currentProfile) {
       this.selectedCategory = currentProfile.category || 'general';
       this.parentOfDisabled = !!currentProfile.parentOfDisabled;
+      this.firstTimeFiler = !!currentProfile.firstTimeFiler;
       // Migrate legacy single-category profile to the combinable flag
       if (this.selectedCategory === 'parent_disabled') {
         this.selectedCategory = 'general';
@@ -188,6 +204,7 @@ export default {
         age: parseInt(this.age),
         location: this.selectedLocation,
         parentOfDisabled: this.parentOfDisabled,
+        firstTimeFiler: this.firstTimeFiler,
       });
       
       // Update fiscal year

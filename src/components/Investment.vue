@@ -23,44 +23,51 @@
   </thead>
   <tbody>
     <tr v-for="(investment, index) in investments" :key="investment.name">
-    <td><strong>{{investment.name}}</strong></td>
-    <td>
-      <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
-        type="number"
-        :aria-label="`${investment.name} amount`"
-        :value="investments[index].amount"
-        @input="changeInvestment($event, index)"
-        step="1000"
-        min="0"
-        max="9999999"
-      /></span>
-    </td>
-    <td>
-      <span v-if="investment.maximum > 9999999999" class="unlimited">Unlimited</span>
-      <span v-else class="limited">{{investment.maximum.toLocaleString()}}</span>
-    </td>
-  </tr>
-
-  <tr>
-    <td><strong>Total Investment</strong></td>
-    <td>{{totalInvestment.toLocaleString()}}</td>
-    <td>{{maxRebateableInvestment.toLocaleString()}}</td>
-  </tr>
-
-  <tr>
-    <td><strong>Total rebateable investment</strong></td>
-    <td>{{totalRebateableInvestment.toLocaleString()}}</td>
-    <td></td>
-  </tr>
-
-  <tr>
-    <td><strong>Tax rebate percentage</strong></td>
-    <td>15%</td>
-    <td></td>
-  </tr>
+      <td><strong>{{investment.name}}</strong></td>
+      <td>
+        <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
+          type="number"
+          :aria-label="`${investment.name} amount`"
+          :value="investments[index].amount"
+          @input="changeInvestment($event, index)"
+          step="1000"
+          min="0"
+          max="9999999"
+        /></span>
+      </td>
+      <td>
+        <span v-if="getCapForRow(investment.name) === null" class="unlimited">Unlimited</span>
+        <span v-else class="limited">{{getCapForRow(investment.name).toLocaleString()}}</span>
+      </td>
+    </tr>
 
     <tr>
-      <td><strong>Totat rebate on investment</strong></td>
+      <td><strong>Total Investment</strong></td>
+      <td>{{totalInvestment.toLocaleString()}}</td>
+      <td>{{maxRebateableInvestment.toLocaleString()}}</td>
+    </tr>
+
+    <tr>
+      <td>
+        <strong>Total rebateable investment</strong>
+      </td>
+      <td>{{eligibleInvestment.toLocaleString()}}</td>
+      <td></td>
+    </tr>
+
+    <tr>
+      <td>
+        <strong>Tax rebate percentage</strong>
+        <small class="formula-hint">
+          Lower of 3% of taxable income, {{rebatePercentage}}% of eligible investment, or ৳{{rebateMaxCap.toLocaleString()}}
+        </small>
+      </td>
+      <td>{{rebatePercentage}}%</td>
+      <td></td>
+    </tr>
+
+    <tr>
+      <td><strong>Total rebate on investment</strong></td>
       <td>{{ investmentRebate.toLocaleString() }}</td>
       <td></td>
     </tr>
@@ -73,12 +80,16 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
+import { getInvestmentCapForType } from "../utils/taxEngine";
 
 export default {
   name: "investment",
   methods: {
     changeInvestment($event, index) {
       this.$store.commit('changeInvestment', { index, value: $event.target.value });
+    },
+    getCapForRow(name) {
+      return getInvestmentCapForType(name, this.currentYear);
     },
   },
   computed: {
@@ -89,18 +100,20 @@ export default {
       bonus: state => state.salaries.bonus,
       others: state => state.salaries.others,
       investments: state => state.salaries.investments,
+      currentYear: state => state.salaries.currentYear,
     }),
     ...mapGetters({
       totalInvestment: 'totalInvestment',
+      eligibleInvestment: 'eligibleInvestment',
       totalRebateableInvestment: 'totalRebateableInvestment',
       maxRebateableInvestment: 'maxRebateableInvestment',
       rebatePercentage: 'rebatePercentage',
+      rebateMaxCap: 'rebateMaxCap',
       investmentRebate: 'investmentRebate',
 
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
       totalHouse: 'totalHouse',
-      totalLfa: 'totalLfa',
       totalMedical: 'totalMedical',
       totalTransport: 'totalTransport',
       totalBasic: 'totalBasic',
@@ -162,6 +175,14 @@ export default {
 .investment-list tr:last-child td {
   border-bottom: 0;
   font-weight: 700;
+}
+
+.formula-hint {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
 .money {

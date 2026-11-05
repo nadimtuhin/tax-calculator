@@ -80,10 +80,12 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   assert.equal(rules.slabs[0].upper_bdt, 500000);
   assert.equal(rules.slabs[5].upper_bdt, null);
   assert.equal(rules.slabs[5].unbounded, true);
-  assert.equal(rules.rebate_rules.investment_rate_percent, 15);
-  assert.equal(rules.rebate_rules.max_cap_bdt, 1000000);
+  assert.equal(rules.rebate_rules.investment_rate_percent, 10);
+  assert.equal(rules.rebate_rules.max_cap_bdt, 750000);
+  assert.equal(rules.investment_instrument_caps_bdt.mutual_fund, null);
+  assert.equal(rules.salary_exemption_rule.maxAmount, 500000);
 
-  // 3. calculate_tax fixture: FY 2026-27 general, taxable 15L, investment 2L -> gross 170k, rebate 20k, payable 150k
+  // 3. calculate_tax fixture: FY 2026-27 general, taxable 15L, investment 2L -> gross 170k, rebate 20k, total 150k, payable 150k
   const calc2026Res = await client.callTool({
     name: 'calculate_tax',
     arguments: {
@@ -98,19 +100,55 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   assert.equal(calc2026.tax_free_threshold_bdt, 400000);
   assert.equal(calc2026.gross_tax_bdt, 170000);
   assert.equal(calc2026.rebate_bdt, 20000);
+  assert.equal(calc2026.total_tax_bdt, 150000);
   assert.equal(calc2026.minimum_tax_bdt, 5000);
   assert.equal(calc2026.is_minimum_tax_applied, false);
   assert.equal(calc2026.payable_tax_bdt, 150000);
 
-  // 4. calculate_tax with monthly salary breakdown + exemptions + TDS + age 67 promotion + parent_of_disabled
-  // Monthly: basic 60k (720k/yr), house 30k (360k/yr -> exempt min(360k, 360k, 300k)=300k),
-  // medical 8k (96k/yr -> exempt min(96k, 72k, 120k)=72k), transport 5k (60k/yr -> exempt 30k), bonus 100k
-  // Gross = 720k + 360k + 96k + 60k + 100k = 1,336,000; Exempt = 300k + 72k + 30k = 402,000; Taxable = 934,000
+  // 3b. At or below threshold -> minimum_tax_bdt = 0, total_tax_bdt = 0, payable_tax_bdt = 0
+  const belowThreshRes = await client.callTool({
+    name: 'calculate_tax',
+    arguments: {
+      year: '2025-26',
+      category: 'general',
+      taxable_income: 400000,
+    },
+  });
+  const belowThresh = parseToolJson(belowThreshRes);
+  assert.equal(belowThresh.below_tax_free_threshold, true);
+  assert.equal(belowThresh.minimum_tax_bdt, 0);
+  assert.equal(belowThresh.is_minimum_tax_applied, false);
+  assert.equal(belowThresh.total_tax_bdt, 0);
+  assert.equal(belowThresh.payable_tax_bdt, 0);
+
+  // 3c. IT-11GA(2023) order: rebate cannot push Line 16 below minimum tax when taxable > threshold, TDS reduces payable
+  const minFloorRes = await client.callTool({
+    name: 'calculate_tax',
+    arguments: {
+      year: '2025-26',
+      category: 'general',
+      taxable_income: 480000, // 80k @ 10% = 8,000 slab tax
+      investments: 100000,    // min(3% * 480k = 14,400, 10% * 100k = 10,000) = 10,000 rebate -> taxAfterRebate = 0 < 5,000 min tax
+      tds: 2000,
+    },
+  });
+  const minFloor = parseToolJson(minFloorRes);
+  assert.equal(minFloor.gross_tax_bdt, 8000);
+  assert.equal(minFloor.rebate_bdt, 10000);
+  assert.equal(minFloor.tax_after_rebate_bdt, 0);
+  assert.equal(minFloor.total_tax_bdt, 5000);
+  assert.equal(minFloor.is_minimum_tax_applied, true);
+  assert.equal(minFloor.payable_tax_bdt, 3000);
+
+  // 4. calculate_tax with monthly salary breakdown + Para 27 single-pool exemption + Part 3 caps + TDS + age 67 + parent_of_disabled
+  // Monthly: basic 60k (720k/yr), house 30k (360k/yr), medical 8k (96k/yr), transport 5k (60k/yr), bonus 100k
+  // Gross = 720k + 360k + 96k + 60k + 100k = 1,336,000
+  // Para 27 single-pool exemption = min(round(1,336,000 / 3) = 445,333, 500,000) = 445,333 -> Taxable = 890,667
   // Age 67 general + parent_of_disabled -> senior 450k + 50k = 500k threshold
-  // FY 2025-26 slabs from 500k: [0-500k@0%=0, 500k-800k@10%=30,000, 800k-934k (134k)@15%=20,100] -> gross 50,100
-  // Investment: itemized { dps: 150000, savings_certificate: 600000, apply_instrument_caps: true } -> capped 120k + 500k = 620k
-  // Rebate 2025-26: min(3% * 934,000 = 28,020, 15% * 620,000 = 93,000, 1,000,000) = 28,020
-  // TDS = 15,000 -> Payable = 50,100 - 15,000 - 28,020 = 7,080
+  // FY 2025-26 slabs from 500k: [0-500k@0%=0, 500k-800k@10%=30,000, 800k-890,667 (90,667)@15%=13,600] -> gross 43,600
+  // Investments (caps default to true): dps 150k->120k, savings_certificate 600k->500k, mutual_fund 700k->700k (uncapped in 2025-26) = 1,320,000
+  // Rebate 2025-26: min(3% * 890,667 = 26,720, 10% * 1,320,000 = 132,000, 750,000) = 26,720
+  // Line 16 totalTax = max(43,600 - 26,720 = 16,880, 5,000) = 16,880; TDS = 15,000 -> Payable = 1,880
   const monthlyRes = await client.callTool({
     name: 'calculate_tax',
     arguments: {
@@ -129,7 +167,7 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
       investments: {
         dps: 150000,
         savings_certificate: 600000,
-        apply_instrument_caps: true,
+        mutual_fund: 700000,
       },
       tds: 15000,
     },
@@ -140,23 +178,26 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   assert.equal(monthly.tax_free_threshold_bdt, 500000);
   assert.equal(monthly.income_summary.gross_income_bdt, 1336000);
   assert.deepEqual(monthly.income_summary.exemptions_bdt, {
-    house: 300000,
-    medical: 72000,
-    transport: 30000,
+    single_pool: 445333,
+    max_cap_bdt: 500000,
+    house: 0,
+    medical: 0,
+    transport: 0,
     lfa: 0,
-    total: 402000,
+    total: 445333,
   });
-  assert.equal(monthly.taxable_income_bdt, 934000);
-  assert.equal(monthly.gross_tax_bdt, 50100);
-  assert.equal(monthly.investment_summary.eligible_investment_bdt, 620000);
-  assert.equal(monthly.rebate_bdt, 28020);
-  assert.equal(monthly.payable_tax_bdt, 7080);
+  assert.equal(monthly.taxable_income_bdt, 890667);
+  assert.equal(monthly.gross_tax_bdt, 43600);
+  assert.equal(monthly.investment_summary.eligible_investment_bdt, 1320000);
+  assert.equal(monthly.rebate_bdt, 26720);
+  assert.equal(monthly.total_tax_bdt, 16880);
+  assert.equal(monthly.payable_tax_bdt, 1880);
 
-  // 5. First-time filer minimum tax in FY 2026-27 vs district minimum tax in FY 2024-25
+  // 5. First-time filer minimum tax in FY 2025-26 & FY 2026-27 vs district minimum tax in FY 2024-25
   const firstTimeRes = await client.callTool({
     name: 'calculate_tax',
     arguments: {
-      year: '2026-27',
+      year: '2025-26',
       category: 'general',
       first_time_filer: true,
       taxable_income: 405000, // 5,000 @ 10% = 500 < 1,000 first-time min tax
@@ -183,29 +224,41 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   assert.equal(district2024.minimum_tax_bdt, 3000);
   assert.equal(district2024.total_tax_bdt, 3000);
 
-  // 6. compare_years: FY 2025-26 vs FY 2026-27 investment-bound rebate delta (15% vs 10%)
-  // Taxable 3,600,000, investment 500,000:
-  // 2025-26 rebate = min(108k, 75k, 10L) = 75,000
-  // 2026-27 rebate = min(108k, 50k, 7.5L) = 50,000
-  // Total tax identical (both 400k threshold, same slabs), payable increases by 25,000 in 2026-27
-  const cmpRes = await client.callTool({
+  // 6. compare_years: FY 2025-26 vs FY 2026-27 match under enacted FA 2026, while FY 2024-25 vs FY 2025-26 shows statutory delta
+  const cmpSameRes = await client.callTool({
     name: 'compare_years',
     arguments: {
       from_year: '2025-26',
       to_year: '2026-27',
       category: 'general',
       taxable_income: 3600000,
-      investments: 500000,
+      investments: { mutual_fund: 800000 },
     },
   });
-  assert.ok(!cmpRes.isError);
-  const cmp = parseToolJson(cmpRes);
-  assert.equal(cmp.from.rebate_bdt, 75000);
-  assert.equal(cmp.to.rebate_bdt, 50000);
-  assert.equal(cmp.comparison.total_tax_diff_bdt, 0);
-  assert.equal(cmp.comparison.rebate_diff_bdt, -25000);
-  assert.equal(cmp.comparison.payable_tax_diff_bdt, 25000);
-  assert.equal(cmp.comparison.verdict, 'no_change');
+  assert.ok(!cmpSameRes.isError);
+  const cmpSame = parseToolJson(cmpSameRes);
+  assert.equal(cmpSame.from.rebate_bdt, 80000); // 10% of uncapped 8L MF
+  assert.equal(cmpSame.to.rebate_bdt, 80000);
+  assert.equal(cmpSame.comparison.total_tax_diff_bdt, 0);
+  assert.equal(cmpSame.comparison.payable_tax_diff_bdt, 0);
+  assert.equal(cmpSame.comparison.verdict, 'no_change');
+
+  const cmp24to25Res = await client.callTool({
+    name: 'compare_years',
+    arguments: {
+      from_year: '2024-25',
+      to_year: '2025-26',
+      category: 'general',
+      taxable_income: 3600000,
+      investments: { mutual_fund: 800000 },
+    },
+  });
+  assert.ok(!cmp24to25Res.isError);
+  const cmp24to25 = parseToolJson(cmp24to25Res);
+  assert.equal(cmp24to25.from.investment_summary.eligible_investment_bdt, 500000); // 2024-25 MF capped at 5L
+  assert.equal(cmp24to25.from.rebate_bdt, 75000); // 15% of 5L
+  assert.equal(cmp24to25.to.investment_summary.eligible_investment_bdt, 800000); // 2025-26 MF uncapped
+  assert.equal(cmp24to25.to.rebate_bdt, 80000); // 10% of 8L
 
   // 7. Validation errors return isError: true with actionable messages
   const ayErr = await client.callTool({

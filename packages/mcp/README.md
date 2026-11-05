@@ -282,11 +282,11 @@ Side-by-side comparison across two fiscal years (defaults to `2025-26` vs `2026-
 
 ```json
 {
-  "from_year": "2025-26",
-  "to_year": "2026-27",
+  "from_year": "2024-25",
+  "to_year": "2025-26",
   "category": "general",
   "taxable_income": 3600000,
-  "investments": 500000
+  "investments": { "mutual_fund": 800000 }
 }
 ```
 
@@ -294,15 +294,15 @@ Side-by-side comparison across two fiscal years (defaults to `2025-26` vs `2026-
 
 ```json
 {
-  "threshold_diff_bdt": 0,
-  "gross_tax_diff_bdt": 0,
-  "rebate_diff_bdt": -25000,
-  "total_tax_diff_bdt": 0,
-  "payable_tax_diff_bdt": 25000,
+  "threshold_diff_bdt": 50000,
+  "gross_tax_diff_bdt": 10000,
+  "rebate_diff_bdt": 5000,
+  "total_tax_diff_bdt": 5000,
+  "payable_tax_diff_bdt": 5000,
   "tax_savings_bdt": 0,
-  "additional_tax_bdt": 0,
-  "verdict": "no_change",
-  "summary": "Total tax remains BDT 710,000 across FY 2025-2026 and FY 2026-2027; final payable after rebate and TDS increases by BDT 25,000 (BDT 635,000 -> BDT 660,000)."
+  "additional_tax_bdt": 5000,
+  "verdict": "increase",
+  "summary": "Total tax increases by BDT 5,000 in FY 2025-2026 vs FY 2024-2025; final payable after rebate and TDS increases by BDT 5,000 (BDT 625,000 -> BDT 630,000)."
 }
 ```
 
