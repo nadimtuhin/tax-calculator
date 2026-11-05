@@ -112,6 +112,7 @@
 
 <script>
 import { mapGetters, mapMutations } from 'vuex';
+import { SUPPORTED_FISCAL_YEARS, resolveDefaultFiscalYear } from '../utils/taxEngine';
 
 export default {
   name: 'TaxpayerProfile',
@@ -123,7 +124,7 @@ export default {
       parentOfDisabled: false,
       firstTimeFiler: false,
       selectedLocation: 'dhaka',
-      selectedFiscalYear: '2025-26',
+      selectedFiscalYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
       categoryOptions: [
         { value: 'general', label: 'General (Male)' },
         { value: 'female', label: 'Female' },

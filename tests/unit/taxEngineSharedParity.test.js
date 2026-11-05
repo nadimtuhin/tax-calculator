@@ -9,6 +9,9 @@ import {
   normalizeFiscalYear,
   calculateEmploymentExemption,
   calculateFinalTaxSummary,
+  DEFAULT_FISCAL_YEAR,
+  resolveDefaultFiscalYear,
+  SUPPORTED_FISCAL_YEARS,
 } from '@/utils/taxEngine';
 
 describe('Shared Tax Engine <-> Vuex Store Parity', () => {
@@ -37,7 +40,8 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
 
   test('listSupportedYears returns all four fiscal years and statutory metadata', () => {
     const data = listSupportedYears();
-    expect(data.default_year).toBe('2025-26');
+    expect(data.default_year).toBe(resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS));
+    expect(data.default_year).toBe(DEFAULT_FISCAL_YEAR);
     expect(data.default_comparison).toEqual({
       from_year: '2025-26',
       to_year: '2026-27',
@@ -287,6 +291,7 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       parentOfDisabled: true,
       firstTimeFiler: false,
     });
+    expect(migrated.salaries.currentYear).toBe('2025-26');
     expect(migrated.salaries.comparisonFromYear).toBe('2025-26');
     expect(migrated.salaries.comparisonToYear).toBe('2026-27');
     expect(migrated.salaries.months[0].salary).toBe(80000);

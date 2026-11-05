@@ -18,9 +18,15 @@ import {
   MINIMUM_TAX_2026,
   MINIMUM_TAX_FIRST_TIME_2026,
 } from './taxSlabs2026.js';
+import { getDefaultFiscalYear, resolveDefaultFiscalYear } from './fiscalYear.js';
+
+export { getDefaultFiscalYear, resolveDefaultFiscalYear };
 
 export const SUPPORTED_FISCAL_YEARS = ['2023-24', '2024-25', '2025-26', '2026-27'];
-export const DEFAULT_FISCAL_YEAR = '2025-26';
+// Most recently completed FY, clamped to a year this build can calculate.
+// 5 Nov 2026 → 2025-26. Rolls forward each 1 July (1 Jul 2027 → 2026-27).
+export const DEFAULT_FISCAL_YEAR = resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS);
+// Comparison pair stays these two years while both are in the catalog.
 export const DEFAULT_COMPARISON_FROM_YEAR = '2025-26';
 export const DEFAULT_COMPARISON_TO_YEAR = '2026-27';
 export const MAX_SAFE_BDT_AMOUNT = Number.MAX_SAFE_INTEGER;

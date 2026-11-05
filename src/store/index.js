@@ -56,6 +56,10 @@ export function migratePersistedState(saved) {
       },
       comparisonFromYear: persistedSalaries.comparisonFromYear || freshSalaries.comparisonFromYear,
       comparisonToYear: persistedSalaries.comparisonToYear || freshSalaries.comparisonToYear,
+      currentYear:
+        typeof persistedSalaries.currentYear === 'string' && persistedSalaries.currentYear.trim()
+          ? persistedSalaries.currentYear
+          : freshSalaries.currentYear,
       months: mergedMonths,
       investments: mergedInvestments,
     },
