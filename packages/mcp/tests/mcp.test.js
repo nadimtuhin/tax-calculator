@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { startHttpServer } from '../src/server.js';
+import { SUPPORTED_FISCAL_YEARS, resolveDefaultFiscalYear } from '../src/engine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, '..');
@@ -53,7 +54,18 @@ test('Stdio MCP server exposes all 4 tools and matches known Bangladesh tax fixt
   const listYearsRes = await client.callTool({ name: 'list_years', arguments: {} });
   assert.ok(!listYearsRes.isError);
   const yearsPayload = parseToolJson(listYearsRes);
-  assert.equal(yearsPayload.default_year, '2025-26');
+  assert.equal(
+    yearsPayload.default_year,
+    resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS)
+  );
+  assert.equal(resolveDefaultFiscalYear(new Date(2026, 10, 5), SUPPORTED_FISCAL_YEARS), '2025-26');
+
+  const defaultRulesRes = await client.callTool({
+    name: 'get_rules',
+    arguments: { category: 'general' },
+  });
+  assert.ok(!defaultRulesRes.isError);
+  assert.equal(parseToolJson(defaultRulesRes).fiscal_year, yearsPayload.default_year);
   assert.deepEqual(
     yearsPayload.supported_years.map((y) => y.fiscal_year),
     ['2023-24', '2024-25', '2025-26', '2026-27']

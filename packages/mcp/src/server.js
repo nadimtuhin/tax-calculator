@@ -11,6 +11,8 @@ import {
   ALL_ACCEPTED_CATEGORIES,
   LOCATIONS,
   DEFAULT_FISCAL_YEAR,
+  DEFAULT_COMPARISON_FROM_YEAR,
+  DEFAULT_COMPARISON_TO_YEAR,
   listSupportedYears,
   getRulesForYear,
   calculateTaxForYear,
@@ -276,11 +278,11 @@ export function createServer() {
         .object({
           from_year: z
             .string()
-            .default('2025-26')
+            .default(DEFAULT_COMPARISON_FROM_YEAR)
             .describe('Baseline Fiscal/Income Year, e.g. "2024-25" or "2025-26".'),
           to_year: z
             .string()
-            .default('2026-27')
+            .default(DEFAULT_COMPARISON_TO_YEAR)
             .describe('Comparison Fiscal/Income Year, e.g. "2025-26" or "2026-27".'),
           category: categorySchema.optional(),
           age: ageSchema,

@@ -14,6 +14,8 @@ const engine = await import(pathToFileURL(resolvedPath).href);
 export const {
   SUPPORTED_FISCAL_YEARS,
   DEFAULT_FISCAL_YEAR,
+  getDefaultFiscalYear,
+  resolveDefaultFiscalYear,
   DEFAULT_COMPARISON_FROM_YEAR,
   DEFAULT_COMPARISON_TO_YEAR,
   FISCAL_YEAR_OPTIONS,
