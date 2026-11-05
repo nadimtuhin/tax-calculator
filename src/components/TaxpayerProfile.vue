@@ -1,6 +1,12 @@
 <template>
   <div class="taxpayer-profile">
-    <h2>Taxpayer Profile</h2>
+    <header class="section-header">
+      <div class="section-heading-group">
+        <span class="section-eyebrow">Step 01 · Assessment Setup</span>
+        <h2>Taxpayer Profile</h2>
+      </div>
+      <span class="section-pill section-pill-accent amount">Tax-free <strong>৳{{ threshold.toLocaleString() }}</strong></span>
+    </header>
 
     <fieldset class="category-group">
       <legend>Category</legend>

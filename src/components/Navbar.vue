@@ -1,85 +1,97 @@
 <template>
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  
+
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="navbar-container">
       <!-- Brand section -->
       <div class="navbar-brand-section">
         <router-link to="/" class="navbar-brand" aria-label="BD Tax Calculator - Go to calculator">
-          <span class="brand-icon">🇧🇩</span>
-          <span class="brand-text">BD Tax Calculator</span>
+          <span class="brand-icon" aria-hidden="true">
+            <svg class="brand-mark" viewBox="0 0 64 64" width="30" height="30" fill="none" focusable="false">
+              <rect x="2" y="2" width="60" height="60" rx="14" class="brand-mark-bg" />
+              <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" class="brand-mark-rim" />
+              <g transform="translate(0,64) scale(0.00625,-0.00625)">
+                <path fill="#ffffff" d="M2330 8445 l0 -555 420 0 420 0 0 -370 0 -370 -640 0 -640 0 0 -555 0 -555 640 0 639 0 4 -1822 c3 -1814 3 -1824 25 -1934 109 -567 420 -902 947 -1021 138 -31 445 -42 632 -24 1134 115 2398 947 3064 2018 379 609 545 1207 526 1893 -17 591 -170 1055 -466 1413 -217 262 -544 458 -897 536 -225 50 -247 51 -1455 51 l-1129 0 0 925 0 925 -1045 0 -1045 0 0 -555z m4269 -2433 c383 -102 607 -444 628 -957 19 -466 -128 -872 -464 -1280 -349 -424 -871 -793 -1413 -1000 -296 -113 -518 -162 -822 -180 l-108 -7 0 1726 0 1727 1048 -4 c1045 -3 1047 -3 1131 -25z" />
+              </g>
+              <circle cx="36.46" cy="33.40" r="5.08" fill="#f42a41" />
+            </svg>
+          </span>
+          <span class="brand-wordmark">
+            <span class="brand-text">BD Tax Calculator</span>
+            <span class="brand-badge">FY 25–27</span>
+          </span>
         </router-link>
       </div>
-      
+
       <!-- Action buttons -->
       <div class="navbar-actions">
         <div class="action-buttons">
           <div v-if="$route.name === 'Home'" class="data-actions">
-            <button 
-              @click="populateRandomData" 
-              class="action-btn action-btn-random" 
+            <button
+              @click="populateRandomData"
+              class="action-btn action-btn-random"
               aria-label="Fill with random sample data"
               title="Random Data"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/><circle cx="12" cy="12" r="1"/></svg>
               <span class="btn-text">Random</span>
             </button>
-            <button 
-              @click="exportData" 
-              class="action-btn" 
+            <button
+              @click="exportData"
+              class="action-btn"
               aria-label="Export your tax data"
               title="Export Data"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
               <span class="btn-text">Export</span>
             </button>
-            <button 
-              @click="triggerFileInput" 
-              class="action-btn" 
+            <button
+              @click="triggerFileInput"
+              class="action-btn"
               aria-label="Import tax data from file"
               title="Import Data"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>
               <span class="btn-text">Import</span>
             </button>
-            <button 
-              @click="resetData" 
-              class="action-btn action-btn-danger" 
+            <button
+              @click="resetData"
+              class="action-btn action-btn-danger"
               aria-label="Reset all tax data"
               title="Reset Data"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/></svg>
               <span class="btn-text">Reset</span>
             </button>
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="importData" 
+            <input
+              type="file"
+              ref="fileInput"
+              @change="importData"
               accept=".json"
               style="display: none;"
               aria-label="Choose file to import"
             >
           </div>
-          
+
           <!-- Star modal button for localhost -->
-          <button 
-            v-if="isLocalhost" 
-            @click="openStarModal" 
-            class="action-btn star-btn" 
+          <button
+            v-if="isLocalhost"
+            @click="openStarModal"
+            class="action-btn star-btn"
             aria-label="Open star modal"
             title="Open Star Modal"
           >
             <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
             <span class="btn-text">Star</span>
           </button>
-          
+
           <!-- GitHub link -->
-          <a 
-            href="https://github.com/nadimtuhin/tax-calculator" 
-            target="_blank" 
+          <a
+            href="https://github.com/nadimtuhin/tax-calculator"
+            target="_blank"
             rel="noopener noreferrer"
-            class="action-btn github-btn" 
+            class="action-btn github-btn"
             aria-label="View source code on GitHub"
             title="GitHub Repository"
           >
@@ -271,6 +283,9 @@ export default {
 
 .navbar {
   background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -285,27 +300,85 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: 56px;
+  min-height: 60px;
 }
 
 .navbar-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  font-weight: 700;
-  font-size: var(--text-lg);
-  color: var(--accent);
+  gap: 10px;
+  color: var(--text);
   border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  text-decoration: none;
+  transition: opacity 0.15s;
 }
 
 .navbar-brand:hover {
-  color: var(--accent-hover);
+  color: var(--text);
+  opacity: 0.88;
 }
 
 .brand-icon {
-  font-size: 1.25rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.brand-mark {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.brand-mark-bg {
+  fill: #0a5c3a;
+}
+
+.brand-mark-rim {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-mark-bg {
+    fill: #0d6942;
+  }
+
+  .brand-mark-rim {
+    stroke: #2c8c62;
+  }
+}
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.brand-text {
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
 }
 
 .action-buttons,
@@ -313,6 +386,12 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+.data-actions {
+  padding-right: var(--space-2);
+  margin-right: var(--space-1);
+  border-right: 1px solid var(--border);
 }
 
 .action-btn {
@@ -332,12 +411,22 @@ export default {
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .action-btn:hover {
   background: var(--surface-muted);
   color: var(--text);
+}
+
+.github-btn {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.github-btn:hover {
+  border-color: var(--border-strong);
 }
 
 .action-btn-danger:hover {
@@ -349,7 +438,7 @@ export default {
   flex-shrink: 0;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 860px) {
   .btn-text {
     position: absolute;
     width: 1px;
@@ -359,12 +448,24 @@ export default {
     white-space: nowrap;
   }
 
+  .action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .brand-badge {
+    display: none;
+  }
+
   .brand-text {
     font-size: var(--text-base);
   }
 }
 
-@media (max-width: 479px) {
+@media (max-width: 559px) {
   .brand-text {
     position: absolute;
     width: 1px;
@@ -376,6 +477,37 @@ export default {
 
   .navbar-container {
     padding: 0 var(--space-2);
+  }
+
+  .data-actions {
+    padding-right: var(--space-1);
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 389px) {
+  .navbar-container {
+    gap: var(--space-1);
+    padding: 0 var(--space-1);
+  }
+
+  .navbar-brand {
+    padding: 0;
+  }
+
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
+  .action-buttons,
+  .data-actions {
+    gap: 0;
+  }
+
+  .data-actions {
+    padding-right: 0;
+    border-right: 0;
   }
 
   .action-btn {

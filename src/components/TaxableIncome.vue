@@ -1,6 +1,12 @@
 <template>
 <div>
-<h2>Taxable income breakdown</h2>
+<header class="section-header">
+  <div class="section-heading-group">
+    <span class="section-eyebrow">Step 03 · Exemptions &amp; Net Base</span>
+    <h2>Taxable income breakdown</h2>
+  </div>
+  <span class="section-pill amount">Taxable <strong>৳{{ Number(taxableSalary || 0).toLocaleString() }}</strong></span>
+</header>
 <div class="table-scroll">
 <table class="income-table">
   <thead>

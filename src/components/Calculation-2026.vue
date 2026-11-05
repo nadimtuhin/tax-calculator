@@ -1,6 +1,9 @@
 <template>
 <div>
-  <h2>Tax for {{otherYearLabel}} {{totalTax}}</h2>
+  <header class="calc-card-header">
+    <span class="section-eyebrow">Assessment Year 2027–28 · Finance Act 2026</span>
+    <h2 class="calc-heading"><span class="calc-heading-label">Tax for {{otherYearLabel}}</span> <span class="calc-heading-amount amount">{{totalTax}}</span></h2>
+  </header>
   <table class="invoice">
     <tbody>
       <tr>

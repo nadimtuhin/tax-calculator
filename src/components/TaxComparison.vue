@@ -1,7 +1,11 @@
 <template>
   <div class="tax-comparison-summary">
     <div class="comparison-header">
-      <h3>Tax Year Comparison (FY 2025-26 vs FY 2026-27)</h3>
+      <div class="comparison-header-top">
+        <span class="section-eyebrow">Live Verdict</span>
+        <span class="section-pill">2-Year Delta</span>
+      </div>
+      <h2>Tax Year Comparison (FY 2025-26 vs FY 2026-27)</h2>
     </div>
 
     <div class="comparison-result">
@@ -57,7 +61,7 @@
         <summary>View Detailed Breakdown</summary>
         <div class="breakdown-content">
           <div class="breakdown-section">
-            <h4>Key Changes in FY 2026-2027 (Finance Act 2026):</h4>
+            <h3>Key Changes in FY 2026-2027 (Finance Act 2026):</h3>
             <ul>
               <li>Tax-free thresholds match FY 2025-26 (৳4,00,000 general; Finance Act 2026 Schedule 1 covers both AY 2026-27 and AY 2027-28)</li>
               <li>Investment rebate rate reduced: 15% → 10% of eligible investment</li>
@@ -68,7 +72,7 @@
           </div>
 
           <div class="breakdown-section">
-            <h4>Your Tax Calculation:</h4>
+            <h3>Your Tax Calculation:</h3>
             <div class="table-scroll">
               <table class="breakdown-table">
                 <thead>
@@ -211,13 +215,26 @@ export default {
   padding: var(--space-5);
 }
 
-.comparison-header h3 {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.comparison-header {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.comparison-header h2 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 650;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .verdict {
@@ -327,7 +344,7 @@ export default {
   margin-bottom: var(--space-4);
 }
 
-.breakdown-section h4 {
+.breakdown-section h3 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-sm);
   font-weight: 600;
