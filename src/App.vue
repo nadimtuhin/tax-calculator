@@ -5,18 +5,21 @@
       <router-view></router-view>
     </main>
     <StarModal />
+    <ToastHost />
   </div>
 </template>
 
 <script>
 import Navbar from './components/Navbar.vue'
 import StarModal from './components/StarModal.vue'
+import ToastHost from './components/ToastHost.vue'
 
 export default {
   name: "App",
   components: {
     Navbar,
-    StarModal
+    StarModal,
+    ToastHost
   }
 };
 </script>
