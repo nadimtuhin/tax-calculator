@@ -5,6 +5,7 @@ import {
   getRebatePercentage2025,
   getMaxRebateableInvestment2025,
   TAX_FREE_THRESHOLDS_2025,
+  PARENT_OF_DISABLED_ALLOWANCE_2025,
   MINIMUM_TAX_2025
 } from '@/utils/taxSlabs2025';
 
@@ -17,7 +18,7 @@ describe('Tax Slabs 2025 Utility Functions', () => {
       expect(TAX_FREE_THRESHOLDS_2025.disabled).toBe(500000);
       expect(TAX_FREE_THRESHOLDS_2025.third_gender).toBe(500000);
       expect(TAX_FREE_THRESHOLDS_2025.freedom_fighter).toBe(525000);
-      expect(TAX_FREE_THRESHOLDS_2025.parent_disabled).toBe(425000);
+      expect(PARENT_OF_DISABLED_ALLOWANCE_2025).toBe(50000);
     });
 
     test('should show correct increase from 2024-25 thresholds', () => {
@@ -80,6 +81,22 @@ describe('Tax Slabs 2025 Utility Functions', () => {
     test('should default to general threshold for unknown categories', () => {
       const profile = { category: 'unknown', age: 30 };
       expect(getTaxFreeThreshold2025(profile)).toBe(375000);
+    });
+
+    test('legacy parent_disabled category returns general + 50k', () => {
+      expect(getTaxFreeThreshold2025({ category: 'parent_disabled', age: 40 })).toBe(425000);
+    });
+
+    test.each([
+      ['general', 40, 425000],
+      ['female', 40, 475000],
+      ['senior', 66, 475000],
+      ['general', 66, 475000], // age-detected senior
+      ['disabled', 40, 550000],
+      ['third_gender', 40, 550000],
+      ['freedom_fighter', 40, 575000],
+    ])('parent of disabled allowance adds 50k on top of %s (age %i) → %i', (category, age, expected) => {
+      expect(getTaxFreeThreshold2025({ category, age, parentOfDisabled: true })).toBe(expected);
     });
   });
 

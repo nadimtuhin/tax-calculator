@@ -67,9 +67,15 @@ export const TAX_FREE_THRESHOLDS_2026 = {
   senior: 450000,          // +25K from 425K (65+ years)
   disabled: 525000,        // +25K from 500K
   third_gender: 525000,    // +25K from 500K
-  freedom_fighter: 550000, // +25K from 525K (gazetted war-wounded freedom fighter / July Warrior)
-  parent_disabled: 450000  // 400K general + 50K additional (one parent only)
+  freedom_fighter: 550000  // +25K from 525K (gazetted war-wounded freedom fighter / July Warrior)
 };
+
+/**
+ * Additional allowance for a parent / legal guardian of a person with disability.
+ * Added ON TOP of the taxpayer's own category threshold (one parent only),
+ * e.g. general 400K -> 450K, female/65+ 450K -> 500K, freedom fighter 550K -> 600K.
+ */
+export const PARENT_OF_DISABLED_ALLOWANCE_2026 = 50000;
 
 /**
  * Minimum tax for FY 2026-2027: flat Tk 5,000 regardless of location.
@@ -87,27 +93,33 @@ export const MINIMUM_TAX_FIRST_TIME_2026 = 1000;
 
 /**
  * Calculate tax-free threshold for FY 2026-2027 based on taxpayer profile.
- * @param {Object} taxpayerProfile - { category, age }
+ * The parent-of-disabled allowance is additive to the taxpayer's own category.
+ * Legacy profiles with category 'parent_disabled' are treated as general + allowance.
+ * @param {Object} taxpayerProfile - { category, age, parentOfDisabled }
  * @returns {number} Tax-free threshold in BDT
  */
 export function getTaxFreeThreshold2026(taxpayerProfile) {
-  const { category, age } = taxpayerProfile;
+  const { category, age, parentOfDisabled } = taxpayerProfile;
+  const isLegacyParent = category === 'parent_disabled';
+  const baseCategory = isLegacyParent ? 'general' : category;
+
+  let threshold = TAX_FREE_THRESHOLDS_2026[baseCategory] || TAX_FREE_THRESHOLDS_2026.general;
 
   // Age-based senior detection: only applies when no higher category set
   if (
     age >= 65 &&
-    category !== 'disabled' &&
-    category !== 'freedom_fighter' &&
-    category !== 'third_gender'
+    baseCategory !== 'disabled' &&
+    baseCategory !== 'freedom_fighter' &&
+    baseCategory !== 'third_gender'
   ) {
-    return TAX_FREE_THRESHOLDS_2026.senior;
+    threshold = TAX_FREE_THRESHOLDS_2026.senior;
   }
 
-  if (category === 'parent_disabled') {
-    return TAX_FREE_THRESHOLDS_2026.parent_disabled;
+  if (parentOfDisabled || isLegacyParent) {
+    threshold += PARENT_OF_DISABLED_ALLOWANCE_2026;
   }
 
-  return TAX_FREE_THRESHOLDS_2026[category] || TAX_FREE_THRESHOLDS_2026.general;
+  return threshold;
 }
 
 /**

@@ -74,6 +74,17 @@ describe('Tax Calculation Tests', () => {
       expect(threshold).toBe(400000); // 350000 + 50000
     });
 
+    test('should add parent of disabled allowance on top of own category', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'female',
+        age: 35,
+        location: 'dhaka',
+        parentOfDisabled: true
+      });
+      
+      expect(store.getters.taxFreeThreshold).toBe(450000); // 400000 + 50000
+    });
+
     test('should calculate correct threshold for freedom fighter', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'freedom_fighter',

@@ -4,6 +4,7 @@ import {
   getMinimumTax2026,
   calculateInvestmentRebate2026,
   TAX_FREE_THRESHOLDS_2026,
+  PARENT_OF_DISABLED_ALLOWANCE_2026,
   MINIMUM_TAX_2026,
   MINIMUM_TAX_FIRST_TIME_2026
 } from '@/utils/taxSlabs2026';
@@ -41,15 +42,16 @@ describe('Tax Slabs 2026-27 Utility Functions', () => {
       expect(TAX_FREE_THRESHOLDS_2026.freedom_fighter).toBe(550000);
     });
 
-    test('parent of disabled child: Tk 4,50,000 (general + Tk 50k)', () => {
-      expect(TAX_FREE_THRESHOLDS_2026.parent_disabled).toBe(450000);
+    test('parent of disabled child: additional Tk 50,000 allowance', () => {
+      expect(PARENT_OF_DISABLED_ALLOWANCE_2026).toBe(50000);
+      expect(TAX_FREE_THRESHOLDS_2026.parent_disabled).toBeUndefined();
     });
 
     test('each category is +25,000 vs FY 2025-26', () => {
       const prev = {
         general: 375000, female: 425000, senior: 425000,
         disabled: 500000, third_gender: 500000,
-        freedom_fighter: 525000, parent_disabled: 425000
+        freedom_fighter: 525000
       };
       Object.keys(prev).forEach(key => {
         expect(TAX_FREE_THRESHOLDS_2026[key] - prev[key]).toBe(25000);
@@ -95,6 +97,34 @@ describe('Tax Slabs 2026-27 Utility Functions', () => {
 
     test('parent_disabled returns 450000 (400k + 50k)', () => {
       expect(getTaxFreeThreshold2026({ category: 'parent_disabled', age: 40 })).toBe(450000);
+    });
+
+    test('legacy parentOfDisabled flag false adds nothing', () => {
+      expect(getTaxFreeThreshold2026({ category: 'general', age: 40, parentOfDisabled: false })).toBe(400000);
+    });
+
+    describe('parent of disabled allowance is additive to own category', () => {
+      test.each([
+        ['general', 40, 450000],
+        ['female', 40, 500000],
+        ['senior', 66, 500000],
+        ['general', 66, 500000], // age-detected senior
+        ['disabled', 40, 575000],
+        ['third_gender', 40, 575000],
+        ['freedom_fighter', 40, 600000],
+        ['disabled', 70, 575000],
+        ['freedom_fighter', 70, 600000],
+      ])('%s (age %i) + parent → %i', (category, age, expected) => {
+        expect(getTaxFreeThreshold2026({ category, age, parentOfDisabled: true })).toBe(expected);
+      });
+
+      test('legacy parent_disabled category aged 65+ gets senior + 50k', () => {
+        expect(getTaxFreeThreshold2026({ category: 'parent_disabled', age: 66 })).toBe(500000);
+      });
+
+      test('legacy category and flag together do not double count', () => {
+        expect(getTaxFreeThreshold2026({ category: 'parent_disabled', age: 40, parentOfDisabled: true })).toBe(450000);
+      });
     });
 
     test('age 65+ general auto-detected as senior → 450000', () => {
@@ -338,7 +368,7 @@ describe('Tax Slabs 2026-27 Utility Functions', () => {
       const thresholds2025 = {
         general: 375000, female: 425000, senior: 425000,
         disabled: 500000, third_gender: 500000,
-        freedom_fighter: 525000, parent_disabled: 425000
+        freedom_fighter: 525000
       };
       Object.entries(thresholds2025).forEach(([key, old]) => {
         expect(TAX_FREE_THRESHOLDS_2026[key]).toBeGreaterThan(old);

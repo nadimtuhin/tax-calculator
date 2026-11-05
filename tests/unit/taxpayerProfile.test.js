@@ -39,14 +39,47 @@ describe('TaxpayerProfile Component', () => {
       const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
       const options = categorySelect.findAll('option');
       
-      expect(options).toHaveLength(7);
+      expect(options).toHaveLength(6);
       expect(options.at(0).text()).toBe('General (Male)');
       expect(options.at(1).text()).toBe('Female');
       expect(options.at(2).text()).toBe('Senior Citizen (65+)');
       expect(options.at(3).text()).toBe('Disabled Person');
-      expect(options.at(4).text()).toBe('Parent of Disabled Child');
-      expect(options.at(5).text()).toBe('War-wounded Freedom Fighter / July Warrior');
-      expect(options.at(6).text()).toBe('Third Gender');
+      expect(options.at(4).text()).toBe('War-wounded Freedom Fighter / July Warrior');
+      expect(options.at(5).text()).toBe('Third Gender');
+    });
+
+    test('should render parent-of-disabled checkbox that combines with category', async () => {
+      const checkbox = wrapper.find('input[type="checkbox"]');
+      expect(checkbox.exists()).toBe(true);
+
+      wrapper.vm.selectedCategory = 'female';
+      await checkbox.setValue(true);
+      expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'female', parentOfDisabled: true });
+      expect(wrapper.vm.threshold).toBe(475000); // FY 2025-26: 425000 + 50000
+      expect(wrapper.vm.categoryName).toBe('Female + Parent of Disabled Child');
+
+      wrapper.vm.selectedFiscalYear = '2026-27';
+      wrapper.vm.updateProfile();
+      await wrapper.vm.$nextTick();
+      expect(store.getters.taxFreeThreshold2026).toBe(500000); // 450000 + 50000
+
+      wrapper.vm.selectedCategory = 'freedom_fighter';
+      wrapper.vm.updateProfile();
+      await wrapper.vm.$nextTick();
+      expect(store.getters.taxFreeThreshold2026).toBe(600000);
+      expect(store.getters.taxFreeThreshold2025).toBe(575000);
+
+      await checkbox.setValue(false);
+      expect(store.getters.taxFreeThreshold2026).toBe(550000);
+    });
+
+    test('should migrate legacy parent_disabled category to general + flag', () => {
+      store.commit('updateTaxpayerProfile', { category: 'parent_disabled', age: 40, location: 'dhaka' });
+      const legacy = mount(TaxpayerProfile, { global: { plugins: [store] } });
+      expect(legacy.vm.selectedCategory).toBe('general');
+      expect(legacy.vm.parentOfDisabled).toBe(true);
+      expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'general', parentOfDisabled: true });
+      legacy.unmount();
     });
 
     test('should render all location options', () => {

@@ -116,6 +116,7 @@ const salaries = {
       category: 'general',
       age: null,
       location: 'dhaka',
+      parentOfDisabled: false,
     },
     currentYear: '2025-26',
     fiscalYearOptions: [
@@ -330,14 +331,17 @@ const salaries = {
     
     taxFreeThreshold(state) {
       const year = state.currentYear;
-      const category = state.taxpayerProfile.category;
+      const { category, parentOfDisabled } = state.taxpayerProfile;
       const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
+      const isLegacyParent = category === 'parent_disabled';
       
-      let baseThreshold = thresholds[category] || thresholds.general;
+      let baseThreshold = isLegacyParent
+        ? thresholds.general
+        : (thresholds[category] || thresholds.general);
       
-      // Add additional amount for parent of disabled child
-      if (category === 'parent_disabled') {
-        baseThreshold = thresholds.general + thresholds.parent_disabled;
+      // Parent of disabled child: additional amount on top of own category
+      if (parentOfDisabled || isLegacyParent) {
+        baseThreshold += thresholds.parent_disabled;
       }
       
       return baseThreshold;
