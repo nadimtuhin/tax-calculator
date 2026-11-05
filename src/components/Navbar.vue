@@ -105,6 +105,8 @@
 </template>
 
 <script>
+import { confirmToast, showToast } from '@/utils/toast'
+
 export default {
   name: 'Navbar',
   computed: {
@@ -119,7 +121,7 @@ export default {
         window.showStarModal();
       } else {
         console.warn('StarModal not available');
-        alert('StarModal component not found or not ready');
+        showToast('StarModal component not found or not ready', { variant: 'error' })
       }
     },
     populateRandomData() {
@@ -177,7 +179,7 @@ export default {
         this.$store.commit('changeInvestment', { index, value: amount });
       });
       
-      alert('Random data populated! 🎲');
+      showToast('Random data populated! 🎲', { variant: 'success' })
     },
     
     triggerFileInput() {
@@ -205,21 +207,26 @@ export default {
       URL.revokeObjectURL(url);
     },
     
-    resetData() {
-      if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
-        this.$store.commit('resetSalaries');
-        this.$store.commit('resetInvestments');
-        this.$store.commit('changeBonus', 0);
-        this.$store.commit('changeBonus2', 0);
-        this.$store.commit('setShowBonus2', false);
-        this.$store.commit('changeOthers', 0);
-        this.$store.commit('updateTaxpayerProfile', {
-          category: 'general',
-          age: null,
-          location: 'dhaka',
-        });
-        alert('All data has been reset!');
+    async resetData() {
+      const confirmed = await confirmToast(
+        'Are you sure you want to reset all data? This action cannot be undone.',
+        { confirmLabel: 'Confirm reset', cancelLabel: 'Cancel', variant: 'warn' }
+      )
+      if (!confirmed) {
+        return
       }
+      this.$store.commit('resetSalaries')
+      this.$store.commit('resetInvestments')
+      this.$store.commit('changeBonus', 0)
+      this.$store.commit('changeBonus2', 0)
+      this.$store.commit('setShowBonus2', false)
+      this.$store.commit('changeOthers', 0)
+      this.$store.commit('updateTaxpayerProfile', {
+        category: 'general',
+        age: null,
+        location: 'dhaka',
+      })
+      showToast('All data has been reset!', { variant: 'success' })
     },
     
     importData(event) {
@@ -252,9 +259,9 @@ export default {
           if (data.taxpayerProfile) {
             this.$store.commit('updateTaxpayerProfile', data.taxpayerProfile);
           }
-          alert('Data imported successfully!');
+          showToast('Data imported successfully!', { variant: 'success' })
         } catch (error) {
-          alert('Error importing data. Please check the file format.');
+          showToast('Error importing data. Please check the file format.', { variant: 'error' })
         }
       };
       reader.readAsText(file);

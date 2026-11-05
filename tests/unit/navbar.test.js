@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import salariesStore from '@/store/salaries';
 import breakdownStore from '@/store/breakdown';
+import { clearToasts, dismissToast, toastState } from '@/utils/toast';
 
 // Mock window methods
 global.URL.createObjectURL = jest.fn(() => 'mock-url');
@@ -18,10 +19,6 @@ document.createElement = jest.fn().mockImplementation((tagName) => {
   }
   return element;
 });
-
-// Mock window.confirm and alert
-global.confirm = jest.fn();
-global.alert = jest.fn();
 
 // Mock FileReader
 global.FileReader = jest.fn().mockImplementation(() => ({
@@ -78,8 +75,10 @@ describe('Navbar Component', () => {
 
     // Clear mocks
     jest.clearAllMocks();
-    global.confirm.mockClear();
-    global.alert.mockClear();
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
+    jest.spyOn(window, 'confirm').mockImplementation(() => {});
+    jest.spyOn(window, 'prompt').mockImplementation(() => {});
+    clearToasts();
   });
 
   afterEach(() => {
@@ -88,6 +87,8 @@ describe('Navbar Component', () => {
     }
     // Restore original location
     window.location = originalLocation;
+    clearToasts();
+    jest.restoreAllMocks();
   });
 
   afterAll(() => {
@@ -244,7 +245,13 @@ describe('Navbar Component', () => {
       await starBtn.trigger('click');
 
       expect(consoleSpy).toHaveBeenCalledWith('StarModal not available');
-      expect(global.alert).toHaveBeenCalledWith('StarModal component not found or not ready');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'StarModal component not found or not ready',
+          variant: 'error',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
@@ -286,7 +293,13 @@ describe('Navbar Component', () => {
         value: expect.any(Number)
       }));
 
-      expect(global.alert).toHaveBeenCalledWith('Random data populated! 🎲');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'Random data populated! 🎲',
+          variant: 'success',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     test('should generate senior citizen age when category is senior', async () => {
@@ -422,7 +435,13 @@ describe('Navbar Component', () => {
 
       expect(spy).toHaveBeenCalledWith('updateTaxpayerProfile', testData.taxpayerProfile);
       expect(spy).toHaveBeenCalledWith('changeBonus', testData.bonus);
-      expect(global.alert).toHaveBeenCalledWith('Data imported successfully!');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'Data imported successfully!',
+          variant: 'success',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     test('should handle invalid JSON gracefully', async () => {
@@ -446,7 +465,13 @@ describe('Navbar Component', () => {
       // Simulate FileReader onload with invalid JSON
       mockFileReader.onload({ target: { result: 'invalid json' } });
 
-      expect(global.alert).toHaveBeenCalledWith('Error importing data. Please check the file format.');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'Error importing data. Please check the file format.',
+          variant: 'error',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     test('should clear file input after import', async () => {
@@ -476,15 +501,26 @@ describe('Navbar Component', () => {
     });
 
     test('should reset data when confirmed', async () => {
-      global.confirm.mockReturnValue(true);
       const spy = jest.spyOn(store, 'commit');
 
       const resetBtn = wrapper.find('.action-btn-danger');
-      await resetBtn.trigger('click');
+      const pending = resetBtn.trigger('click');
+      await wrapper.vm.$nextTick();
 
-      expect(global.confirm).toHaveBeenCalledWith(
-        'Are you sure you want to reset all data? This action cannot be undone.'
-      );
+      expect(toastState.items[0]).toEqual(expect.objectContaining({
+        message: 'Are you sure you want to reset all data? This action cannot be undone.',
+        variant: 'warn',
+      }));
+      expect(toastState.items[0].actions.map((action) => action.label)).toEqual([
+        'Confirm reset',
+        'Cancel',
+      ]);
+      expect(spy).not.toHaveBeenCalledWith('resetSalaries');
+      expect(window.confirm).not.toHaveBeenCalled();
+
+      toastState.items[0].actions[0].onClick();
+      dismissToast(toastState.items[0].id, 'action');
+      await pending;
 
       expect(spy).toHaveBeenCalledWith('resetSalaries');
       expect(spy).toHaveBeenCalledWith('resetInvestments');
@@ -498,19 +534,30 @@ describe('Navbar Component', () => {
         location: 'dhaka'
       });
 
-      expect(global.alert).toHaveBeenCalledWith('All data has been reset!');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'All data has been reset!',
+          variant: 'success',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
     });
 
     test('should not reset data when cancelled', async () => {
-      global.confirm.mockReturnValue(false);
       const spy = jest.spyOn(store, 'commit');
 
       const resetBtn = wrapper.find('.action-btn-danger');
-      await resetBtn.trigger('click');
+      const pending = resetBtn.trigger('click');
+      await wrapper.vm.$nextTick();
 
-      expect(global.confirm).toHaveBeenCalled();
+      toastState.items[0].actions[1].onClick();
+      dismissToast(toastState.items[0].id, 'action');
+      await pending;
+
+      expect(window.confirm).not.toHaveBeenCalled();
       expect(spy).not.toHaveBeenCalledWith('resetSalaries');
-      expect(global.alert).not.toHaveBeenCalledWith('All data has been reset!');
+      expect(toastState.items.some((item) => item.message === 'All data has been reset!')).toBe(false);
+      expect(window.alert).not.toHaveBeenCalled();
     });
   });
 
@@ -573,6 +620,24 @@ describe('Navbar Component', () => {
       expect(typeof wrapper.vm.exportData).toBe('function');
       expect(typeof wrapper.vm.resetData).toBe('function');
       expect(typeof wrapper.vm.importData).toBe('function');
+    });
+
+    test('shows a toast when the star modal is not ready', () => {
+      window.showStarModal = undefined;
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      wrapper.vm.openStarModal();
+
+      expect(consoleSpy).toHaveBeenCalledWith('StarModal not available');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'StarModal component not found or not ready',
+          variant: 'error',
+        }),
+      ]);
+      expect(window.alert).not.toHaveBeenCalled();
+      expect(window.confirm).not.toHaveBeenCalled();
+      expect(window.prompt).not.toHaveBeenCalled();
     });
 
     test('triggerFileInput should click file input', () => {
