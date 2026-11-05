@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import { createRouter, createWebHistory } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
+import ToastHost from '@/components/ToastHost.vue';
 import salariesStore from '@/store/salaries';
 import breakdownStore from '@/store/breakdown';
 import { clearToasts, dismissToast, toastState } from '@/utils/toast';
@@ -558,6 +559,50 @@ describe('Navbar Component', () => {
       expect(spy).not.toHaveBeenCalledWith('resetSalaries');
       expect(toastState.items.some((item) => item.message === 'All data has been reset!')).toBe(false);
       expect(window.alert).not.toHaveBeenCalled();
+    });
+
+    test('should ignore repeated reset clicks while confirmation is open', async () => {
+      const resetBtn = wrapper.find('.action-btn-danger');
+      const first = resetBtn.trigger('click');
+      await wrapper.vm.$nextTick();
+
+      await resetBtn.trigger('click');
+      await wrapper.vm.$nextTick();
+
+      expect(toastState.items).toHaveLength(1);
+
+      toastState.items[0].actions[1].onClick();
+      dismissToast(toastState.items[0].id, 'action');
+      await first;
+
+      const second = resetBtn.trigger('click');
+      await wrapper.vm.$nextTick();
+      expect(toastState.items).toHaveLength(1);
+      dismissToast(toastState.items[0].id, 'escape');
+      await second;
+    });
+
+    test('confirms reset through rendered ToastHost buttons', async () => {
+      const host = mount(ToastHost);
+      const spy = jest.spyOn(store, 'commit');
+
+      const resetBtn = wrapper.find('.action-btn-danger');
+      await resetBtn.trigger('click');
+      await host.vm.$nextTick();
+
+      const confirmBtn = host.findAll('.toast-action').find((btn) => btn.text() === 'Confirm reset');
+      expect(confirmBtn).toBeDefined();
+      await confirmBtn.trigger('click');
+      await wrapper.vm.$nextTick();
+
+      expect(spy).toHaveBeenCalledWith('resetSalaries');
+      expect(toastState.items).toEqual([
+        expect.objectContaining({
+          message: 'All data has been reset!',
+          variant: 'success',
+        }),
+      ]);
+      host.unmount();
     });
   });
 

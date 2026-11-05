@@ -109,6 +109,11 @@ import { confirmToast, showToast } from '@/utils/toast'
 
 export default {
   name: 'Navbar',
+  data() {
+    return {
+      resetPending: false,
+    };
+  },
   computed: {
     isLocalhost() {
       return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -208,25 +213,33 @@ export default {
     },
     
     async resetData() {
-      const confirmed = await confirmToast(
-        'Are you sure you want to reset all data? This action cannot be undone.',
-        { confirmLabel: 'Confirm reset', cancelLabel: 'Cancel', variant: 'warn' }
-      )
-      if (!confirmed) {
+      if (this.resetPending) {
         return
       }
-      this.$store.commit('resetSalaries')
-      this.$store.commit('resetInvestments')
-      this.$store.commit('changeBonus', 0)
-      this.$store.commit('changeBonus2', 0)
-      this.$store.commit('setShowBonus2', false)
-      this.$store.commit('changeOthers', 0)
-      this.$store.commit('updateTaxpayerProfile', {
-        category: 'general',
-        age: null,
-        location: 'dhaka',
-      })
-      showToast('All data has been reset!', { variant: 'success' })
+      this.resetPending = true
+      try {
+        const confirmed = await confirmToast(
+          'Are you sure you want to reset all data? This action cannot be undone.',
+          { confirmLabel: 'Confirm reset', cancelLabel: 'Cancel', variant: 'warn' }
+        )
+        if (!confirmed) {
+          return
+        }
+        this.$store.commit('resetSalaries')
+        this.$store.commit('resetInvestments')
+        this.$store.commit('changeBonus', 0)
+        this.$store.commit('changeBonus2', 0)
+        this.$store.commit('setShowBonus2', false)
+        this.$store.commit('changeOthers', 0)
+        this.$store.commit('updateTaxpayerProfile', {
+          category: 'general',
+          age: null,
+          location: 'dhaka',
+        })
+        showToast('All data has been reset!', { variant: 'success' })
+      } finally {
+        this.resetPending = false
+      }
     },
     
     importData(event) {
