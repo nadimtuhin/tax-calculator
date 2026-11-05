@@ -148,14 +148,23 @@ describe('Tax Slabs 2025 Utility Functions', () => {
       expect(slabs[1]).toEqual(['Next Tk3 lakh [4.5-7.5 lakh]', 450000, 750000, 10]);
     });
 
-    test('should generate correct tax slabs for disabled person (525k threshold)', () => {
+    test('should generate correct tax slabs for disabled person (525k threshold, exact quarter-lakh labels)', () => {
       const slabs = calculateTaxSlabs2025(525000);
       
       expect(slabs).toHaveLength(6);
       
-      // First slab should reflect higher threshold
-      expect(slabs[0]).toEqual(['First Tk5.3 lakh [0-5.3 lakh]', 0, 525000, 0]);
-      expect(slabs[1]).toEqual(['Next Tk3 lakh [5.3-8.3 lakh]', 525000, 825000, 10]);
+      // First slab and subsequent slabs preserve exact 0.25-lakh precision (5.25, not rounded 5.3)
+      expect(slabs[0]).toEqual(['First Tk5.25 lakh [0-5.25 lakh]', 0, 525000, 0]);
+      expect(slabs[1]).toEqual(['Next Tk3 lakh [5.25-8.25 lakh]', 525000, 825000, 10]);
+      expect(slabs[2]).toEqual(['Next Tk4 lakh [8.25-12.25 lakh]', 825000, 1225000, 15]);
+      expect(slabs[3]).toEqual(['Next Tk5 lakh [12.25-17.25 lakh]', 1225000, 1725000, 20]);
+      expect(slabs[4]).toEqual(['Next Tk20 lakh [17.25-37.25 lakh]', 1725000, 3725000, 25]);
+      expect(slabs[5]).toEqual(['Above [37.25-UP lakh]', 3725000, Infinity, 30]);
+
+      // Disabled + parent allowance (575k = 5.75 lakh) also preserves exact quarter-lakh labels
+      const parentSlabs = calculateTaxSlabs2025(575000);
+      expect(parentSlabs[0]).toEqual(['First Tk5.75 lakh [0-5.75 lakh]', 0, 575000, 0]);
+      expect(parentSlabs[1]).toEqual(['Next Tk3 lakh [5.75-8.75 lakh]', 575000, 875000, 10]);
     });
 
     test('should generate correct tax slabs for freedom fighter (550k threshold)', () => {

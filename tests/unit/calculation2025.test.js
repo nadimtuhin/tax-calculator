@@ -540,14 +540,16 @@ describe('Calculation-2025 Component', () => {
   });
 
   describe('Edge Cases and Boundary Testing', () => {
-    test('should handle tax calculation at exact threshold boundaries', () => {
+    test('should handle tax calculation at exact 400,000 threshold boundary and immediately above it', () => {
       store.commit('updateTaxpayerProfile', {
         category: 'general',
         age: 30,
         location: 'dhaka'
       });
-      
-      store.commit('changeSubsequentSalaries', { index: 0, value: 33333 }); // ~400K annually
+
+      // Exact 400,000 taxable salary: 33,000 * 12 = 396,000 + 4,000 bonus = 400,000 (exemptions = 0)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 33000 });
+      store.commit('changeBonus', 4000);
 
       wrapper = mount(Calculation2025, {
         global: {
@@ -555,12 +557,19 @@ describe('Calculation-2025 Component', () => {
         }
       });
 
-      const taxBreakdown = wrapper.vm.taxBreakdown;
-      const totalTax = wrapper.vm.totalTax;
-      const minimumTax = wrapper.vm.minimumTaxAmount;
-      
-      expect(taxBreakdown[0].slabCut).toBe(0);
-      expect(totalTax).toBe(minimumTax); // Should apply minimum tax
+      expect(store.getters.taxableSalary).toBe(400000);
+      expect(wrapper.vm.taxBreakdown[0].slabAmount).toBe(400000);
+      expect(wrapper.vm.taxBreakdown[0].slabCut).toBe(0);
+      expect(wrapper.vm.taxBreakdown[1].slabAmount).toBe(0);
+      expect(wrapper.vm.calculatedTax).toBe(0);
+      expect(wrapper.vm.totalTax).toBe(wrapper.vm.minimumTaxAmount);
+
+      // Immediately above threshold: 400,010 -> 10 BDT in 10% bracket -> 1 BDT calculated tax, 5,000 minimum tax
+      store.commit('changeBonus', 4010);
+      expect(store.getters.taxableSalary).toBe(400010);
+      expect(wrapper.vm.taxBreakdown[1].slabAmount).toBe(10);
+      expect(wrapper.vm.calculatedTax).toBe(1);
+      expect(wrapper.vm.totalTax).toBe(5000);
     });
 
     test('should handle very high income correctly', () => {

@@ -55,17 +55,31 @@ test.describe('Dual Tax Calculation Workflow (2024-25 vs 2025-26)', () => {
     expect(hasNumbers).toBe(true);
   });
 
-  test('should show different thresholds in calculation tables', async ({ page }) => {
-    // Enter a salary to trigger calculations
-    const salaryInput = page.locator('input[type="number"]').first();
-    await salaryInput.fill('40000'); // 480K annually
-    await page.waitForTimeout(1000);
-    
-    // Look for threshold indicators in the page
-    const pageContent = await page.textContent('body');
-    
-    // Both FY 2025-26 (AY 2026-27) and FY 2026-27 (AY 2027-28) show Tk4 lakh general threshold
-    expect(pageContent).toContain('First Tk4 lakh');
+  test('should show enacted 400k thresholds in both FY 2025-26 and FY 2026-27 calculation tables while preserving FY 2024-25 in profile', async ({ page }) => {
+    const salaryInput = page.getByLabel('July basic');
+    await salaryInput.fill('40000'); // 480,000 exact taxable salary annually (basic has 0 exemption)
+    await page.waitForTimeout(500);
+
+    // Verify both side-by-side columns independently render First Tk4 lakh [0-4 lakh]
+    const cols = page.locator('.comparison-col');
+    await expect(cols).toHaveCount(2);
+    await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026');
+    await expect(cols.nth(0)).toContainText('First Tk4 lakh [0-4 lakh]');
+    await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027');
+    await expect(cols.nth(1)).toContainText('First Tk4 lakh [0-4 lakh]');
+
+    // Verify both comparison cards show Tax-free: ৳400,000
+    const cards = page.locator('.comparison-card');
+    await expect(cards.nth(0)).toContainText('FY 2025-2026');
+    await expect(cards.nth(0)).toContainText('Tax-free: ৳400,000');
+    await expect(cards.nth(1)).toContainText('FY 2026-2027');
+    await expect(cards.nth(1)).toContainText('Tax-free: ৳400,000');
+
+    // Verify selecting FY 2024-25 in profile still displays preserved BDT 350,000 threshold
+    await page.locator('#profile-fiscal-year').selectOption('2024-25');
+    await expect(page.locator('.threshold-amount')).toHaveText('BDT 350,000');
+    await page.locator('#profile-fiscal-year').selectOption('2025-26');
+    await expect(page.locator('.threshold-amount')).toHaveText('BDT 400,000');
   });
 
   test('should update both calculations when taxpayer profile changes', async ({ page }) => {

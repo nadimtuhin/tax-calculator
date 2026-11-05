@@ -82,7 +82,7 @@ describe('Vuex Store 2025 Getters', () => {
       expect(threshold).toBe(525000); // +50K from FY 2024-25
     });
 
-    test('shared taxFreeThreshold getter for 2025-26 matches taxFreeThreshold2025 and preserves 2024-25 / 2026-27', () => {
+    test('shared taxFreeThreshold getter for 2025-26 matches taxFreeThreshold2025 (including age-65+ promotion) and preserves 2024-25 / 2026-27', () => {
       const expected2025And2026 = {
         general: 400000,
         female: 450000,
@@ -102,6 +102,8 @@ describe('Vuex Store 2025 Getters', () => {
 
       Object.entries(expected2025And2026).forEach(([category, expected]) => {
         const age = category === 'senior' ? 66 : 35;
+
+        // FY 2025-26 without and with parentOfDisabled
         store.commit('setCurrentYear', '2025-26');
         store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: false });
         expect(store.getters.taxFreeThreshold).toBe(expected);
@@ -111,11 +113,57 @@ describe('Vuex Store 2025 Getters', () => {
         store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: true });
         expect(store.getters.taxFreeThreshold).toBe(expected + 50000);
         expect(store.getters.taxFreeThreshold2025).toBe(expected + 50000);
+        expect(store.getters.taxFreeThreshold2026).toBe(expected + 50000);
 
+        // FY 2026-27 shared getter preservation (without and with parentOfDisabled)
+        store.commit('setCurrentYear', '2026-27');
+        store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: false });
+        expect(store.getters.taxFreeThreshold).toBe(expected);
+        store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: true });
+        expect(store.getters.taxFreeThreshold).toBe(expected + 50000);
+
+        // FY 2024-25 shared getter preservation (without and with parentOfDisabled)
         store.commit('setCurrentYear', '2024-25');
         store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: false });
         expect(store.getters.taxFreeThreshold).toBe(expected2024[category]);
+        store.commit('updateTaxpayerProfile', { category, age, location: 'dhaka', parentOfDisabled: true });
+        expect(store.getters.taxFreeThreshold).toBe(expected2024[category] + 50000);
       });
+
+      // Age-detected senior parity on FY 2025-26 (64 vs 65, additive parent allowance, legacy parent_disabled, protected higher categories)
+      store.commit('setCurrentYear', '2025-26');
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 64, location: 'dhaka', parentOfDisabled: false });
+      expect(store.getters.taxFreeThreshold).toBe(400000);
+      expect(store.getters.taxFreeThreshold2025).toBe(400000);
+
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 65, location: 'dhaka', parentOfDisabled: false });
+      expect(store.getters.taxFreeThreshold).toBe(450000);
+      expect(store.getters.taxFreeThreshold2025).toBe(450000);
+
+      store.commit('updateTaxpayerProfile', { category: 'general', age: 65, location: 'dhaka', parentOfDisabled: true });
+      expect(store.getters.taxFreeThreshold).toBe(500000);
+      expect(store.getters.taxFreeThreshold2025).toBe(500000);
+
+      store.commit('updateTaxpayerProfile', { category: 'parent_disabled', age: 65, location: 'dhaka' });
+      expect(store.getters.taxFreeThreshold).toBe(500000);
+      expect(store.getters.taxFreeThreshold2025).toBe(500000);
+
+      [
+        ['disabled', 525000],
+        ['third_gender', 525000],
+        ['freedom_fighter', 550000]
+      ].forEach(([cat, expected]) => {
+        store.commit('updateTaxpayerProfile', { category: cat, age: 70, location: 'dhaka', parentOfDisabled: false });
+        expect(store.getters.taxFreeThreshold).toBe(expected);
+        expect(store.getters.taxFreeThreshold2025).toBe(expected);
+      });
+
+      // Explicit investment rebate formula preservation across all three getters
+      store.commit('changeSubsequentSalaries', { index: 0, value: 300000 }); // 3.6M taxable
+      store.commit('changeInvestment', { index: 0, value: 500000 }); // 5L investment
+      expect(store.getters.investmentRebate).toBe(75000);     // min(108k, 15% of 5L = 75k, 10L)
+      expect(store.getters.investmentRebate2025).toBe(75000); // min(108k, 15% of 5L = 75k, 10L)
+      expect(store.getters.investmentRebate2026).toBe(50000); // min(108k, 10% of 5L = 50k, 7.5L)
     });
   });
 

@@ -331,6 +331,9 @@ const salaries = {
     
     taxFreeThreshold(state) {
       const year = state.currentYear;
+      if (year === '2025-26') {
+        return getTaxFreeThreshold2025(state.taxpayerProfile);
+      }
       const { category, parentOfDisabled } = state.taxpayerProfile;
       const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
       const isLegacyParent = category === 'parent_disabled';
