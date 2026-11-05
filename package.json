@@ -20,7 +20,9 @@
     "prepare": "husky",
     "security:scan": "trivy fs --scanners vuln,secret .",
     "security:scan-image": "trivy image --scanners vuln,secret",
-    "security:config": "trivy config ."
+    "security:config": "trivy config .",
+    "mcp:start": "node packages/mcp/bin/tax-calculator-mcp.js",
+    "mcp:test": "npm --prefix packages/mcp test"
   },
   "dependencies": {
     "@vue/cli-plugin-babel": "^5.0.8",

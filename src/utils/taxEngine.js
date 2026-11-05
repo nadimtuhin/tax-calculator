@@ -1,0 +1,981 @@
+import { calculateTaxSlabs } from './taxSlabs.js';
+import {
+  calculateTaxSlabs2025,
+  getTaxFreeThreshold2025,
+  getMinimumTax2025,
+  TAX_FREE_THRESHOLDS_2025,
+  PARENT_OF_DISABLED_ALLOWANCE_2025,
+  MINIMUM_TAX_2025,
+} from './taxSlabs2025.js';
+import {
+  calculateTaxSlabs2026,
+  getTaxFreeThreshold2026,
+  getMinimumTax2026,
+  calculateInvestmentRebate2026,
+  TAX_FREE_THRESHOLDS_2026,
+  PARENT_OF_DISABLED_ALLOWANCE_2026,
+  MINIMUM_TAX_2026,
+  MINIMUM_TAX_FIRST_TIME_2026,
+} from './taxSlabs2026.js';
+
+export const SUPPORTED_FISCAL_YEARS = ['2023-24', '2024-25', '2025-26', '2026-27'];
+export const DEFAULT_FISCAL_YEAR = '2025-26';
+export const MAX_SAFE_BDT_AMOUNT = Number.MAX_SAFE_INTEGER;
+
+export const FISCAL_YEAR_OPTIONS = [
+  { value: '2024-25', label: 'FY 2024-2025' },
+  { value: '2025-26', label: 'FY 2025-2026' },
+  { value: '2026-27', label: 'FY 2026-2027' },
+];
+
+export const FISCAL_YEAR_METADATA = {
+  '2023-24': {
+    fiscalYear: '2023-24',
+    label: 'FY 2023-2024',
+    assessmentYear: '2024-25',
+    slabRatesPercent: [0, 5, 10, 15, 20, 25, 30],
+    autoPromotesAge65: false,
+    notes: 'Income Year 2023-24 (Assessment Year 2024-25). Location-tiered minimum tax; 7-slab progressive structure in shared calculator.',
+  },
+  '2024-25': {
+    fiscalYear: '2024-25',
+    label: 'FY 2024-2025',
+    assessmentYear: '2025-26',
+    slabRatesPercent: [0, 5, 10, 15, 20, 25, 30],
+    autoPromotesAge65: false,
+    notes: 'Income Year 2024-25 (Assessment Year 2025-26). 7 slabs (0%, 5%, 10%, 15%, 20%, 25%, 30%); location-tiered minimum tax (BDT 3,000-5,000); rebate min(3% taxable, 15% investment, BDT 10L).',
+  },
+  '2025-26': {
+    fiscalYear: '2025-26',
+    label: 'FY 2025-2026',
+    assessmentYear: '2026-27',
+    slabRatesPercent: [0, 10, 15, 20, 25, 30],
+    autoPromotesAge65: true,
+    notes: 'Income Year 2025-26 (Assessment Year 2026-27). Enacted Finance Act 2026 Schedule 1 400k-family thresholds; 6 slabs (5% bracket removed); unified BDT 5,000 minimum tax; rebate min(3% taxable, 15% investment, BDT 10L).',
+  },
+  '2026-27': {
+    fiscalYear: '2026-27',
+    label: 'FY 2026-2027',
+    assessmentYear: '2027-28',
+    slabRatesPercent: [0, 10, 15, 20, 25, 30],
+    autoPromotesAge65: true,
+    notes: 'Income Year 2026-27 (Assessment Year 2027-28). Finance Act 2026 400k-family thresholds; 6 slabs; unified BDT 5,000 minimum tax (BDT 1,000 for first-time filers); rebate min(3% taxable, 10% investment, BDT 7.5L).',
+  },
+};
+
+export const TAXPAYER_CATEGORIES = [
+  'general',
+  'female',
+  'senior',
+  'disabled',
+  'third_gender',
+  'freedom_fighter',
+];
+
+export const ALL_ACCEPTED_CATEGORIES = [...TAXPAYER_CATEGORIES, 'parent_disabled'];
+
+export const LOCATIONS = ['dhaka', 'chittagong', 'other_city', 'district'];
+
+export const SALARY_EXEMPTION_CAPS = {
+  house: {
+    basicFraction: 0.5,
+    maxAmount: 300000,
+    rule: 'min(actual house rent allowance, 50% of annual basic salary, BDT 300,000)',
+  },
+  medical: {
+    basicFraction: 0.1,
+    maxAmount: 120000,
+    rule: 'min(actual medical allowance, 10% of annual basic salary, BDT 120,000)',
+  },
+  transport: {
+    maxAmount: 30000,
+    rule: 'min(actual conveyance/transport allowance, BDT 30,000)',
+  },
+  lfa: {
+    maxAmount: 0,
+    rule: 'No exemption modeled (BDT 0)',
+  },
+};
+
+export const STANDARD_SALARY_SPLIT = {
+  basic: 0.6,
+  house: 0.25,
+  medical: 0.1,
+  transport: 0.05,
+  lfa: 0,
+};
+
+export const INVESTMENT_INSTRUMENT_CAPS = {
+  dps: 120000,
+  life_insurance: null,
+  stocks: null,
+  savings_certificate: 500000,
+  mutual_fund: 500000,
+  others: null,
+};
+
+export const TAX_FREE_THRESHOLDS_BY_YEAR = {
+  '2023-24': {
+    general: 350000,
+    female: 400000,
+    senior: 400000,
+    disabled: 475000,
+    parent_disabled: 50000,
+    freedom_fighter: 500000,
+    third_gender: 475000,
+  },
+  '2024-25': {
+    general: 350000,
+    female: 400000,
+    senior: 400000,
+    disabled: 475000,
+    parent_disabled: 50000,
+    freedom_fighter: 500000,
+    third_gender: 475000,
+  },
+  '2025-26': {
+    ...TAX_FREE_THRESHOLDS_2025,
+    parent_disabled: PARENT_OF_DISABLED_ALLOWANCE_2025,
+  },
+  '2026-27': {
+    ...TAX_FREE_THRESHOLDS_2026,
+    parent_disabled: PARENT_OF_DISABLED_ALLOWANCE_2026,
+  },
+};
+
+export const MINIMUM_TAX_BY_YEAR = {
+  '2022-23': {
+    dhaka: 5000,
+    chittagong: 4000,
+    other_city: 3000,
+    district: 2000,
+  },
+  '2023-24': {
+    dhaka: 5000,
+    chittagong: 5000,
+    other_city: 4000,
+    district: 3000,
+  },
+  '2024-25': {
+    dhaka: 5000,
+    chittagong: 5000,
+    other_city: 4000,
+    district: 3000,
+  },
+  '2025-26': {
+    ...MINIMUM_TAX_2025,
+  },
+  '2026-27': {
+    ...MINIMUM_TAX_2026,
+  },
+};
+
+export const REBATE_RULES_BY_YEAR = {
+  '2023-24': {
+    taxableIncomeRate: 0.03,
+    investmentRate: 0.15,
+    maxCap: 1000000,
+    formula: 'min(3% of taxable income, 15% of eligible investment, BDT 1,000,000)',
+  },
+  '2024-25': {
+    taxableIncomeRate: 0.03,
+    investmentRate: 0.15,
+    maxCap: 1000000,
+    formula: 'min(3% of taxable income, 15% of eligible investment, BDT 1,000,000)',
+  },
+  '2025-26': {
+    taxableIncomeRate: 0.03,
+    investmentRate: 0.15,
+    maxCap: 1000000,
+    formula: 'min(3% of taxable income, 15% of eligible investment, BDT 1,000,000)',
+  },
+  '2026-27': {
+    taxableIncomeRate: 0.03,
+    investmentRate: 0.10,
+    maxCap: 750000,
+    formula: 'min(3% of taxable income, 10% of eligible investment, BDT 750,000)',
+  },
+};
+
+const YEAR_ALIASES = {
+  '2023': '2023-24',
+  '2023-24': '2023-24',
+  '2023-2024': '2023-24',
+  '2024': '2024-25',
+  '2024-25': '2024-25',
+  '2024-2025': '2024-25',
+  '2025': '2025-26',
+  '2025-26': '2025-26',
+  '2025-2026': '2025-26',
+  '2026': '2026-27',
+  '2026-27': '2026-27',
+  '2026-2027': '2026-27',
+};
+
+/**
+ * Normalize a fiscal year string into canonical 'YYYY-YY' format.
+ * Rejects Assessment Year ('AY ...') strings explicitly to avoid off-by-one confusion.
+ */
+export function normalizeFiscalYear(yearInput = DEFAULT_FISCAL_YEAR) {
+  if (yearInput === undefined || yearInput === null || yearInput === '') {
+    return DEFAULT_FISCAL_YEAR;
+  }
+  const raw = String(yearInput).trim();
+  if (/^ay\b|^assessment\s*year\b/i.test(raw)) {
+    throw new Error(
+      `Received Assessment Year "${raw}". Pass the Fiscal/Income Year instead — e.g. "2025-26" (for AY 2026-27) or "2026-27" (for AY 2027-28).`
+    );
+  }
+  const cleaned = raw
+    .replace(/^(fy|fiscal\s*year|income\s*year|iy)\s*[:=-]?\s*/i, '')
+    .replace(/\s+/g, '')
+    .replace(/[–—/]/g, '-');
+
+  const resolved = YEAR_ALIASES[cleaned];
+  if (!resolved) {
+    throw new Error(
+      `Unsupported fiscal year "${raw}". Supported fiscal years: ${SUPPORTED_FISCAL_YEARS.join(', ')}.`
+    );
+  }
+  return resolved;
+}
+
+export function calculateHouseExemption(totalBasic, totalHouse) {
+  const halfBasic = totalBasic / 2;
+  const houseExempt = halfBasic < totalHouse ? halfBasic : totalHouse;
+  return Math.min(SALARY_EXEMPTION_CAPS.house.maxAmount, houseExempt);
+}
+
+export function calculateMedicalExemption(totalBasic, totalMedical) {
+  return Math.min(SALARY_EXEMPTION_CAPS.medical.maxAmount, totalBasic / 10, totalMedical);
+}
+
+export function calculateTransportExemption(totalTransport) {
+  return Math.min(totalTransport, SALARY_EXEMPTION_CAPS.transport.maxAmount);
+}
+
+export function calculateLfaExemption() {
+  return 0;
+}
+
+export function calculateSalaryExemptions({
+  basic = 0,
+  house = 0,
+  medical = 0,
+  transport = 0,
+  lfa = 0,
+  others = 0,
+  bonus = 0,
+  bonus2 = 0,
+  additionalIncome = 0,
+} = {}) {
+  const houseExempt = calculateHouseExemption(basic, house);
+  const medicalExempt = calculateMedicalExemption(basic, medical);
+  const transportExempt = calculateTransportExemption(transport);
+  const lfaExempt = calculateLfaExemption();
+  const totalExempt = houseExempt + medicalExempt + transportExempt + lfaExempt;
+  const grossSalary = basic + house + medical + transport + lfa + others + bonus + bonus2 + additionalIncome;
+  const taxableSalary = grossSalary - totalExempt;
+
+  return {
+    grossSalary,
+    houseExempt,
+    medicalExempt,
+    transportExempt,
+    lfaExempt,
+    totalExempt,
+    taxableSalary,
+  };
+}
+
+export function calculateMaxRebateableInvestment(taxableIncome) {
+  return Math.round(taxableIncome / 5);
+}
+
+/**
+ * Compute tax-free threshold for a fiscal year and taxpayer profile.
+ * Preserves exact Vuex store semantics:
+ * - FY 2025-26 delegates to getTaxFreeThreshold2025 (includes age >= 65 senior promotion).
+ * - FY 2026-27 delegates to getTaxFreeThreshold2026 unless legacySharedGetter is true
+ *   (matching salaries.js shared `taxFreeThreshold` vs `taxFreeThreshold2026` getters).
+ * - FY 2023-24 and FY 2024-25 use explicit category + additive parentOfDisabled without implicit age override.
+ */
+export function getTaxFreeThresholdForYear(
+  year,
+  taxpayerProfile = {},
+  { legacySharedGetter = false } = {}
+) {
+  if (year === '2025-26') {
+    return getTaxFreeThreshold2025(taxpayerProfile);
+  }
+  if (year === '2026-27' && !legacySharedGetter) {
+    return getTaxFreeThreshold2026(taxpayerProfile);
+  }
+
+  const { category, parentOfDisabled } = taxpayerProfile;
+  const thresholds = TAX_FREE_THRESHOLDS_BY_YEAR[year] || TAX_FREE_THRESHOLDS_BY_YEAR['2024-25'];
+  const isLegacyParent = category === 'parent_disabled';
+  const parentExtra = Number(thresholds.parent_disabled) || 0;
+
+  let baseThreshold = isLegacyParent
+    ? thresholds.general
+    : thresholds[category] || thresholds.general;
+
+  if (parentOfDisabled || isLegacyParent) {
+    baseThreshold += parentExtra;
+  }
+
+  return baseThreshold;
+}
+
+export function getMinimumTaxForYear(year, location = 'dhaka', { firstTimeFiler = false } = {}) {
+  if (year === '2025-26') {
+    return getMinimumTax2025(location);
+  }
+  if (year === '2026-27') {
+    return getMinimumTax2026(location, firstTimeFiler);
+  }
+
+  const taxRates = MINIMUM_TAX_BY_YEAR[year] || MINIMUM_TAX_BY_YEAR['2024-25'];
+  return taxRates[location] || taxRates.dhaka;
+}
+
+export function calculateTaxSlabsForYear(year, taxFreeThreshold) {
+  if (year === '2026-27') {
+    return calculateTaxSlabs2026(taxFreeThreshold);
+  }
+  if (year === '2025-26') {
+    return calculateTaxSlabs2025(taxFreeThreshold);
+  }
+  return calculateTaxSlabs(taxFreeThreshold);
+}
+
+export function calculateSlabBreakdown(taxableSalary, slabs, idPrefix = 'slab') {
+  return slabs.map((slab, index) => {
+    const slabTitle = slab[0];
+    const slabLower = slab[1];
+    const slabUpper = slab[2];
+    const slabPercentage = slab[3];
+    let slabAmount = 0;
+
+    if (taxableSalary >= slabLower && taxableSalary <= slabUpper) {
+      slabAmount = taxableSalary - slabLower;
+    } else if (taxableSalary >= slabLower && taxableSalary >= slabUpper) {
+      slabAmount = slabUpper - slabLower;
+    }
+
+    const slabCut = Math.round((slabAmount / 100) * slabPercentage);
+    const id = `${idPrefix}-${index}-${slabLower}-${slabUpper}-${slabPercentage}`;
+
+    return {
+      id,
+      slabTitle,
+      slabUpper,
+      slabLower,
+      slabPercentage,
+      slabAmount,
+      slabCut,
+    };
+  });
+}
+
+export function sumSlabTax(breakdown) {
+  return Math.round(breakdown.reduceRight((carry, item) => carry + +item.slabCut, 0));
+}
+
+export function calculateInvestmentRebateForYear(year, taxableIncome, eligibleInvestment) {
+  if (year === '2026-27') {
+    return calculateInvestmentRebate2026(taxableIncome, eligibleInvestment);
+  }
+  const rules = REBATE_RULES_BY_YEAR[year] || REBATE_RULES_BY_YEAR['2024-25'];
+  const incomeCap = taxableIncome * rules.taxableIncomeRate;
+  const investmentShare = eligibleInvestment * rules.investmentRate;
+  return Math.round(Math.max(0, Math.min(incomeCap, investmentShare, rules.maxCap)));
+}
+
+export function calculateFinalTaxSummary(calculatedTax, minimumTax, totalTds = 0, investmentRebate = 0) {
+  const totalTax = Math.max(calculatedTax, minimumTax);
+  const isMinimumTaxApplied = calculatedTax < minimumTax;
+  const payable = Math.max(0, totalTax - totalTds - investmentRebate);
+
+  return {
+    totalTax,
+    isMinimumTaxApplied,
+    minimumTaxAmount: minimumTax,
+    payable,
+    totalTds,
+    investmentRebate,
+  };
+}
+
+function assertSafeAmount(value, fieldName) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    throw new Error(`"${fieldName}" must be a finite non-negative number (received ${value}).`);
+  }
+  if (value > MAX_SAFE_BDT_AMOUNT) {
+    throw new Error(
+      `"${fieldName}" exceeds maximum safe BDT amount (${MAX_SAFE_BDT_AMOUNT}).`
+    );
+  }
+}
+
+export function resolveEffectiveProfile(
+  {
+    category = 'general',
+    age = null,
+    parent_of_disabled = false,
+    parentOfDisabled,
+    location = 'dhaka',
+    first_time_filer = false,
+    firstTimeFiler,
+  } = {},
+  fiscalYear = DEFAULT_FISCAL_YEAR
+) {
+  if (!ALL_ACCEPTED_CATEGORIES.includes(category)) {
+    throw new Error(
+      `Unsupported category "${category}". Supported categories: ${ALL_ACCEPTED_CATEGORIES.join(', ')}.`
+    );
+  }
+  if (!LOCATIONS.includes(location)) {
+    throw new Error(
+      `Unsupported location "${location}". Supported locations: ${LOCATIONS.join(', ')}.`
+    );
+  }
+  if (age !== null && age !== undefined) {
+    if (typeof age !== 'number' || !Number.isInteger(age) || age < 0 || age > 150) {
+      throw new Error(`"age" must be an integer between 0 and 150 (received ${age}).`);
+    }
+  }
+
+  const isLegacyParent = category === 'parent_disabled';
+  const baseCategory = isLegacyParent ? 'general' : category;
+  const parentFlag = Boolean(parentOfDisabled ?? parent_of_disabled) || isLegacyParent;
+  const firstTime = Boolean(firstTimeFiler ?? first_time_filer);
+  const autoPromotesAge = Boolean(FISCAL_YEAR_METADATA[fiscalYear]?.autoPromotesAge65);
+
+  let effectiveCategory = baseCategory;
+  if (
+    autoPromotesAge &&
+    age !== null &&
+    age !== undefined &&
+    age >= 65 &&
+    baseCategory !== 'disabled' &&
+    baseCategory !== 'freedom_fighter' &&
+    baseCategory !== 'third_gender'
+  ) {
+    effectiveCategory = 'senior';
+  }
+
+  return {
+    category,
+    effectiveCategory,
+    age: age ?? null,
+    parentOfDisabled: parentFlag,
+    location,
+    firstTimeFiler: firstTime,
+  };
+}
+
+export function resolveIncomeInputs({ taxable_income, taxableIncome, income } = {}) {
+  const directTaxable = taxableIncome ?? taxable_income;
+  if (directTaxable !== undefined && directTaxable !== null && income !== undefined && income !== null) {
+    throw new Error('Provide either "taxable_income" or "income" components, not both.');
+  }
+  if ((directTaxable === undefined || directTaxable === null) && (!income || typeof income !== 'object')) {
+    throw new Error('Provide either "taxable_income" (annual BDT) or "income" (salary components / gross_salary).');
+  }
+
+  if (directTaxable !== undefined && directTaxable !== null) {
+    assertSafeAmount(directTaxable, 'taxable_income');
+    return {
+      mode: 'taxable_income',
+      period: 'annual',
+      gross_income_bdt: directTaxable,
+      exemptions_bdt: {
+        house: 0,
+        medical: 0,
+        transport: 0,
+        lfa: 0,
+        total: 0,
+      },
+      components_annual_bdt: null,
+      taxable_income_bdt: directTaxable,
+    };
+  }
+
+  const period = income.period || 'annual';
+  if (period !== 'annual' && period !== 'monthly') {
+    throw new Error(`Unsupported income.period "${period}". Expected "annual" or "monthly".`);
+  }
+  const multiplier = period === 'monthly' ? 12 : 1;
+
+  const hasGross = income.gross_salary !== undefined && income.gross_salary !== null;
+  const componentKeys = ['basic', 'house', 'medical', 'transport', 'lfa', 'others'];
+  const hasComponents = componentKeys.some((k) => income[k] !== undefined && income[k] !== null);
+
+  if (hasGross && hasComponents) {
+    throw new Error(
+      'Provide either "income.gross_salary" OR itemized components ("basic", "house", "medical", "transport", "lfa", "others"), not both.'
+    );
+  }
+  if (!hasGross && !hasComponents && income.bonus === undefined && income.bonus2 === undefined && income.additional_income === undefined) {
+    throw new Error(
+      'Income object is empty. Provide "gross_salary" or itemized salary components ("basic", "house", "medical", "transport", "others", "bonus").'
+    );
+  }
+
+  const bonus = income.bonus ?? 0;
+  const bonus2 = income.bonus2 ?? 0;
+  const additionalIncome = income.additional_income ?? 0;
+  assertSafeAmount(bonus, 'income.bonus');
+  assertSafeAmount(bonus2, 'income.bonus2');
+  assertSafeAmount(additionalIncome, 'income.additional_income');
+
+  if (hasGross) {
+    assertSafeAmount(income.gross_salary, 'income.gross_salary');
+    const annualBaseSalary = income.gross_salary * multiplier;
+    assertSafeAmount(annualBaseSalary, 'annualized income.gross_salary');
+
+    if (income.use_standard_breakdown) {
+      const basic = Math.round(annualBaseSalary * STANDARD_SALARY_SPLIT.basic);
+      const house = Math.round(annualBaseSalary * STANDARD_SALARY_SPLIT.house);
+      const medical = Math.round(annualBaseSalary * STANDARD_SALARY_SPLIT.medical);
+      const transport = annualBaseSalary - basic - house - medical;
+      const calc = calculateSalaryExemptions({
+        basic,
+        house,
+        medical,
+        transport,
+        lfa: 0,
+        others: 0,
+        bonus,
+        bonus2,
+        additionalIncome,
+      });
+      assertSafeAmount(calc.grossSalary, 'computed gross_income_bdt');
+      assertSafeAmount(calc.taxableSalary, 'computed taxable_income_bdt');
+
+      return {
+        mode: 'gross_salary_standard_split',
+        period,
+        gross_income_bdt: calc.grossSalary,
+        exemptions_bdt: {
+          house: calc.houseExempt,
+          medical: calc.medicalExempt,
+          transport: calc.transportExempt,
+          lfa: calc.lfaExempt,
+          total: calc.totalExempt,
+        },
+        components_annual_bdt: {
+          basic,
+          house,
+          medical,
+          transport,
+          lfa: 0,
+          others: 0,
+          bonus,
+          bonus2,
+          additional_income: additionalIncome,
+        },
+        taxable_income_bdt: calc.taxableSalary,
+      };
+    }
+
+    const totalGross = annualBaseSalary + bonus + bonus2 + additionalIncome;
+    assertSafeAmount(totalGross, 'computed gross_income_bdt');
+    return {
+      mode: 'gross_salary_unsplit',
+      period,
+      gross_income_bdt: totalGross,
+      exemptions_bdt: {
+        house: 0,
+        medical: 0,
+        transport: 0,
+        lfa: 0,
+        total: 0,
+      },
+      components_annual_bdt: {
+        gross_salary: annualBaseSalary,
+        bonus,
+        bonus2,
+        additional_income: additionalIncome,
+      },
+      taxable_income_bdt: totalGross,
+    };
+  }
+
+  const annualComponents = {};
+  componentKeys.forEach((key) => {
+    const rawVal = income[key] ?? 0;
+    assertSafeAmount(rawVal, `income.${key}`);
+    const annualized = rawVal * multiplier;
+    assertSafeAmount(annualized, `annualized income.${key}`);
+    annualComponents[key] = annualized;
+  });
+
+  const calc = calculateSalaryExemptions({
+    ...annualComponents,
+    bonus,
+    bonus2,
+    additionalIncome,
+  });
+  assertSafeAmount(calc.grossSalary, 'computed gross_income_bdt');
+  assertSafeAmount(calc.taxableSalary, 'computed taxable_income_bdt');
+
+  return {
+    mode: 'components',
+    period,
+    gross_income_bdt: calc.grossSalary,
+    exemptions_bdt: {
+      house: calc.houseExempt,
+      medical: calc.medicalExempt,
+      transport: calc.transportExempt,
+      lfa: calc.lfaExempt,
+      total: calc.totalExempt,
+    },
+    components_annual_bdt: {
+      ...annualComponents,
+      bonus,
+      bonus2,
+      additional_income: additionalIncome,
+    },
+    taxable_income_bdt: calc.taxableSalary,
+  };
+}
+
+export function resolveInvestmentInputs(investments = 0, taxableIncome = 0) {
+  if (investments === undefined || investments === null) {
+    return {
+      total_investment_bdt: 0,
+      instrument_capped_investment_bdt: 0,
+      eligible_investment_bdt: 0,
+      max_rebateable_investment_bdt: calculateMaxRebateableInvestment(taxableIncome),
+      apply_instrument_caps: false,
+      breakdown_bdt: null,
+    };
+  }
+
+  if (typeof investments === 'number') {
+    assertSafeAmount(investments, 'investments');
+    return {
+      total_investment_bdt: investments,
+      instrument_capped_investment_bdt: investments,
+      eligible_investment_bdt: investments,
+      max_rebateable_investment_bdt: calculateMaxRebateableInvestment(taxableIncome),
+      apply_instrument_caps: false,
+      breakdown_bdt: null,
+    };
+  }
+
+  if (typeof investments !== 'object' || Array.isArray(investments)) {
+    throw new Error('"investments" must be a non-negative number (BDT) or an investment breakdown object.');
+  }
+
+  const instrumentKeys = Object.keys(INVESTMENT_INSTRUMENT_CAPS);
+  const hasTotal = investments.total !== undefined && investments.total !== null;
+  const hasInstruments = instrumentKeys.some((k) => investments[k] !== undefined && investments[k] !== null);
+
+  if (hasTotal && hasInstruments) {
+    throw new Error('Provide either "investments.total" OR itemized investment fields, not both.');
+  }
+
+  if (hasTotal) {
+    assertSafeAmount(investments.total, 'investments.total');
+    return {
+      total_investment_bdt: investments.total,
+      instrument_capped_investment_bdt: investments.total,
+      eligible_investment_bdt: investments.total,
+      max_rebateable_investment_bdt: calculateMaxRebateableInvestment(taxableIncome),
+      apply_instrument_caps: false,
+      breakdown_bdt: null,
+    };
+  }
+
+  const breakdown = {};
+  let rawTotal = 0;
+  let cappedTotal = 0;
+
+  instrumentKeys.forEach((key) => {
+    const val = investments[key] ?? 0;
+    assertSafeAmount(val, `investments.${key}`);
+    breakdown[key] = val;
+    rawTotal += val;
+    const cap = INVESTMENT_INSTRUMENT_CAPS[key];
+    cappedTotal += cap === null ? val : Math.min(val, cap);
+  });
+
+  assertSafeAmount(rawTotal, 'total_investment_bdt');
+  assertSafeAmount(cappedTotal, 'instrument_capped_investment_bdt');
+
+  const applyCaps = Boolean(investments.apply_instrument_caps);
+  const eligible = applyCaps ? cappedTotal : rawTotal;
+
+  return {
+    total_investment_bdt: rawTotal,
+    instrument_capped_investment_bdt: cappedTotal,
+    eligible_investment_bdt: eligible,
+    max_rebateable_investment_bdt: calculateMaxRebateableInvestment(taxableIncome),
+    apply_instrument_caps: applyCaps,
+    breakdown_bdt: breakdown,
+  };
+}
+
+export function formatSlabForOutput(slab, index) {
+  const [title, lower, upper, rate] = slab;
+  const unbounded = upper === Infinity;
+  return {
+    index,
+    title,
+    lower_bdt: lower,
+    upper_bdt: unbounded ? null : upper,
+    unbounded,
+    width_bdt: unbounded ? null : upper - lower,
+    rate_percent: rate,
+  };
+}
+
+export function listSupportedYears() {
+  return {
+    default_year: DEFAULT_FISCAL_YEAR,
+    supported_years: SUPPORTED_FISCAL_YEARS.map((fy) => {
+      const meta = FISCAL_YEAR_METADATA[fy];
+      const thresholds = TAX_FREE_THRESHOLDS_BY_YEAR[fy];
+      const rebate = REBATE_RULES_BY_YEAR[fy];
+      const minTax = MINIMUM_TAX_BY_YEAR[fy];
+      return {
+        fiscal_year: fy,
+        label: meta.label,
+        assessment_year: meta.assessmentYear,
+        general_threshold_bdt: thresholds.general,
+        parent_of_disabled_allowance_bdt: thresholds.parent_disabled,
+        slab_count: meta.slabRatesPercent.length,
+        rates_percent: meta.slabRatesPercent,
+        rebate_formula: rebate.formula,
+        minimum_tax_bdt: minTax,
+        first_time_filer_minimum_tax_bdt: fy === '2026-27' ? MINIMUM_TAX_FIRST_TIME_2026 : null,
+        notes: meta.notes,
+      };
+    }),
+    categories: TAXPAYER_CATEGORIES.map((cat) => ({
+      value: cat,
+      notes:
+        cat === 'senior'
+          ? 'Applies automatically in FY 2025-26 and FY 2026-27 when age >= 65 unless taxpayer has a higher threshold category (disabled, third_gender, freedom_fighter); pass category: "senior" explicitly for FY 2023-24 / FY 2024-25.'
+          : undefined,
+    })),
+    legacy_category_aliases: ['parent_disabled'],
+    locations: LOCATIONS,
+    salary_exemption_caps: SALARY_EXEMPTION_CAPS,
+    investment_instrument_caps_bdt: INVESTMENT_INSTRUMENT_CAPS,
+  };
+}
+
+export function getRulesForYear({
+  year = DEFAULT_FISCAL_YEAR,
+  category = 'general',
+  age = null,
+  parent_of_disabled = false,
+} = {}) {
+  const fiscalYear = normalizeFiscalYear(year);
+  const profile = resolveEffectiveProfile({ category, age, parent_of_disabled }, fiscalYear);
+  const meta = FISCAL_YEAR_METADATA[fiscalYear];
+  const rawThresholds = TAX_FREE_THRESHOLDS_BY_YEAR[fiscalYear];
+  const { parent_disabled: parentAllowance, ...categoryThresholds } = rawThresholds;
+  const effectiveThreshold = getTaxFreeThresholdForYear(fiscalYear, {
+    category: profile.category,
+    age: profile.age,
+    parentOfDisabled: profile.parentOfDisabled,
+  });
+  const slabs = calculateTaxSlabsForYear(fiscalYear, effectiveThreshold).map(formatSlabForOutput);
+  const rebate = REBATE_RULES_BY_YEAR[fiscalYear];
+  const minTax = MINIMUM_TAX_BY_YEAR[fiscalYear];
+
+  return {
+    fiscal_year: fiscalYear,
+    assessment_year: meta.assessmentYear,
+    label: meta.label,
+    notes: meta.notes,
+    thresholds_bdt: categoryThresholds,
+    parent_of_disabled_allowance_bdt: parentAllowance,
+    requested_profile: {
+      category: profile.category,
+      effective_category: profile.effectiveCategory,
+      age: profile.age,
+      parent_of_disabled: profile.parentOfDisabled,
+      effective_threshold_bdt: effectiveThreshold,
+    },
+    slabs,
+    rebate_rules: {
+      taxable_income_rate_percent: rebate.taxableIncomeRate * 100,
+      investment_rate_percent: rebate.investmentRate * 100,
+      max_cap_bdt: rebate.maxCap,
+      formula: rebate.formula,
+    },
+    minimum_tax_bdt: {
+      ...minTax,
+      first_time_filer_bdt: fiscalYear === '2026-27' ? MINIMUM_TAX_FIRST_TIME_2026 : null,
+    },
+    salary_exemption_caps: SALARY_EXEMPTION_CAPS,
+    investment_instrument_caps_bdt: INVESTMENT_INSTRUMENT_CAPS,
+  };
+}
+
+export function calculateTaxForYear({
+  year = DEFAULT_FISCAL_YEAR,
+  category = 'general',
+  age = null,
+  parent_of_disabled = false,
+  location = 'dhaka',
+  first_time_filer = false,
+  taxable_income,
+  income,
+  investments = 0,
+  tds = 0,
+} = {}) {
+  const fiscalYear = normalizeFiscalYear(year);
+  assertSafeAmount(tds, 'tds');
+
+  const profile = resolveEffectiveProfile(
+    {
+      category,
+      age,
+      parent_of_disabled,
+      location,
+      first_time_filer,
+    },
+    fiscalYear
+  );
+
+  const incomeSummary = resolveIncomeInputs({ taxable_income, income });
+  const taxableIncomeBdt = incomeSummary.taxable_income_bdt;
+
+  const threshold = getTaxFreeThresholdForYear(fiscalYear, {
+    category: profile.category,
+    age: profile.age,
+    parentOfDisabled: profile.parentOfDisabled,
+  });
+
+  const minTax = getMinimumTaxForYear(fiscalYear, profile.location, {
+    firstTimeFiler: profile.firstTimeFiler,
+  });
+
+  const slabs = calculateTaxSlabsForYear(fiscalYear, threshold);
+  const idPrefix =
+    fiscalYear === '2026-27' ? 'slab-2026' : fiscalYear === '2025-26' ? 'slab-2025' : 'slab';
+  const rawBreakdown = calculateSlabBreakdown(taxableIncomeBdt, slabs, idPrefix);
+  const grossTax = sumSlabTax(rawBreakdown);
+
+  const investmentDetails = resolveInvestmentInputs(investments, taxableIncomeBdt);
+  const rebate = calculateInvestmentRebateForYear(
+    fiscalYear,
+    taxableIncomeBdt,
+    investmentDetails.eligible_investment_bdt
+  );
+
+  const finalSummary = calculateFinalTaxSummary(grossTax, minTax, tds, rebate);
+  const totalCredits = tds + rebate;
+  assertSafeAmount(totalCredits, 'tds + rebate');
+
+  const rebateRules = REBATE_RULES_BY_YEAR[fiscalYear];
+  const meta = FISCAL_YEAR_METADATA[fiscalYear];
+  const belowThreshold = taxableIncomeBdt <= threshold;
+
+  return {
+    fiscal_year: fiscalYear,
+    assessment_year: meta.assessmentYear,
+    label: meta.label,
+    profile: {
+      category: profile.category,
+      effective_category: profile.effectiveCategory,
+      age: profile.age,
+      parent_of_disabled: profile.parentOfDisabled,
+      location: profile.location,
+      first_time_filer: profile.firstTimeFiler,
+    },
+    tax_free_threshold_bdt: threshold,
+    income_summary: incomeSummary,
+    taxable_income_bdt: taxableIncomeBdt,
+    slab_breakdown: rawBreakdown.map((item, index) => {
+      const unbounded = item.slabUpper === Infinity;
+      return {
+        index,
+        id: item.id,
+        title: item.slabTitle,
+        lower_bdt: item.slabLower,
+        upper_bdt: unbounded ? null : item.slabUpper,
+        unbounded,
+        rate_percent: item.slabPercentage,
+        taxable_amount_bdt: item.slabAmount,
+        tax_bdt: item.slabCut,
+      };
+    }),
+    gross_tax_bdt: grossTax,
+    minimum_tax_bdt: minTax,
+    is_minimum_tax_applied: finalSummary.isMinimumTaxApplied,
+    below_tax_free_threshold: belowThreshold,
+    total_tax_bdt: finalSummary.totalTax,
+    investment_summary: {
+      ...investmentDetails,
+      rebate_bdt: rebate,
+      formula: rebateRules.formula,
+    },
+    rebate_bdt: rebate,
+    tds_bdt: tds,
+    payable_tax_bdt: finalSummary.payable,
+    excess_tds_or_rebate_bdt: Math.max(0, totalCredits - finalSummary.totalTax),
+  };
+}
+
+export function compareTaxYears({
+  from_year = '2025-26',
+  to_year = '2026-27',
+  ...sharedInputs
+} = {}) {
+  const fromResult = calculateTaxForYear({ ...sharedInputs, year: from_year });
+  const toResult = calculateTaxForYear({ ...sharedInputs, year: to_year });
+
+  const thresholdDiff = toResult.tax_free_threshold_bdt - fromResult.tax_free_threshold_bdt;
+  const grossTaxDiff = toResult.gross_tax_bdt - fromResult.gross_tax_bdt;
+  const rebateDiff = toResult.rebate_bdt - fromResult.rebate_bdt;
+  const totalTaxDiff = toResult.total_tax_bdt - fromResult.total_tax_bdt;
+  const payableDiff = toResult.payable_tax_bdt - fromResult.payable_tax_bdt;
+
+  const taxSavings = totalTaxDiff < 0 ? Math.abs(totalTaxDiff) : 0;
+  const additionalTax = totalTaxDiff > 0 ? totalTaxDiff : 0;
+
+  let verdict = 'no_change';
+  let summary = `Total tax remains BDT ${toResult.total_tax_bdt.toLocaleString('en-US')} across ${fromResult.label} and ${toResult.label}`;
+  if (taxSavings > 0) {
+    verdict = 'savings';
+    summary = `Total tax decreases by BDT ${taxSavings.toLocaleString('en-US')} in ${toResult.label} vs ${fromResult.label}`;
+  } else if (additionalTax > 0) {
+    verdict = 'increase';
+    summary = `Total tax increases by BDT ${additionalTax.toLocaleString('en-US')} in ${toResult.label} vs ${fromResult.label}`;
+  }
+
+  if (payableDiff > 0) {
+    summary += `; final payable after rebate and TDS increases by BDT ${payableDiff.toLocaleString('en-US')} (BDT ${fromResult.payable_tax_bdt.toLocaleString('en-US')} -> BDT ${toResult.payable_tax_bdt.toLocaleString('en-US')}).`;
+  } else if (payableDiff < 0) {
+    summary += `; final payable after rebate and TDS decreases by BDT ${Math.abs(payableDiff).toLocaleString('en-US')} (BDT ${fromResult.payable_tax_bdt.toLocaleString('en-US')} -> BDT ${toResult.payable_tax_bdt.toLocaleString('en-US')}).`;
+  } else {
+    summary += `; final payable after rebate and TDS stays BDT ${toResult.payable_tax_bdt.toLocaleString('en-US')}.`;
+  }
+
+  return {
+    from_year: fromResult.fiscal_year,
+    to_year: toResult.fiscal_year,
+    from: fromResult,
+    to: toResult,
+    comparison: {
+      threshold_diff_bdt: thresholdDiff,
+      gross_tax_diff_bdt: grossTaxDiff,
+      rebate_diff_bdt: rebateDiff,
+      total_tax_diff_bdt: totalTaxDiff,
+      payable_tax_diff_bdt: payableDiff,
+      tax_savings_bdt: taxSavings,
+      additional_tax_bdt: additionalTax,
+      verdict,
+      summary,
+    },
+  };
+}
