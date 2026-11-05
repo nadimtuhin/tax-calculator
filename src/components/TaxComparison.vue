@@ -59,7 +59,7 @@
           <div class="breakdown-section">
             <h4>Key Changes in FY 2026-2027 (Finance Act 2026):</h4>
             <ul>
-              <li>Tax-free threshold raised by ৳25,000 across all categories</li>
+              <li>Tax-free thresholds match FY 2025-26 (৳4,00,000 general; Finance Act 2026 Schedule 1 covers both AY 2026-27 and AY 2027-28)</li>
               <li>Investment rebate rate reduced: 15% → 10% of eligible investment</li>
               <li>Investment rebate cap reduced: ৳10,00,000 → ৳7,50,000</li>
               <li>Minimum tax remains flat ৳5,000; ৳1,000 for first-time filers</li>

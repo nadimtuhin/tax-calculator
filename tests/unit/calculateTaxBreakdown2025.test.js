@@ -8,13 +8,13 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
   let testSlabs;
 
   beforeEach(() => {
-    // Create standard test slabs for general taxpayer (375k threshold)
-    testSlabs = calculateTaxSlabs2025(375000);
+    // Create standard test slabs for general taxpayer (400k threshold)
+    testSlabs = calculateTaxSlabs2025(400000);
   });
 
   describe('calculateTaxBreakdown2025', () => {
     test('should calculate no tax for income below threshold', () => {
-      const taxableSalary = 300000; // Below 375k threshold
+      const taxableSalary = 300000; // Below 400k threshold
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       expect(breakdown).toHaveLength(6);
@@ -26,14 +26,14 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
     });
 
     test('should calculate tax correctly for income in first taxable bracket', () => {
-      const taxableSalary = 475000; // 100k above 375k threshold, in 10% bracket
+      const taxableSalary = 500000; // 100k above 400k threshold, in 10% bracket
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       expect(breakdown).toHaveLength(6);
       
       // First slab (0%) should have no tax
       expect(breakdown[0].slabCut).toBe(0);
-      expect(breakdown[0].slabAmount).toBe(375000);
+      expect(breakdown[0].slabAmount).toBe(400000);
       
       // Second slab (10%) should have tax on 100k
       expect(breakdown[1].slabCut).toBe(10000); // 100k * 10% = 10k
@@ -50,9 +50,9 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       const taxableSalary = 1200000; // Spans first 3 brackets
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
-      // First slab: 375k at 0% = 0
+      // First slab: 400k at 0% = 0
       expect(breakdown[0].slabCut).toBe(0);
-      expect(breakdown[0].slabAmount).toBe(375000);
+      expect(breakdown[0].slabAmount).toBe(400000);
       
       // Second slab: 300k at 10% = 30k
       expect(breakdown[1].slabCut).toBe(30000);
@@ -62,9 +62,9 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       expect(breakdown[2].slabCut).toBe(60000);
       expect(breakdown[2].slabAmount).toBe(400000);
       
-      // Fourth slab: 125k at 20% = 25k
-      expect(breakdown[3].slabCut).toBe(25000);
-      expect(breakdown[3].slabAmount).toBe(125000);
+      // Fourth slab: 100k at 20% = 20k
+      expect(breakdown[3].slabCut).toBe(20000);
+      expect(breakdown[3].slabAmount).toBe(100000);
       
       // Remaining slabs should have no tax
       expect(breakdown[4].slabCut).toBe(0);
@@ -76,15 +76,15 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
 
       // All slabs should have some amount
-      expect(breakdown[0].slabAmount).toBe(375000);  // 3.75L at 0%
+      expect(breakdown[0].slabAmount).toBe(400000);  // 4L at 0%
       expect(breakdown[1].slabAmount).toBe(300000);  // 3L at 10%
       expect(breakdown[2].slabAmount).toBe(400000);  // 4L at 15%
       expect(breakdown[3].slabAmount).toBe(500000);  // 5L at 20%
       expect(breakdown[4].slabAmount).toBe(2000000); // 20L at 25%
-      expect(breakdown[5].slabAmount).toBe(1425000); // Remaining at 30%
+      expect(breakdown[5].slabAmount).toBe(1400000); // Remaining at 30%
 
       // Calculate expected tax
-      const expectedTax = 0 + 30000 + 60000 + 100000 + 500000 + 427500;
+      const expectedTax = 0 + 30000 + 60000 + 100000 + 500000 + 420000;
       const actualTax = breakdown.reduce((sum, slab) => sum + slab.slabCut, 0);
       expect(actualTax).toBe(expectedTax);
     });
@@ -116,18 +116,18 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
 
     test('should handle boundary values correctly', () => {
       // Test exact threshold
-      let breakdown = calculateTaxBreakdown2025(375000, testSlabs);
+      let breakdown = calculateTaxBreakdown2025(400000, testSlabs);
       expect(breakdown[0].slabCut).toBe(0);
       expect(breakdown[1].slabCut).toBe(0);
 
-      // Test one rupee above threshold
-      breakdown = calculateTaxBreakdown2025(375001, testSlabs);
+      // Test one taka above threshold
+      breakdown = calculateTaxBreakdown2025(400001, testSlabs);
       expect(breakdown[0].slabCut).toBe(0);
       expect(breakdown[1].slabCut).toBe(0); // Should be rounded to 0
       expect(breakdown[1].slabAmount).toBe(1);
 
       // Test exact slab boundary
-      breakdown = calculateTaxBreakdown2025(675000, testSlabs); // End of 10% slab
+      breakdown = calculateTaxBreakdown2025(700000, testSlabs); // End of 10% slab
       expect(breakdown[1].slabAmount).toBe(300000);
       expect(breakdown[1].slabCut).toBe(30000);
       expect(breakdown[2].slabCut).toBe(0);
@@ -239,10 +239,10 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
   describe('Integration Tests', () => {
     test('should work correctly with different taxpayer thresholds', () => {
       const testCases = [
-        { threshold: 375000, expectedSlabs: 6 }, // General
-        { threshold: 425000, expectedSlabs: 6 }, // Female
-        { threshold: 500000, expectedSlabs: 6 }, // Disabled
-        { threshold: 525000, expectedSlabs: 6 }  // Freedom Fighter
+        { threshold: 400000, expectedSlabs: 6 }, // General
+        { threshold: 450000, expectedSlabs: 6 }, // Female
+        { threshold: 525000, expectedSlabs: 6 }, // Disabled
+        { threshold: 550000, expectedSlabs: 6 }  // Freedom Fighter / July Warrior
       ];
 
       testCases.forEach(({ threshold, expectedSlabs }) => {
@@ -289,7 +289,7 @@ describe('Calculate Tax Breakdown 2025 Functions', () => {
     });
 
     test('should start with 10% bracket instead of 5%', () => {
-      const taxableSalary = 400000; // Just above threshold
+      const taxableSalary = 425000; // Just above 400k threshold
       const breakdown = calculateTaxBreakdown2025(taxableSalary, testSlabs);
       
       // Find first taxable slab

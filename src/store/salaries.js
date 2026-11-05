@@ -58,13 +58,13 @@ const taxFreeThresholds = {
     third_gender: 475000,
   },
   '2025-26': {
-    general: 375000,
-    female: 425000,
-    senior: 425000,
-    disabled: 500000,
+    general: 400000,
+    female: 450000,
+    senior: 450000,
+    disabled: 525000,
     parent_disabled: 50000, // additional amount
-    freedom_fighter: 525000,
-    third_gender: 500000,
+    freedom_fighter: 550000,
+    third_gender: 525000,
   },
   '2026-27': {
     general: 400000,
@@ -331,6 +331,9 @@ const salaries = {
     
     taxFreeThreshold(state) {
       const year = state.currentYear;
+      if (year === '2025-26') {
+        return getTaxFreeThreshold2025(state.taxpayerProfile);
+      }
       const { category, parentOfDisabled } = state.taxpayerProfile;
       const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
       const isLegacyParent = category === 'parent_disabled';

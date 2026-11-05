@@ -94,7 +94,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
       expect(updatedThreshold2025).toBeGreaterThan(initialThreshold2025);
       expect(updatedThreshold2026).toBeGreaterThan(initialThreshold2026);
-      expect(updatedThreshold2025).toBe(425000); // Female FY 2025-26
+      expect(updatedThreshold2025).toBe(450000); // Female FY 2025-26
       expect(updatedThreshold2026).toBe(450000); // Female FY 2026-27
     });
 
@@ -147,10 +147,10 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const threshold2025 = calculation2025.vm.taxFreeThreshold;
       const threshold2026 = calculation2026.vm.taxFreeThreshold;
 
-      // General taxpayer: 375k (2025-26) vs 400k (2026-27)
-      expect(threshold2025).toBe(375000);
+      // General taxpayer: 400k in both FY 2025-26 (AY 2026-27) and FY 2026-27 (AY 2027-28)
+      expect(threshold2025).toBe(400000);
       expect(threshold2026).toBe(400000);
-      expect(threshold2026 - threshold2025).toBe(25000);
+      expect(threshold2026 - threshold2025).toBe(0);
     });
 
     test('should show flat minimum tax in both years', async () => {
@@ -218,11 +218,11 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
   describe('Different Taxpayer Categories', () => {
     const categories = [
-      { category: 'general', threshold2025: 375000, threshold2026: 400000 },
-      { category: 'female', threshold2025: 425000, threshold2026: 450000 },
-      { category: 'disabled', threshold2025: 500000, threshold2026: 525000 },
-      { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 550000 },
-      { category: 'third_gender', threshold2025: 500000, threshold2026: 525000 }
+      { category: 'general', threshold2025: 400000, threshold2026: 400000 },
+      { category: 'female', threshold2025: 450000, threshold2026: 450000 },
+      { category: 'disabled', threshold2025: 525000, threshold2026: 525000 },
+      { category: 'freedom_fighter', threshold2025: 550000, threshold2026: 550000 },
+      { category: 'third_gender', threshold2025: 525000, threshold2026: 525000 }
     ];
 
     categories.forEach(({ category, threshold2025, threshold2026 }) => {
@@ -239,7 +239,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
         expect(calculation2025.vm.taxFreeThreshold).toBe(threshold2025);
         expect(calculation2026.vm.taxFreeThreshold).toBe(threshold2026);
-        expect(threshold2026 - threshold2025).toBe(25000); // Consistent 25K increase
+        expect(threshold2026 - threshold2025).toBe(0); // Matching Finance Act 2026 Schedule 1 thresholds
       });
     });
   });
@@ -275,7 +275,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
       // Should default to general taxpayer
-      expect(calculation2025.vm.taxFreeThreshold).toBe(375000);
+      expect(calculation2025.vm.taxFreeThreshold).toBe(400000);
       expect(calculation2026.vm.taxFreeThreshold).toBe(400000);
     });
   });
@@ -295,7 +295,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
       // All components should reflect the changes
-      expect(calculation2025.vm.taxFreeThreshold).toBe(425000); // Female 2025-26
+      expect(calculation2025.vm.taxFreeThreshold).toBe(450000); // Female 2025-26
       expect(calculation2026.vm.taxFreeThreshold).toBe(450000); // Female 2026-27
       expect(calculation2025.vm.investmentRebate).toBeGreaterThan(0);
       expect(calculation2026.vm.investmentRebate).toBeGreaterThan(0);

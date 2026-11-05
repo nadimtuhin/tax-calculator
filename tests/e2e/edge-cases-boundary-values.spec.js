@@ -51,38 +51,34 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   });
 
   test('should handle exact threshold amounts for general taxpayer', async ({ page }) => {
-    // Test exact threshold amounts
-    const thresholdTests = [
-      { salary: 29167, annual: 350000, description: '2024-25 exact threshold' }, // 350K/12
-      { salary: 31250, annual: 375000, description: '2025-26 exact threshold' }  // 375K/12
-    ];
-    
-    // Set general taxpayer
-    const categorySelect = categoryRadios(page).first();
-    if (await categorySelect.count() > 0) {
-      await selectCategory(page, 'general');
-      await page.waitForTimeout(500);
-    }
-    
-    for (const test of thresholdTests) {
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill(test.salary.toString());
-      await page.waitForTimeout(1000);
-      
-      // At exact thresholds, calculated tax should be minimal
-      // but minimum tax might apply
-      const pageContent = await page.textContent('body');
-      
-      // Should show threshold amounts in the calculations
-      expect(pageContent).toContain('3.5'); // 350K for 2024-25
-      expect(pageContent).toContain('3.75'); // 375K for 2025-26
-      
-      // Both years should show some tax (likely minimum tax)
-      const h2Elements = page.locator('h2');
-      const h2Texts = await h2Elements.allTextContents();
-      const hasNumbers = h2Texts.every(text => /\d/.test(text));
-      expect(hasNumbers).toBe(true);
-    }
+    await selectCategory(page, 'general');
+    await page.waitForTimeout(300);
+
+    // Verify FY 2024-25 threshold preserved at 350,000 in profile selector
+    await page.locator('#profile-fiscal-year').selectOption('2024-25');
+    await expect(page.locator('.threshold-amount')).toHaveText('BDT 350,000');
+
+    // Switch back to FY 2025-26 and verify exact 400,000 annual income (33,000 * 12 + 4,000 bonus = 400,000)
+    await page.locator('#profile-fiscal-year').selectOption('2025-26');
+    await expect(page.locator('.threshold-amount')).toHaveText('BDT 400,000');
+
+    const basicInput = page.getByLabel('July basic');
+    const bonusInput = page.getByLabel('Bonus', { exact: true });
+    await basicInput.fill('33000');
+    await bonusInput.fill('4000');
+    await page.waitForTimeout(300);
+
+    // Exact 400,000 taxable salary: both columns show 0 slab tax and 5,000 minimum tax
+    const cols = page.locator('.comparison-col');
+    await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026 5000');
+    await expect(cols.nth(0)).toContainText('First Tk4 lakh [0-4 lakh]');
+    await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027 5000');
+    await expect(cols.nth(1)).toContainText('First Tk4 lakh [0-4 lakh]');
+
+    // Step above threshold to 460,000 (33,000 * 12 + 64,000 = 460,000 -> 60,000 @ 10% = 6,000 > minimum tax)
+    await bonusInput.fill('64000');
+    await expect(cols.nth(0)).toContainText('Tax for FY 2025-2026 6000');
+    await expect(cols.nth(1)).toContainText('Tax for FY 2026-2027 6000');
   });
 
   test('should handle boundary values for different taxpayer categories', async ({ page }) => {
@@ -90,23 +86,23 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
       { 
         category: 'female', 
         threshold2024: 400000, 
-        threshold2025: 425000,
+        threshold2025: 450000,
         monthlyThreshold2024: 33334,
-        monthlyThreshold2025: 35417
+        monthlyThreshold2025: 37500
       },
       { 
         category: 'disabled', 
         threshold2024: 475000, 
-        threshold2025: 500000,
+        threshold2025: 525000,
         monthlyThreshold2024: 39583,
-        monthlyThreshold2025: 41667
+        monthlyThreshold2025: 43750
       },
       { 
         category: 'freedom_fighter', 
         threshold2024: 500000, 
-        threshold2025: 525000,
+        threshold2025: 550000,
         monthlyThreshold2024: 41667,
-        monthlyThreshold2025: 43750
+        monthlyThreshold2025: 45834
       }
     ];
     
@@ -394,45 +390,37 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
     const exactBoundaryTests = [
       { 
         category: 'general',
-        monthly: 56250, // Exactly 675K annually (375K threshold + 300K first bracket)
-        description: 'Exact end of 10% bracket in 2025-26'
+        monthly: 58000,
+        bonus: 4000, // Exactly 700,000 taxable annually (58,000 * 12 + 4,000 = 400K threshold + 300K @ 10% = 30,000 tax)
+        expectedSlabRow: 'Next Tk3 lakh [4-7 lakh]',
+        expectedTax: 30000
       },
       {
         category: 'female', 
-        monthly: 60417, // Exactly 725K annually (425K threshold + 300K first bracket)
-        description: 'Exact end of 10% bracket for female in 2025-26'
+        monthly: 62500,
+        bonus: 0, // Exactly 750,000 taxable annually (62,500 * 12 = 450K threshold + 300K @ 10% = 30,000 tax)
+        expectedSlabRow: 'Next Tk3 lakh [4.5-7.5 lakh]',
+        expectedTax: 30000
+      },
+      {
+        category: 'disabled',
+        monthly: 68000,
+        bonus: 9000, // Exactly 825,000 taxable annually (68,000 * 12 + 9,000 = 525K threshold + 300K @ 10% = 30,000 tax)
+        expectedSlabRow: 'Next Tk3 lakh [5.25-8.25 lakh]',
+        expectedTax: 30000
       }
     ];
     
-    for (const test of exactBoundaryTests) {
-      // Set taxpayer category
-      const categorySelect = categoryRadios(page).first();
-      if (await categorySelect.count() > 0) {
-        await selectCategory(page, test.category);
-        await page.waitForTimeout(500);
-      }
-      
-      // Set exact boundary amount
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill(test.monthly.toString());
-      await page.waitForTimeout(1000);
-      
-      // Should show calculations at exact boundary
-      const h2Elements = page.locator('h2');
-      const h2Texts = await h2Elements.allTextContents();
-      
-      // Both calculations should show tax amounts
-      const taxAmounts = h2Texts.map(text => {
-        const match = text.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      });
-      
-      expect(taxAmounts[0]).toBeGreaterThan(0);
-      expect(taxAmounts[1]).toBeGreaterThan(0);
-      
-      // Should show the boundary tax rate
-      const pageContent = await page.textContent('body');
-      expect(pageContent).toContain('10%');
+    for (const testCase of exactBoundaryTests) {
+      await selectCategory(page, testCase.category);
+      await page.getByLabel('July basic').fill(String(testCase.monthly));
+      await page.getByLabel('Bonus', { exact: true }).fill(String(testCase.bonus));
+      await page.waitForTimeout(300);
+
+      const cols = page.locator('.comparison-col');
+      await expect(cols.nth(0)).toContainText(`Tax for FY 2025-2026 ${testCase.expectedTax}`);
+      await expect(cols.nth(0)).toContainText(testCase.expectedSlabRow);
+      await expect(cols.nth(1)).toContainText(`Tax for FY 2026-2027 ${testCase.expectedTax}`);
     }
   });
 
