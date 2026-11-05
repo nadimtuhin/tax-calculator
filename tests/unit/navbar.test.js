@@ -602,6 +602,24 @@ describe('Navbar Component', () => {
           variant: 'success',
         }),
       ]);
+      clearToasts();
+
+      // Rendered Cancel path leaves data intact
+      spy.mockClear();
+      await resetBtn.trigger('click');
+      await host.vm.$nextTick();
+      const cancelBtn = host.findAll('.toast-action').find((btn) => btn.text() === 'Cancel');
+      await cancelBtn.trigger('click');
+      await wrapper.vm.$nextTick();
+      expect(spy).not.toHaveBeenCalledWith('resetSalaries');
+
+      // Rendered Escape path leaves data intact
+      await resetBtn.trigger('click');
+      await host.vm.$nextTick();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await wrapper.vm.$nextTick();
+      expect(spy).not.toHaveBeenCalledWith('resetSalaries');
+
       host.unmount();
     });
   });

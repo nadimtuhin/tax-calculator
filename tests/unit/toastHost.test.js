@@ -245,6 +245,61 @@ describe('ToastHost', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
+  test('pauses timed toast while focused or hovered and restores focus on dismiss', async () => {
+    jest.useFakeTimers();
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Random';
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    mountHost();
+    showToast('Random data populated!', { variant: 'success', duration: 1000 });
+    await wrapper.vm.$nextTick();
+
+    jest.advanceTimersByTime(600);
+    const dismissBtn = wrapper.find('[aria-label="Dismiss notification"]').element;
+    dismissBtn.focus();
+
+    // Does not auto-dismiss while dismiss control holds keyboard focus
+    jest.advanceTimersByTime(5000);
+    await wrapper.vm.$nextTick();
+    expect(toastState.items).toHaveLength(1);
+    expect(document.activeElement).toBe(dismissBtn);
+
+    // Dismissing while focused restores focus to previous control instead of dropping to body
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await wrapper.vm.$nextTick();
+    expect(toastState.items).toHaveLength(0);
+    expect(document.activeElement).toBe(trigger);
+
+    // Also pauses on pointer hover and resumes on leave
+    showToast('Hover toast', { duration: 1000 });
+    await wrapper.vm.$nextTick();
+    await wrapper.find('.toast').trigger('mouseenter');
+    jest.advanceTimersByTime(3000);
+    expect(toastState.items).toHaveLength(1);
+
+    await wrapper.find('.toast').trigger('mouseleave');
+    jest.advanceTimersByTime(1000);
+    await wrapper.vm.$nextTick();
+    expect(toastState.items).toHaveLength(0);
+  });
+
+  test('unmounts cleanly while a confirmation toast is still pending', async () => {
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Reset';
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    mountHost();
+    confirmToast('Pending confirmation?');
+    await wrapper.vm.$nextTick();
+    expect(document.activeElement.textContent).toBe('Cancel');
+
+    expect(() => wrapper.unmount()).not.toThrow();
+    wrapper = null;
+  });
+
   test('removes the Escape listener when unmounted', async () => {
     mountHost();
     showToast('Stay', { duration: 0 });

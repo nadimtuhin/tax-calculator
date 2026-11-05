@@ -1,4 +1,12 @@
-import { confirmToast, clearToasts, dismissToast, showToast, toastState } from '@/utils/toast';
+import {
+  confirmToast,
+  clearToasts,
+  dismissToast,
+  pauseToast,
+  resumeToast,
+  showToast,
+  toastState,
+} from '@/utils/toast';
 
 describe('toast helper', () => {
   beforeEach(() => {
@@ -156,5 +164,30 @@ describe('toast helper', () => {
     toastState.items[0].actions[1].onClick();
     dismissToast(toastState.items[0].id);
     return expect(pending).resolves.toBe(false);
+  });
+
+  test('pauses and resumes auto-dismiss across independent reasons', () => {
+    jest.useFakeTimers();
+    const id = showToast('Hold on', { duration: 1000 });
+
+    jest.advanceTimersByTime(400);
+    expect(pauseToast(id, 'hover')).toBe(true);
+    expect(pauseToast(id, 'focus')).toBe(true);
+
+    jest.advanceTimersByTime(5000);
+    expect(toastState.items).toHaveLength(1);
+
+    // Leaving hover while still focused keeps toast paused
+    expect(resumeToast(id, 'hover')).toBe(true);
+    jest.advanceTimersByTime(2000);
+    expect(toastState.items).toHaveLength(1);
+
+    // Leaving focus resumes remaining ~600ms
+    expect(resumeToast(id, 'focus')).toBe(true);
+    jest.advanceTimersByTime(599);
+    expect(toastState.items).toHaveLength(1);
+
+    jest.advanceTimersByTime(1);
+    expect(toastState.items).toHaveLength(0);
   });
 });

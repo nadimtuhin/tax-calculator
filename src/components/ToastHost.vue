@@ -12,6 +12,10 @@
       :data-toast-id="toast.id"
       :role="toast.actions.length ? 'dialog' : undefined"
       :aria-labelledby="toast.actions.length ? `toast-message-${toast.id}` : undefined"
+      @mouseenter="onMouseEnter(toast.id)"
+      @mouseleave="onMouseLeave(toast.id)"
+      @focusin="onFocusIn(toast, $event)"
+      @focusout="onFocusOut(toast, $event)"
     >
       <div class="toast-row">
         <p
@@ -43,7 +47,12 @@
 </template>
 
 <script>
-import { dismissToast, toastState } from '@/utils/toast';
+import {
+  dismissToast,
+  pauseToast,
+  resumeToast,
+  toastState,
+} from '@/utils/toast';
 
 function isFocusLost(element) {
   return !element || element === document.body || element === document.documentElement;
@@ -96,6 +105,34 @@ export default {
         return null;
       }
       return toastEl.querySelector('[data-toast-cancel]') || toastEl.querySelector('.toast-action');
+    },
+    onMouseEnter(id) {
+      pauseToast(id, 'hover');
+    },
+    onMouseLeave(id) {
+      resumeToast(id, 'hover');
+    },
+    onFocusIn(toast, event) {
+      pauseToast(toast.id, 'focus');
+      if (!this.focusOrigins.has(toast.id)) {
+        const previous = event && event.relatedTarget;
+        const toastEl = this.getToastEl(toast.id);
+        const fromOutside = previous && !isFocusLost(previous) && (!toastEl || !toastEl.contains(previous));
+        if (fromOutside) {
+          this.focusOrigins.set(toast.id, previous);
+        }
+      }
+    },
+    onFocusOut(toast, event) {
+      const toastEl = this.getToastEl(toast.id);
+      const next = event && event.relatedTarget;
+      if (toastEl && next && toastEl.contains(next)) {
+        return;
+      }
+      resumeToast(toast.id, 'focus');
+      if (!toast.actions.length && next && !isFocusLost(next)) {
+        this.focusOrigins.delete(toast.id);
+      }
     },
     repointDetachedOrigins(removedEl, fallbackOrigin) {
       this.focusOrigins.forEach((savedOrigin, otherId) => {

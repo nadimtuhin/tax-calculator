@@ -25,6 +25,12 @@ function normalizeDuration(duration) {
   return value;
 }
 
+function scheduleTimer(id, delay) {
+  return setTimeout(() => {
+    dismissToast(id, 'timeout');
+  }, delay);
+}
+
 /**
  * Show a non-blocking toast. Duration 0 stays until the user dismisses it.
  * @param {unknown} message
@@ -47,12 +53,55 @@ export function showToast(message, options = {}) {
   toastState.items.push(item);
 
   if (duration > 0) {
-    timers.set(id, setTimeout(() => {
-      dismissToast(id, 'timeout');
-    }, duration));
+    timers.set(id, {
+      timeoutId: scheduleTimer(id, duration),
+      remaining: duration,
+      startedAt: Date.now(),
+      pausedReasons: new Set(),
+    });
   }
 
   return id;
+}
+
+/**
+ * Pause auto-dismiss for a timed toast (e.g. while focused or hovered).
+ * @param {number} id
+ * @param {string} [reason]
+ * @returns {boolean}
+ */
+export function pauseToast(id, reason = 'default') {
+  const entry = timers.get(id);
+  if (!entry) {
+    return false;
+  }
+  if (entry.pausedReasons.size === 0 && entry.timeoutId !== null) {
+    clearTimeout(entry.timeoutId);
+    entry.timeoutId = null;
+    const elapsed = Math.max(0, Date.now() - entry.startedAt);
+    entry.remaining = Math.max(1, entry.remaining - elapsed);
+  }
+  entry.pausedReasons.add(reason);
+  return true;
+}
+
+/**
+ * Resume auto-dismiss once all pause reasons have cleared.
+ * @param {number} id
+ * @param {string} [reason]
+ * @returns {boolean}
+ */
+export function resumeToast(id, reason = 'default') {
+  const entry = timers.get(id);
+  if (!entry) {
+    return false;
+  }
+  entry.pausedReasons.delete(reason);
+  if (entry.pausedReasons.size === 0 && entry.timeoutId === null) {
+    entry.startedAt = Date.now();
+    entry.timeoutId = scheduleTimer(id, entry.remaining);
+  }
+  return true;
 }
 
 /**
@@ -68,9 +117,11 @@ export function dismissToast(id, reason = 'dismiss') {
   }
 
   const [item] = toastState.items.splice(index, 1);
-  const timer = timers.get(id);
-  if (timer) {
-    clearTimeout(timer);
+  const entry = timers.get(id);
+  if (entry) {
+    if (entry.timeoutId !== null) {
+      clearTimeout(entry.timeoutId);
+    }
     timers.delete(id);
   }
   if (typeof item.onDismiss === 'function') {
