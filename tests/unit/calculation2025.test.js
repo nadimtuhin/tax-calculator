@@ -422,7 +422,7 @@ describe('Calculation-2025 Component', () => {
         }
       });
 
-      const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
+      const minimumTaxNotice = wrapper.find('small.min-tax-notice');
       expect(minimumTaxNotice.exists()).toBe(true);
       expect(minimumTaxNotice.text()).toContain('Minimum tax applied');
       expect(minimumTaxNotice.text()).toContain('BDT 5000'); // Unified minimum tax
@@ -443,7 +443,7 @@ describe('Calculation-2025 Component', () => {
         }
       });
 
-      const minimumTaxNotice = wrapper.find('small[style*="color: red"]');
+      const minimumTaxNotice = wrapper.find('small.min-tax-notice');
       expect(minimumTaxNotice.exists()).toBe(false);
     });
 
