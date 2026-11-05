@@ -371,6 +371,25 @@ export default {
   .brand-text {
     font-size: var(--text-base);
   }
+}
+
+@media (max-width: 479px) {
+  .brand-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .navbar-container {
+    padding: 0 var(--space-2);
+  }
+
+  .action-btn {
+    min-width: 36px;
+  }
 
   .action-btn {
     padding: 0;
