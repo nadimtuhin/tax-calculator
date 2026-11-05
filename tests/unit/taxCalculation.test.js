@@ -14,6 +14,8 @@ describe('Tax Calculation Tests', () => {
         }
       }
     });
+    // These tests cover FY 2024-25 rules via the shared taxFreeThreshold getter
+    store.commit('setCurrentYear', '2024-25');
   });
 
   describe('Tax-Free Threshold Calculations', () => {
@@ -70,6 +72,17 @@ describe('Tax Calculation Tests', () => {
       
       const threshold = store.getters.taxFreeThreshold;
       expect(threshold).toBe(400000); // 350000 + 50000
+    });
+
+    test('should add parent of disabled allowance on top of own category', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'female',
+        age: 35,
+        location: 'dhaka',
+        parentOfDisabled: true
+      });
+      
+      expect(store.getters.taxFreeThreshold).toBe(450000); // 400000 + 50000
     });
 
     test('should calculate correct threshold for freedom fighter', () => {
@@ -423,6 +436,52 @@ describe('Tax Calculation Tests', () => {
       expect(taxableSalary).toBe(totalSalary - totalExempt);
       expect(investmentRebate).toBeGreaterThan(0);
       expect(totalTds).toBe(60000); // 12 months * 5000
+    });
+  });
+  describe('FY 2023-24 parent-of-disabled regressions', () => {
+    beforeEach(() => {
+      store.commit('setCurrentYear', '2023-24');
+    });
+
+    test('legacy parent_disabled category is general + 50k', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'parent_disabled',
+        age: 35,
+        location: 'dhaka',
+      });
+      expect(store.getters.taxFreeThreshold).toBe(400000); // 350000 + 50000
+    });
+
+    test('parentOfDisabled flag is additive on female', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'female',
+        age: 35,
+        location: 'dhaka',
+        parentOfDisabled: true,
+      });
+      expect(store.getters.taxFreeThreshold).toBe(450000); // 400000 + 50000
+    });
+
+    test('parentOfDisabled flag is additive on general', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'general',
+        age: 35,
+        location: 'dhaka',
+        parentOfDisabled: true,
+      });
+      expect(store.getters.taxFreeThreshold).toBe(400000);
+    });
+
+    test('threshold stays numeric when parent flag set', () => {
+      store.commit('updateTaxpayerProfile', {
+        category: 'freedom_fighter',
+        age: 40,
+        location: 'dhaka',
+        parentOfDisabled: true,
+      });
+      const t = store.getters.taxFreeThreshold;
+      expect(Number.isFinite(t)).toBe(true);
+      expect(t).toBe(550000); // 500000 + 50000
     });
   });
 });

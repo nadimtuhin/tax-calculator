@@ -16,6 +16,8 @@ describe('Calculation-2024 Component', () => {
         }
       }
     });
+    // Calculation-2024 displays the "current year" label; set to 2024-25 for these tests
+    store.commit('setCurrentYear', '2024-25');
   });
 
   afterEach(() => {
@@ -385,7 +387,7 @@ describe('Calculation-2024 Component', () => {
       const totalTax = wrapper.vm.totalTax;
       const totalTds = store.getters.totalTds;
       const investmentRebate = store.getters.investmentRebate;
-      const expectedPayable = totalTax - totalTds - investmentRebate;
+      const expectedPayable = Math.max(0, totalTax - totalTds - investmentRebate);
       
       const payableCell = payableRow.findAll('td').at(2);
       expect(payableCell.text().trim()).toBe(expectedPayable.toString());

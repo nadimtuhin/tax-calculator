@@ -62,9 +62,15 @@ export const TAX_FREE_THRESHOLDS_2025 = {
   senior: 425000,         // +25K from 400K (65+ years)
   disabled: 500000,       // +25K from 475K
   third_gender: 500000,   // +25K from 475K
-  freedom_fighter: 525000, // +25K from 500K
-  parent_disabled: 425000  // 375K + 50K exemption
+  freedom_fighter: 525000  // +25K from 500K
 };
+
+/**
+ * Additional allowance for a parent / legal guardian of a person with disability.
+ * Added ON TOP of the taxpayer's own category threshold (one parent only),
+ * e.g. general 375K -> 425K, female/65+ 425K -> 475K, freedom fighter 525K -> 575K.
+ */
+export const PARENT_OF_DISABLED_ALLOWANCE_2025 = 50000;
 
 /**
  * Get minimum tax amounts for FY 2025-2026
@@ -78,19 +84,29 @@ export const MINIMUM_TAX_2025 = {
 };
 
 /**
- * Calculate tax-free threshold for FY 2025-2026 based on taxpayer profile
- * @param {Object} taxpayerProfile - Profile containing category, age, location
+ * Calculate tax-free threshold for FY 2025-2026 based on taxpayer profile.
+ * The parent-of-disabled allowance is additive to the taxpayer's own category.
+ * Legacy profiles with category 'parent_disabled' are treated as general + allowance.
+ * @param {Object} taxpayerProfile - Profile containing category, age, location, parentOfDisabled
  * @returns {number} Tax-free threshold in BDT
  */
 export function getTaxFreeThreshold2025(taxpayerProfile) {
-  const { category, age } = taxpayerProfile;
-  
+  const { category, age, parentOfDisabled } = taxpayerProfile;
+  const isLegacyParent = category === 'parent_disabled';
+  const baseCategory = isLegacyParent ? 'general' : category;
+
+  let threshold = TAX_FREE_THRESHOLDS_2025[baseCategory] || TAX_FREE_THRESHOLDS_2025.general;
+
   // Handle age-based senior citizen detection
-  if (age >= 65 && category !== 'disabled' && category !== 'freedom_fighter' && category !== 'third_gender') {
-    return TAX_FREE_THRESHOLDS_2025.senior;
+  if (age >= 65 && baseCategory !== 'disabled' && baseCategory !== 'freedom_fighter' && baseCategory !== 'third_gender') {
+    threshold = TAX_FREE_THRESHOLDS_2025.senior;
   }
-  
-  return TAX_FREE_THRESHOLDS_2025[category] || TAX_FREE_THRESHOLDS_2025.general;
+
+  if (parentOfDisabled || isLegacyParent) {
+    threshold += PARENT_OF_DISABLED_ALLOWANCE_2025;
+  }
+
+  return threshold;
 }
 
 /**

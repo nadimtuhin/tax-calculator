@@ -10,10 +10,20 @@
           <option value="female">Female</option>
           <option value="senior">Senior Citizen (65+)</option>
           <option value="disabled">Disabled Person</option>
-          <option value="parent_disabled">Parent of Disabled Child</option>
-          <option value="freedom_fighter">War-wounded Freedom Fighter</option>
+          <option value="freedom_fighter">War-wounded Freedom Fighter / July Warrior</option>
           <option value="third_gender">Third Gender</option>
         </select>
+      </div>
+      
+      <div class="profile-field">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            v-model="parentOfDisabled"
+            @change="updateProfile"
+          >
+          Parent / guardian of a person with disability (+BDT 50,000)
+        </label>
       </div>
       
       <div class="profile-field">
@@ -81,8 +91,9 @@ export default {
     return {
       age: 30,
       selectedCategory: 'general',
+      parentOfDisabled: false,
       selectedLocation: 'dhaka',
-      selectedFiscalYear: '2024-25',
+      selectedFiscalYear: '2025-26',
     };
   },
 
@@ -111,7 +122,8 @@ export default {
         freedom_fighter: 'War-wounded Freedom Fighter',
         third_gender: 'Third Gender',
       };
-      return names[this.selectedCategory] || 'General';
+      const name = names[this.selectedCategory] || 'General';
+      return this.parentOfDisabled ? `${name} + Parent of Disabled Child` : name;
     },
   },
 
@@ -122,6 +134,12 @@ export default {
     
     if (currentProfile) {
       this.selectedCategory = currentProfile.category || 'general';
+      this.parentOfDisabled = !!currentProfile.parentOfDisabled;
+      // Migrate legacy single-category profile to the combinable flag
+      if (this.selectedCategory === 'parent_disabled') {
+        this.selectedCategory = 'general';
+        this.parentOfDisabled = true;
+      }
       this.age = currentProfile.age || 30;
       this.selectedLocation = currentProfile.location || 'dhaka';
     }
@@ -146,6 +164,7 @@ export default {
         category: this.selectedCategory,
         age: parseInt(this.age),
         location: this.selectedLocation,
+        parentOfDisabled: this.parentOfDisabled,
       });
       
       // Update fiscal year
@@ -198,6 +217,16 @@ export default {
   outline: none;
   border-color: #80bdff;
   box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .readonly-value {

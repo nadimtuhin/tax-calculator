@@ -27,12 +27,12 @@
         <div class="comparison-row">
           <div class="comparison-col">
             <div class="content-section">
-              <current />
+              <calculation-2025 />
             </div>
           </div>
           <div class="comparison-col">
             <div class="content-section">
-              <calculation-2025 />
+              <calculation-2026 />
             </div>
           </div>
         </div>
@@ -48,8 +48,8 @@
 
 <script>
 /* eslint-disable */
-import Current from "../components/Calculation-2024";
 import Calculation2025 from "../components/Calculation-2025";
+import Calculation2026 from "../components/Calculation-2026";
 import TaxComparison from "../components/TaxComparison";
 import SalaryBreakdown from "../components/SalaryBreakdown";
 import Salaries from "../components/Salaries";
@@ -61,8 +61,8 @@ export default {
   name: "App",
   data: () => ({}),
   components: {
-    Current,
     Calculation2025,
+    Calculation2026,
     TaxComparison,
     Salaries,
     TaxableIncome,

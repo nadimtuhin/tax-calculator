@@ -41,7 +41,7 @@
       <tr>
         <td> <strong>Payable</strong> </td>
         <td> </td>
-        <td> <strong>{{totalTax - totalTds - investmentRebate}}</strong> </td>
+        <td> <strong>{{payableTax}}</strong> </td>
       </tr>
     </tbody>
   </table>
@@ -58,7 +58,7 @@ export default {
     ...mapGetters({
       taxableSalary: 'taxableSalary',
       totalTds: 'totalTds',
-      
+
       // FY 2025-2026 specific getters
       investmentRebate: 'investmentRebate2025',
       taxFreeThreshold: 'taxFreeThreshold2025',
@@ -68,12 +68,13 @@ export default {
       totalTax: 'totalTax2025',
       isMinimumTaxApplied: 'isMinimumTaxApplied2025',
       payableTax: 'payableTax2025',
-      
+
       currentYear: 'currentYear',
       fiscalYearOptions: 'fiscalYearOptions'
     }),
     otherYearLabel() {
-      return this.currentYear === '2024-25' ? 'FY 2025-2026' : 'FY 2024-2025';
+      // This component always shows FY 2025-26 data
+      return 'FY 2025-2026';
     }
   }
 };

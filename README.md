@@ -2,9 +2,9 @@
 
 # Bangladesh Tax Calculator
 
-![Bangladesh Tax Calculator: income tax for salaried people, FY 2024-25 vs 2025-26](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/hero.svg)
+![Bangladesh Tax Calculator: income tax for salaried people, FY 2025-26 vs 2026-27](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/hero.svg)
 
-**Know your tax before you file.** Put in your salary and see the tax under both fiscal years, side by side.
+**Know your tax before you file.** Put in your salary and see the tax under FY 2025-26 and FY 2026-27, side by side.
 
 [`Live demo`](https://tax.nadimtuhin.com) `Vue 3` [`MIT`](LICENSE) `★ 20`
 
@@ -12,7 +12,7 @@
 
 <br>
 
-Working out income tax by hand means slabs, rebates, and a new rule set each year. This app does the math for salaried people in Bangladesh and shows FY 2024-25 next to FY 2025-26, so you can see what changes for you. It runs in your browser and keeps your data local.
+Working out income tax by hand means slabs, rebates, and a new rule set each year. This app does the math for salaried people in Bangladesh and shows FY 2025-26 next to FY 2026-27, so you can see what changes for you. It runs in your browser and keeps your data local.
 
 <br>
 
@@ -20,9 +20,9 @@ Working out income tax by hand means slabs, rebates, and a new rule set each yea
 
 **1. Open the app.** Go to [tax.nadimtuhin.com](https://tax.nadimtuhin.com). Nothing to install.
 
-**2. Enter your numbers.** Pick a taxpayer profile (General, Female, Senior, Disabled, Freedom Fighter, Parent of Disabled Child, Third Gender), then add your salary and investments.
+**2. Enter your numbers.** Pick a taxpayer profile (General, Female, Senior Citizen 65+, Disabled Person, War-wounded Freedom Fighter / July Warrior, Parent of Disabled Child, Third Gender), then add your salary and investments.
 
-**3. Read the result.** You get the tax for each year, a breakdown, and what you save or pay extra under the new structure.
+**3. Read the result.** You get the tax for FY 2025-26 and FY 2026-27, a breakdown, and what you save or pay extra under the new Finance Act 2026 structure.
 
 **Want to run it yourself?** You need Node 20 or newer and Yarn.
 
@@ -39,7 +39,7 @@ Open `http://localhost:8080`.
 
 ![What you get](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-how.svg)
 
-**Two years, one screen.** FY 2024-25 and FY 2025-26 sit side by side, with the savings or extra tax shown for you.
+**Two years, one screen.** FY 2025-26 and FY 2026-27 sit side by side, with the savings or extra tax shown for you. All three years (FY 2024-25, 2025-26, 2026-27) are available in the Fiscal Year selector.
 
 **Your data stays with you.** Inputs are saved in your browser between visits. You can export and import them.
 

@@ -60,12 +60,13 @@
         <summary>View Detailed Breakdown</summary>
         <div class="breakdown-content">
           <div class="breakdown-section">
-            <h4>Key Changes in FY 2025-2026:</h4>
+            <h4>Key Changes in FY 2026-2027 (Finance Act 2026):</h4>
             <ul>
-              <li>Tax-free threshold increased by ৳25,000</li>
-              <li>5% tax bracket removed (simplified to 6 slabs)</li>
-              <li>Unified minimum tax of ৳5,000</li>
-              <li>Tax rates: 0%, 10%, 15%, 20%, 25%, 30%</li>
+              <li>Tax-free threshold raised by ৳25,000 across all categories</li>
+              <li>Investment rebate rate reduced: 15% → 10% of eligible investment</li>
+              <li>Investment rebate cap reduced: ৳10,00,000 → ৳7,50,000</li>
+              <li>Minimum tax remains flat ৳5,000; ৳1,000 for first-time filers</li>
+              <li>Slab rates unchanged: 0%, 10%, 15%, 20%, 25%, 30%</li>
             </ul>
           </div>
           
@@ -75,32 +76,32 @@
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>FY 2024-25</th>
                   <th>FY 2025-26</th>
+                  <th>FY 2026-27</th>
                   <th>Difference</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Tax-free Threshold</td>
-                  <td>৳{{taxFreeThreshold2024.toLocaleString()}}</td>
                   <td>৳{{taxFreeThreshold2025.toLocaleString()}}</td>
-                  <td class="positive">+৳{{(taxFreeThreshold2025 - taxFreeThreshold2024).toLocaleString()}}</td>
+                  <td>৳{{taxFreeThreshold2026.toLocaleString()}}</td>
+                  <td class="positive">+৳{{(taxFreeThreshold2026 - taxFreeThreshold2025).toLocaleString()}}</td>
                 </tr>
                 <tr>
                   <td>Total Tax</td>
-                  <td>৳{{totalTax2024.toLocaleString()}}</td>
                   <td>৳{{totalTax2025.toLocaleString()}}</td>
+                  <td>৳{{totalTax2026.toLocaleString()}}</td>
                   <td :class="taxDifference > 0 ? 'negative' : 'positive'">
                     {{taxDifference > 0 ? '+' : ''}}৳{{taxDifference.toLocaleString()}}
                   </td>
                 </tr>
                 <tr>
                   <td>Final Payable</td>
-                  <td>৳{{payableTax2024.toLocaleString()}}</td>
                   <td>৳{{payableTax2025.toLocaleString()}}</td>
-                  <td :class="(payableTax2025 - payableTax2024) > 0 ? 'negative' : 'positive'">
-                    {{(payableTax2025 - payableTax2024) > 0 ? '+' : ''}}৳{{(payableTax2025 - payableTax2024).toLocaleString()}}
+                  <td>৳{{payableTax2026.toLocaleString()}}</td>
+                  <td :class="(payableTax2026 - payableTax2025) > 0 ? 'negative' : 'positive'">
+                    {{(payableTax2026 - payableTax2025) > 0 ? '+' : ''}}৳{{(payableTax2026 - payableTax2025).toLocaleString()}}
                   </td>
                 </tr>
               </tbody>
@@ -119,49 +120,49 @@ export default {
   name: "TaxComparison",
   computed: {
     ...mapGetters({
-      // FY 2024-25 (current)
-      totalTax2024: 'totalTax',
-      taxFreeThreshold2024: 'taxFreeThreshold',
-      payableTax2024: 'payableTax',
-      
-      // FY 2025-26 (new)
+      // FY 2025-26
       totalTax2025: 'totalTax2025',
       taxFreeThreshold2025: 'taxFreeThreshold2025',
       payableTax2025: 'payableTax2025',
-      
+
+      // FY 2026-27 (new/current)
+      totalTax2026: 'totalTax2026',
+      taxFreeThreshold2026: 'taxFreeThreshold2026',
+      payableTax2026: 'payableTax2026',
+
       // Comparison
       taxDifference: 'taxDifference',
       taxSavings: 'taxSavings',
       additionalTax: 'additionalTax',
-      
+
       // Current year
       currentYear: 'currentYear',
       fiscalYearOptions: 'fiscalYearOptions'
     }),
-    
+
     currentYearLabel() {
       const option = this.fiscalYearOptions.find(opt => opt.value === this.currentYear);
-      return option ? option.label : 'FY 2024-2025';
+      return option ? option.label : 'FY 2026-2027';
     },
-    
+
     otherYearLabel() {
-      return this.currentYear === '2024-25' ? 'FY 2025-2026' : 'FY 2024-2025';
+      return this.currentYear === '2026-27' ? 'FY 2025-2026' : 'FY 2026-2027';
     },
-    
+
     currentYearTax() {
-      return this.currentYear === '2024-25' ? this.totalTax2024 : this.totalTax2025;
+      return this.currentYear === '2026-27' ? this.totalTax2026 : this.totalTax2025;
     },
-    
+
     currentYearThreshold() {
-      return this.currentYear === '2024-25' ? this.taxFreeThreshold2024 : this.taxFreeThreshold2025;
+      return this.currentYear === '2026-27' ? this.taxFreeThreshold2026 : this.taxFreeThreshold2025;
     },
-    
+
     otherYearTax() {
-      return this.currentYear === '2024-25' ? this.totalTax2025 : this.totalTax2024;
+      return this.currentYear === '2026-27' ? this.totalTax2025 : this.totalTax2026;
     },
-    
+
     otherYearThreshold() {
-      return this.currentYear === '2024-25' ? this.taxFreeThreshold2025 : this.taxFreeThreshold2024;
+      return this.currentYear === '2026-27' ? this.taxFreeThreshold2025 : this.taxFreeThreshold2026;
     }
   }
 };
