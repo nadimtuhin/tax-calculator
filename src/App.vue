@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="tax-app">
     <Navbar />
     <main id="main-content" tabindex="-1">
       <router-view></router-view>
@@ -33,7 +33,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-#app {
+#tax-app {
   font-family: var(--font);
   color: var(--text);
   line-height: 1.5;
