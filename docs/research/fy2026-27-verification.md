@@ -68,18 +68,19 @@ But the existing `taxSlabs2025.js` had a *tiered* rebate percentage function (`g
 
 ---
 
-## FY 2025-26 Implementation Correctness Check
+## FY 2025-26 (Income Year 2025-26 / Assessment Year 2026-27) Threshold Update
 
-The existing FY 2025-26 (Finance Ordinance 2025, 3 June 2025) implementation was verified:
+Finance Ordinance 2025 (3 June 2025) originally legislated a prospective **Tk 3,75,000** general threshold for AY 2026-27 and AY 2027-28, and the 11 June 2026 Budget Bill initially kept it. However, when Parliament passed the **Finance Act 2026** on **29 June 2026** (effective **1 July 2026**, the start of AY 2026-27), **Schedule 1** superseded that prospective schedule and set the **400k-family thresholds** for **both AY 2026-27 (Income Year 2025-26) and AY 2027-28 (Income Year 2026-27)**:
 
-| Item | Implemented | Expected | Correct? |
-|---|---|---|---|
-| General threshold | 375,000 | 375,000 | ✅ |
-| Female / 65+ | 425,000 | 425,000 | ✅ |
-| Disabled / third-gender | 500,000 | 500,000 | ✅ |
-| Freedom fighter | 525,000 | 525,000 | ✅ |
-| Minimum tax (all locations) | 5,000 | 5,000 | ✅ |
+| Item | Superseded FO 2025 | Enacted FA 2026 (AY 2026-27) | Implemented |
+|---|---:|---:|---|
+| General threshold | 375,000 | 400,000 | ✅ 400,000 |
+| Female / 65+ | 425,000 | 450,000 | ✅ 450,000 |
+| Disabled / third-gender | 500,000 | 525,000 | ✅ 525,000 |
+| Freedom fighter / July Warrior | 525,000 | 550,000 | ✅ 550,000 |
+| Parent of disabled child | +50,000 | +50,000 | ✅ +50,000 |
+| Minimum tax (all locations) | 5,000 (1,000 new) | 5,000 (1,000 new) | ✅ 5,000 |
 | Slab rates | 0/10/15/20/25/30% | 0/10/15/20/25/30% | ✅ |
-| Investment rebate | min(3%/15%/10L) | min(3%/15%/10L) | ✅ (after fix) |
+| Investment rebate | min(3%/15%/10L) | *See note in `fy2025-26-thresholds-resolution.md`* | min(3%/15%/10L) |
 
-Source for FY 2025-26 check: ACNABIN Finance Ordinance 2025 Summary (https://bti-global.files.svdcdn.com/production/network/bangladesh/documents/Reports/Summary-of-Important-Changes-Introduced-by-the-Finance-Ordinance-2025-of-BD-ACNABIN.pdf)
+See `docs/research/fy2025-26-thresholds-resolution.md` for full statutory citations.

@@ -1,0 +1,59 @@
+{
+  "name": "@nadimtuhin/tax-calculator-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Bangladesh salaried personal income tax calculations (FY 2023-24 through FY 2026-27)",
+  "type": "module",
+  "license": "MIT",
+  "author": "Nadim Tuhin <nadimtuhin@gmail.com>",
+  "homepage": "https://tax.nadimtuhin.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nadimtuhin/tax-calculator.git",
+    "directory": "packages/mcp"
+  },
+  "bin": {
+    "tax-calculator-mcp": "./bin/tax-calculator-mcp.js",
+    "bd-tax-mcp": "./bin/tax-calculator-mcp.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./server": "./src/server.js",
+    "./engine": "./src/engine.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "vendor/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node ./bin/tax-calculator-mcp.js",
+    "start:http": "node ./bin/tax-calculator-mcp.js --http",
+    "test": "node --test ./tests/*.test.js",
+    "prepack": "node ./scripts/sync-vendor.js",
+    "postpack": "node ./scripts/clean-vendor.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "bangladesh",
+    "income-tax",
+    "tax-calculator",
+    "nbr",
+    "claude",
+    "opencode",
+    "hermes"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0"
+  }
+}

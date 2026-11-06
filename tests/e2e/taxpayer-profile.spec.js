@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectedCategory } from './helpers/category.js';
 
 test.describe('Taxpayer Profile Selection', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,7 +18,7 @@ test.describe('Taxpayer Profile Selection', () => {
     }
     
     // Look for profile selection dropdowns/radios
-    const categorySelect = page.locator('select, input[type="radio"]').first();
+    const categorySelect = categoryRadios(page).first();
     const ageInput = page.locator('input[type="number"]').first();
     const locationSelect = page.locator('select').last();
     
@@ -34,10 +35,7 @@ test.describe('Taxpayer Profile Selection', () => {
       await generalOption.first().click();
       
       // Verify selection
-      const isSelected = await generalOption.first().isChecked().catch(() => false);
-      const selectedValue = await page.locator('select').first().inputValue().catch(() => '');
-      
-      expect(isSelected || selectedValue === 'general').toBeTruthy();
+      expect(await selectedCategory(page)).toBe('general');
     }
   });
 
@@ -122,14 +120,9 @@ test.describe('Taxpayer Profile Selection', () => {
     }
     
     // Try to set location
-    const locationSelect = page.locator('select').last();
-    if (await locationSelect.count() > 0) {
-      const dhakaOption = page.locator('option[value="dhaka"]');
-      if (await dhakaOption.count() > 0) {
-        await locationSelect.selectOption('dhaka');
-        await expect(locationSelect).toHaveValue('dhaka');
-      }
-    }
+    const locationSelect = page.locator('#profile-location');
+    await locationSelect.selectOption('dhaka');
+    await expect(locationSelect).toHaveValue('dhaka');
   });
 
   test('should update tax calculations when profile changes', async ({ page }) => {
@@ -168,10 +161,7 @@ test.describe('Taxpayer Profile Selection', () => {
       await page.waitForTimeout(1000);
       
       // Check if selection persisted
-      const selectedValue = await page.locator('select').first().inputValue().catch(() => '');
-      const isChecked = await seniorOption.first().isChecked().catch(() => false);
-      
-      expect(selectedValue === 'senior' || isChecked).toBeTruthy();
+      expect(await selectedCategory(page)).toBe('senior');
     }
   });
 

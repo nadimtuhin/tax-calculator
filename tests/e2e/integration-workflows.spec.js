@@ -73,7 +73,7 @@ test.describe('End-to-End User Workflows', () => {
     }
 
     // Step 7: Verify payable amount calculation
-    const payableRow = page.locator('tr').filter({ hasText: /payable/i }).first();
+    const payableRow = page.locator('tr').filter({ hasText: /payable/i }).filter({ visible: true }).first();
     if (await payableRow.count() > 0) {
       await expect(payableRow).toBeVisible();
     }
@@ -251,7 +251,7 @@ test.describe('End-to-End User Workflows', () => {
     }
 
     // Step 5: Verify final payable amount
-    const payableRow = page.locator('tr').filter({ hasText: /payable/i }).first();
+    const payableRow = page.locator('tr').filter({ hasText: /payable/i }).filter({ visible: true }).first();
     if (await payableRow.count() > 0) {
       await expect(payableRow).toBeVisible();
     }

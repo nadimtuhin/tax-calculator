@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory, selectedCategory } from './helpers/category.js';
 
 test.describe('Responsive Design - Dual Tax Calculator', () => {
   test.beforeEach(async ({ page }) => {
@@ -134,13 +135,13 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
     expect(hasNumbers).toBe(true);
     
     // Test select dropdown if it exists
-    const categorySelect = page.locator('select').first();
+    const categorySelect = categoryRadios(page).first();
     if (await categorySelect.count() > 0) {
-      await categorySelect.selectOption('female');
+      await selectCategory(page, 'female');
       await page.waitForTimeout(500);
       
       // Verify selection worked
-      const selectedValue = await categorySelect.inputValue();
+      const selectedValue = await selectedCategory(page);
       expect(selectedValue).toBe('female');
     }
   });

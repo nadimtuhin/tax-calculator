@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": false,
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=16.0.0 <25.0.0",
     "npm": ">=8.0.0"
   },
   "scripts": {
@@ -20,7 +20,9 @@
     "prepare": "husky",
     "security:scan": "trivy fs --scanners vuln,secret .",
     "security:scan-image": "trivy image --scanners vuln,secret",
-    "security:config": "trivy config ."
+    "security:config": "trivy config .",
+    "mcp:start": "node packages/mcp/bin/tax-calculator-mcp.js",
+    "mcp:test": "npm --prefix packages/mcp test"
   },
   "dependencies": {
     "@vue/cli-plugin-babel": "^5.0.8",

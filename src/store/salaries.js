@@ -1,21 +1,25 @@
-import { 
-  getTaxFreeThreshold2025, 
-  getMinimumTax2025, 
-  calculateTaxSlabs2025 
-} from '../utils/taxSlabs2025';
-import calculateTaxBreakdown2025, { 
-  calculateFinalTax2025 
-} from '../calculateTaxBreakdown2025';
 import {
-  getTaxFreeThreshold2026,
-  getMinimumTax2026,
-  calculateTaxSlabs2026,
-  calculateInvestmentRebate2026
-} from '../utils/taxSlabs2026';
-import calculateTaxBreakdown2026, {
-  calculateFinalTax2026
-} from '../calculateTaxBreakdown2026';
-import { calculateTaxSlabs } from '../utils/taxSlabs';
+  DEFAULT_FISCAL_YEAR,
+  DEFAULT_COMPARISON_FROM_YEAR,
+  DEFAULT_COMPARISON_TO_YEAR,
+  FISCAL_YEAR_OPTIONS,
+  SUPPORTED_FISCAL_YEARS,
+  resolveDefaultFiscalYear,
+  INVESTMENT_INSTRUMENT_CAPS_BY_YEAR,
+  REBATE_RULES_BY_YEAR,
+  getSalaryExemptionRuleForYear,
+  calculateEmploymentExemption,
+  calculateCappedInvestmentFromList,
+  calculateMaxRebateableInvestment,
+  getTaxFreeThresholdForYear,
+  getMinimumTaxForYear,
+  calculateTaxSlabsForYear,
+  sumSlabTax,
+  calculateInvestmentRebateForYear,
+  calculateFinalTaxSummary,
+} from '../utils/taxEngine.js';
+import calculateTaxBreakdown2025 from '../calculateTaxBreakdown2025';
+import calculateTaxBreakdown2026 from '../calculateTaxBreakdown2026';
 import calculateTaxBreakdown from '../calculateTaxBreakdown';
 
 function monthlyDefault() {
@@ -29,86 +33,18 @@ function monthlyDefault() {
       transport: 0,
       others: 0,
     },
-  }
+  };
 }
 
 function arraySum(arr) {
-  return arr.reduceRight((c, i) => (c + +i), 0);
+  return arr.reduceRight((c, i) => c + +i, 0);
 }
 
-const infinity = 99999999999999999999999999; // Inifiny has persist issues in localStorage
+const infinity = 99999999999999999999999999; // Infinity has persist issues in localStorage
 
-const taxFreeThresholds = {
-  '2023-24': {
-    general: 350000,
-    female: 400000,
-    senior: 400000,
-    disabled: 475000,
-    parent_disabled: 50000, // additional amount
-    freedom_fighter: 500000,
-    third_gender: 475000,
-  },
-  '2024-25': {
-    general: 350000,
-    female: 400000,
-    senior: 400000,
-    disabled: 475000,
-    parent_disabled: 50000, // additional amount
-    freedom_fighter: 500000,
-    third_gender: 475000,
-  },
-  '2025-26': {
-    general: 375000,
-    female: 425000,
-    senior: 425000,
-    disabled: 500000,
-    parent_disabled: 50000, // additional amount
-    freedom_fighter: 525000,
-    third_gender: 500000,
-  },
-  '2026-27': {
-    general: 400000,
-    female: 450000,
-    senior: 450000,
-    disabled: 525000,
-    parent_disabled: 50000, // additional amount
-    freedom_fighter: 550000,
-    third_gender: 525000,
-  },
-};
+const capOrInfinity = (cap) => (cap === null ? infinity : cap);
 
-const minimumTax = {
-  '2022-23': {
-    dhaka: 5000,
-    chittagong: 4000,
-    other_city: 3000,
-    district: 2000,
-  },
-  '2023-24': {
-    dhaka: 5000,
-    chittagong: 5000,
-    other_city: 4000,
-    district: 3000,
-  },
-  '2024-25': {
-    dhaka: 5000,
-    chittagong: 5000,
-    other_city: 4000,
-    district: 3000,
-  },
-  '2025-26': {
-    dhaka: 5000,
-    chittagong: 5000,
-    other_city: 5000,
-    district: 5000,
-  },
-  '2026-27': {
-    dhaka: 5000,
-    chittagong: 5000,
-    other_city: 5000,
-    district: 5000,
-  },
-};
+const defaultCaps = INVESTMENT_INSTRUMENT_CAPS_BY_YEAR[DEFAULT_FISCAL_YEAR];
 
 const salaries = {
   state: () => ({
@@ -117,35 +53,34 @@ const salaries = {
       age: null,
       location: 'dhaka',
       parentOfDisabled: false,
+      firstTimeFiler: false,
     },
-    currentYear: '2025-26',
-    fiscalYearOptions: [
-      { value: '2024-25', label: 'FY 2024-2025' },
-      { value: '2025-26', label: 'FY 2025-2026' },
-      { value: '2026-27', label: 'FY 2026-2027' }
-    ],
+    currentYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
+    comparisonFromYear: DEFAULT_COMPARISON_FROM_YEAR,
+    comparisonToYear: DEFAULT_COMPARISON_TO_YEAR,
+    fiscalYearOptions: FISCAL_YEAR_OPTIONS.map((opt) => ({ ...opt })),
     investments: [
-      { name: 'DPS', amount: 0,  maximum: 120000 },
-      { name: 'Life insurance premium', amount: 0,  maximum: infinity },
-      { name: 'Stocks', amount: 0,  maximum: infinity },
-      { name: 'Savings certificate', amount: 0,  maximum: 500000 },
-      { name: 'Mutual fund', amount: 0,  maximum: 500000 },
-      { name: 'Others', amount: 0,  maximum: infinity },
+      { name: 'DPS', amount: 0, maximum: capOrInfinity(defaultCaps.dps) },
+      { name: 'Life insurance premium', amount: 0, policyValue: null, maximum: capOrInfinity(defaultCaps.life_insurance) },
+      { name: 'Stocks', amount: 0, maximum: capOrInfinity(defaultCaps.stocks) },
+      { name: 'Savings certificate', amount: 0, maximum: capOrInfinity(defaultCaps.savings_certificate) },
+      { name: 'Mutual fund', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
+      { name: 'Others', amount: 0, maximum: capOrInfinity(defaultCaps.others) },
     ],
     parts: ['basic', 'house', 'medical', 'transport', 'others'],
     months: [
-      { id: "July",  ...monthlyDefault() },
-      { id: "August",  ...monthlyDefault() },
-      { id: "September",  ...monthlyDefault() },
-      { id: "October",  ...monthlyDefault() },
-      { id: "November",  ...monthlyDefault() },
-      { id: "December",  ...monthlyDefault() },
-      { id: "January",  ...monthlyDefault() },
-      { id: "February",  ...monthlyDefault() },
-      { id: "March",  ...monthlyDefault() },
-      { id: "April",  ...monthlyDefault() },
-      { id: "May",  ...monthlyDefault() },
-      { id: "June",  ...monthlyDefault() },
+      { id: 'July', ...monthlyDefault() },
+      { id: 'August', ...monthlyDefault() },
+      { id: 'September', ...monthlyDefault() },
+      { id: 'October', ...monthlyDefault() },
+      { id: 'November', ...monthlyDefault() },
+      { id: 'December', ...monthlyDefault() },
+      { id: 'January', ...monthlyDefault() },
+      { id: 'February', ...monthlyDefault() },
+      { id: 'March', ...monthlyDefault() },
+      { id: 'April', ...monthlyDefault() },
+      { id: 'May', ...monthlyDefault() },
+      { id: 'June', ...monthlyDefault() },
     ],
     bonus: 0,
     bonus2: 0,
@@ -153,8 +88,8 @@ const salaries = {
     others: 0,
   }),
   mutations: {
-    loadSalaries(state, salaries) {
-      state.months = salaries;
+    loadSalaries(state, salariesList) {
+      state.months = salariesList;
     },
     loadInvestments(state, investments) {
       state.investments = investments;
@@ -169,60 +104,64 @@ const salaries = {
           house: 0,
           medical: 0,
           transport: 0,
-          lfa: 0,
+          others: 0,
         },
       }));
     },
     resetInvestments(state) {
-      state.investments = state.investments.map(investment => ({
+      state.investments = state.investments.map((investment) => ({
         ...investment,
         amount: 0,
+        ...(Object.prototype.hasOwnProperty.call(investment, 'policyValue') ? { policyValue: null } : {}),
       }));
-    },  
+    },
     changeInvestment(state, { index, value }) {
       state.investments[index].amount = +value;
     },
-    
-    updateTaxpayerProfile(state, profile) {
-      state.taxpayerProfile = profile;
+    changeInvestmentPolicyValue(state, { index, value }) {
+      const cleaned = value === '' || value === null || value === undefined ? null : Math.max(0, +value || 0);
+      state.investments[index].policyValue = cleaned;
     },
-    
+    updateTaxpayerProfile(state, profile) {
+      state.taxpayerProfile = {
+        category: 'general',
+        age: null,
+        location: 'dhaka',
+        parentOfDisabled: false,
+        firstTimeFiler: false,
+        ...profile,
+      };
+    },
     setCurrentYear(state, year) {
       state.currentYear = year;
     },
-
+    setComparisonFromYear(state, year) {
+      state.comparisonFromYear = year;
+    },
+    setComparisonToYear(state, year) {
+      state.comparisonToYear = year;
+    },
     changeSubsequentSalaries(state, { index, value }) {
-      // window.history.pushState(value, "Tax for monthly salary "+value, "/?salary="+value);
-      const { months, parts } = state;
-
+      const { months } = state;
       months[index].salary = +value;
-
-      // change subsequent salaries
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].salary = months[index].salary;
       }
     },
-
     changeSubsequentTds(state, { index, value }) {
       const { months } = state;
-
       months[index].tds = +value;
-
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].tds = months[index].tds;
       }
     },
-
     changeParts(state, { part, index, value }) {
-      const { months, parts } = state;
+      const { months } = state;
       months[index].breakdown[part] = +value;
-
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].breakdown[part] = months[index].breakdown[part];
       }
-
-      // calculate monthly salary from breakdowns
-      months.forEach(month => {
+      months.forEach((month) => {
         month.salary = arraySum(Object.values(month.breakdown));
       });
     },
@@ -247,236 +186,345 @@ const salaries = {
       return state.currentYear;
     },
     totalSalary(state) {
-      return state.months.reduceRight((carry, item) => carry + +item.salary, 0) + state.others + state.bonus + state.bonus2;
+      return (
+        state.months.reduceRight((carry, item) => carry + +item.salary, 0) +
+        state.others +
+        state.bonus +
+        state.bonus2
+      );
     },
     totalTds(state) {
       return state.months.reduceRight((carry, item) => carry + +item.tds, 0);
     },
     totalBasic({ months }) {
-      return arraySum(months.map(month => month.breakdown.basic));
+      return arraySum(months.map((month) => month.breakdown.basic));
     },
     totalHouse({ months }) {
-      return arraySum(months.map(month => month.breakdown.house));
+      return arraySum(months.map((month) => month.breakdown.house));
     },
     totalMedical({ months }) {
-      return arraySum(months.map(month => month.breakdown.medical));
+      return arraySum(months.map((month) => month.breakdown.medical));
     },
     totalTransport({ months }) {
-      return arraySum(months.map(month => month.breakdown.transport));
+      return arraySum(months.map((month) => month.breakdown.transport));
     },
     totalOthersBreakdown({ months }) {
-      return arraySum(months.map(month => month.breakdown.others));
+      return arraySum(months.map((month) => month.breakdown.others || 0));
     },
-    houseExempt(state, getters) {
-      const { totalBasic, totalHouse } = getters;
-      const houseExempt = totalBasic/2 < totalHouse ? totalBasic/2 : totalHouse;
-      const maxExempt = 300000;
 
-      return Math.min(maxExempt, houseExempt)
-    },
-    medicalExempt(state, getters) {
-      const { totalBasic, totalMedical } = getters;
-      const maxExempt = 120000;
-      // মূল ববতদনর ১০% অথবা বাতষকড ১,২০,০০০/- টাকা (প্রততবন্ধী ব্যতির বেদত্র ১০ লে টাকা), এ দ্য’টির মদে বেটি কম বস পতরমাণ অাংক করমুি।
-      return Math.min(maxExempt, totalBasic/10, totalMedical)
-    },
-    transportExempt(state, getters) {
-      const { totalTransport } = getters;
-      const maxExempt = 30000;
-      return Math.min(totalTransport, maxExempt)
-    },
-    lfaExempt(state, getters) {
-      // no exempt on lfa
+    // ITA 2023 Sixth Schedule Part 1 Para 27 single-pool employment exemption
+    houseExempt() {
       return 0;
     },
+    medicalExempt() {
+      return 0;
+    },
+    transportExempt() {
+      return 0;
+    },
+    lfaExempt() {
+      return 0;
+    },
+    exemptionCap(state) {
+      return getSalaryExemptionRuleForYear(state.currentYear).maxAmount;
+    },
     totalExempt(state, getters) {
-      const { medicalExempt, transportExempt, lfaExempt, houseExempt } = getters;
-      return medicalExempt + transportExempt + lfaExempt + houseExempt;
+      return calculateEmploymentExemption(getters.totalSalary, state.currentYear);
     },
     taxableSalary(state, getters) {
-      return getters.totalSalary - getters.totalExempt;
+      return Math.max(0, getters.totalSalary - getters.totalExempt);
     },
-    totalInvestment(state, getters) {
-      return state.investments.map(i => i.amount).reduce((c, n) => c+n, 0);
-    },
-    totalRebateableInvestment(state, getters) {
-      const rebateable = state.investments
-        .map(i => [i.amount, i.maximum])
-        .reduceRight((c, arr) => {
-          return c+(Math.min(...arr))
-        }, 0);
 
-      return Math.min(getters.maxRebateableInvestment, rebateable);
+    // Sixth Schedule Part 3 investments & Section 78 rebate (year-aware)
+    totalInvestment(state) {
+      return state.investments.map((i) => +i.amount || 0).reduce((c, n) => c + n, 0);
+    },
+    eligibleInvestment(state) {
+      return calculateCappedInvestmentFromList(state.investments, state.currentYear);
+    },
+    eligibleInvestment2024(state) {
+      return calculateCappedInvestmentFromList(state.investments, '2024-25');
+    },
+    eligibleInvestment2025(state) {
+      return calculateCappedInvestmentFromList(state.investments, '2025-26');
+    },
+    eligibleInvestment2026(state) {
+      return calculateCappedInvestmentFromList(state.investments, '2026-27');
     },
     maxRebateableInvestment(state, getters) {
-      return Math.round(getters.taxableSalary/5);
+      return calculateMaxRebateableInvestment(getters.taxableSalary, state.currentYear);
     },
-    rebatePercentage(state, getters) {
-      return 15;
+    totalRebateableInvestment(state, getters) {
+      return Math.min(getters.maxRebateableInvestment, getters.eligibleInvestment);
+    },
+    rebatePercentage(state) {
+      const rule = REBATE_RULES_BY_YEAR[state.currentYear] || REBATE_RULES_BY_YEAR[DEFAULT_FISCAL_YEAR];
+      return Math.round(rule.investmentRate * 100);
+    },
+    rebateMaxCap(state) {
+      const rule = REBATE_RULES_BY_YEAR[state.currentYear] || REBATE_RULES_BY_YEAR[DEFAULT_FISCAL_YEAR];
+      return rule.maxCap;
     },
     investmentRebate(state, getters) {
-      // FY 2024-25: lowest of 3% of taxable income, 15% of investment, Tk 10L
-      const threePercentOfTaxableIncome = getters.taxableSalary * 0.03;
-      const fifteenPercentOfInvestment = getters.totalInvestment * 0.15;
-      const tenLac = 1000000;
-
-      const rebate = Math.min(
-        threePercentOfTaxableIncome,
-        fifteenPercentOfInvestment,
-        tenLac
+      return calculateInvestmentRebateForYear(
+        state.currentYear,
+        getters.taxableSalary,
+        getters.eligibleInvestment
       );
-
-      return Math.round(Math.max(0, rebate));
     },
-    
+
+    // Active fiscal year (`state.currentYear`) getters
     taxFreeThreshold(state) {
-      const year = state.currentYear;
-      const { category, parentOfDisabled } = state.taxpayerProfile;
-      const thresholds = taxFreeThresholds[year] || taxFreeThresholds['2024-25'];
-      const isLegacyParent = category === 'parent_disabled';
-      const parentExtra = Number(thresholds.parent_disabled) || 0;
-
-      let baseThreshold = isLegacyParent
-        ? thresholds.general
-        : (thresholds[category] || thresholds.general);
-
-      // Parent of disabled child: additional amount on top of own category.
-      // parent_disabled in taxFreeThresholds is always the additive delta (Tk 50,000),
-      // never a flat threshold, for every supported fiscal year including 2023-24.
-      if (parentOfDisabled || isLegacyParent) {
-        baseThreshold += parentExtra;
-      }
-
-      return baseThreshold;
+      return getTaxFreeThresholdForYear(state.currentYear, state.taxpayerProfile);
     },
-    
     minimumTaxAmount(state) {
-      const year = state.currentYear;
-      const location = state.taxpayerProfile.location;
-      const taxRates = minimumTax[year] || minimumTax['2024-25'];
-      
-      return taxRates[location] || taxRates.dhaka;
+      return getMinimumTaxForYear(state.currentYear, state.taxpayerProfile.location, {
+        firstTimeFiler: Boolean(state.taxpayerProfile?.firstTimeFiler),
+      });
     },
-    
     taxSlabs(state, getters) {
-      return calculateTaxSlabs(getters.taxFreeThreshold);
+      return calculateTaxSlabsForYear(state.currentYear, getters.taxFreeThreshold);
     },
-    
     taxBreakdown(state, getters) {
+      if (state.currentYear === '2026-27') {
+        return calculateTaxBreakdown2026(getters.taxableSalary, getters.taxSlabs);
+      }
+      if (state.currentYear === '2025-26') {
+        return calculateTaxBreakdown2025(getters.taxableSalary, getters.taxSlabs);
+      }
       return calculateTaxBreakdown(getters.taxableSalary, getters.taxSlabs);
     },
-    
     calculatedTax(state, getters) {
-      return Math.round(getters.taxBreakdown.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      return sumSlabTax(getters.taxBreakdown);
     },
-    
+    _finalSummaryCurrent(state, getters) {
+      return calculateFinalTaxSummary(
+        getters.calculatedTax,
+        getters.minimumTaxAmount,
+        getters.totalTds,
+        getters.investmentRebate,
+        {
+          taxableIncome: getters.taxableSalary,
+          taxFreeThreshold: getters.taxFreeThreshold,
+        }
+      );
+    },
+    effectiveMinimumTax(state, getters) {
+      return getters._finalSummaryCurrent.minimumTaxAmount;
+    },
     totalTax(state, getters) {
-      return Math.max(getters.calculatedTax, getters.minimumTaxAmount);
+      return getters._finalSummaryCurrent.totalTax;
     },
-    
     isMinimumTaxApplied(state, getters) {
-      return getters.calculatedTax < getters.minimumTaxAmount;
+      return getters._finalSummaryCurrent.isMinimumTaxApplied;
     },
-    
     payableTax(state, getters) {
-      return Math.max(0, getters.totalTax - getters.totalTds - getters.investmentRebate);
+      return getters._finalSummaryCurrent.payable;
+    },
+
+    // FY 2024-2025 Getters
+    taxFreeThreshold2024(state) {
+      return getTaxFreeThresholdForYear('2024-25', state.taxpayerProfile);
+    },
+    minimumTaxAmount2024(state) {
+      return getMinimumTaxForYear('2024-25', state.taxpayerProfile.location);
+    },
+    taxSlabs2024(state, getters) {
+      return calculateTaxSlabsForYear('2024-25', getters.taxFreeThreshold2024);
+    },
+    investmentRebate2024(state, getters) {
+      return calculateInvestmentRebateForYear(
+        '2024-25',
+        getters.taxableSalary,
+        getters.eligibleInvestment2024
+      );
+    },
+    taxBreakdown2024(state, getters) {
+      return calculateTaxBreakdown(getters.taxableSalary, getters.taxSlabs2024);
+    },
+    calculatedTax2024(state, getters) {
+      return sumSlabTax(getters.taxBreakdown2024);
+    },
+    _finalSummary2024(state, getters) {
+      return calculateFinalTaxSummary(
+        getters.calculatedTax2024,
+        getters.minimumTaxAmount2024,
+        getters.totalTds,
+        getters.investmentRebate2024,
+        {
+          taxableIncome: getters.taxableSalary,
+          taxFreeThreshold: getters.taxFreeThreshold2024,
+        }
+      );
+    },
+    effectiveMinimumTax2024(state, getters) {
+      return getters._finalSummary2024.minimumTaxAmount;
+    },
+    totalTax2024(state, getters) {
+      return getters._finalSummary2024.totalTax;
+    },
+    isMinimumTaxApplied2024(state, getters) {
+      return getters._finalSummary2024.isMinimumTaxApplied;
+    },
+    payableTax2024(state, getters) {
+      return getters._finalSummary2024.payable;
     },
 
     // FY 2025-2026 Getters
     taxFreeThreshold2025(state) {
-      return getTaxFreeThreshold2025(state.taxpayerProfile);
+      return getTaxFreeThresholdForYear('2025-26', state.taxpayerProfile);
     },
-
     minimumTaxAmount2025(state) {
-      return getMinimumTax2025(state.taxpayerProfile.location);
+      return getMinimumTaxForYear('2025-26', state.taxpayerProfile.location, {
+        firstTimeFiler: Boolean(state.taxpayerProfile?.firstTimeFiler),
+      });
     },
-
     taxSlabs2025(state, getters) {
-      return calculateTaxSlabs2025(getters.taxFreeThreshold2025);
+      return calculateTaxSlabsForYear('2025-26', getters.taxFreeThreshold2025);
     },
-
     investmentRebate2025(state, getters) {
-      // FY 2025-26: lowest of 3% of taxable income, 15% of investment, Tk 10L
-      const threePercent = getters.taxableSalary * 0.03;
-      const fifteenPercentOfInvestment = getters.totalInvestment * 0.15;
-      const tenLac = 1000000;
-      return Math.round(Math.max(0, Math.min(threePercent, fifteenPercentOfInvestment, tenLac)));
+      return calculateInvestmentRebateForYear(
+        '2025-26',
+        getters.taxableSalary,
+        getters.eligibleInvestment2025
+      );
     },
-    
     taxBreakdown2025(state, getters) {
       return calculateTaxBreakdown2025(getters.taxableSalary, getters.taxSlabs2025);
     },
-
     calculatedTax2025(state, getters) {
-      return Math.round(getters.taxBreakdown2025.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      return sumSlabTax(getters.taxBreakdown2025);
     },
-
+    _finalSummary2025(state, getters) {
+      return calculateFinalTaxSummary(
+        getters.calculatedTax2025,
+        getters.minimumTaxAmount2025,
+        getters.totalTds,
+        getters.investmentRebate2025,
+        {
+          taxableIncome: getters.taxableSalary,
+          taxFreeThreshold: getters.taxFreeThreshold2025,
+        }
+      );
+    },
+    effectiveMinimumTax2025(state, getters) {
+      return getters._finalSummary2025.minimumTaxAmount;
+    },
     totalTax2025(state, getters) {
-      return Math.max(getters.calculatedTax2025, getters.minimumTaxAmount2025);
+      return getters._finalSummary2025.totalTax;
     },
-
     isMinimumTaxApplied2025(state, getters) {
-      return getters.calculatedTax2025 < getters.minimumTaxAmount2025;
+      return getters._finalSummary2025.isMinimumTaxApplied;
     },
-
     payableTax2025(state, getters) {
-      return Math.max(0, getters.totalTax2025 - getters.totalTds - getters.investmentRebate2025);
+      return getters._finalSummary2025.payable;
     },
 
     // FY 2026-2027 Getters
     taxFreeThreshold2026(state) {
-      return getTaxFreeThreshold2026(state.taxpayerProfile);
+      return getTaxFreeThresholdForYear('2026-27', state.taxpayerProfile);
     },
-
     minimumTaxAmount2026(state) {
-      return getMinimumTax2026(state.taxpayerProfile.location);
+      return getMinimumTaxForYear('2026-27', state.taxpayerProfile.location, {
+        firstTimeFiler: Boolean(state.taxpayerProfile?.firstTimeFiler),
+      });
     },
-
     taxSlabs2026(state, getters) {
-      return calculateTaxSlabs2026(getters.taxFreeThreshold2026);
+      return calculateTaxSlabsForYear('2026-27', getters.taxFreeThreshold2026);
     },
-
     investmentRebate2026(state, getters) {
-      // FY 2026-27: lowest of 3% of taxable income, 10% of investment, Tk 7.5L
-      return calculateInvestmentRebate2026(getters.taxableSalary, getters.totalInvestment);
+      return calculateInvestmentRebateForYear(
+        '2026-27',
+        getters.taxableSalary,
+        getters.eligibleInvestment2026
+      );
     },
-
     taxBreakdown2026(state, getters) {
       return calculateTaxBreakdown2026(getters.taxableSalary, getters.taxSlabs2026);
     },
-
     calculatedTax2026(state, getters) {
-      return Math.round(getters.taxBreakdown2026.reduceRight((c,i)=>c+ +i.slabCut, 0));
+      return sumSlabTax(getters.taxBreakdown2026);
     },
-
+    _finalSummary2026(state, getters) {
+      return calculateFinalTaxSummary(
+        getters.calculatedTax2026,
+        getters.minimumTaxAmount2026,
+        getters.totalTds,
+        getters.investmentRebate2026,
+        {
+          taxableIncome: getters.taxableSalary,
+          taxFreeThreshold: getters.taxFreeThreshold2026,
+        }
+      );
+    },
+    effectiveMinimumTax2026(state, getters) {
+      return getters._finalSummary2026.minimumTaxAmount;
+    },
     totalTax2026(state, getters) {
-      return Math.max(getters.calculatedTax2026, getters.minimumTaxAmount2026);
+      return getters._finalSummary2026.totalTax;
     },
-
     isMinimumTaxApplied2026(state, getters) {
-      return getters.calculatedTax2026 < getters.minimumTaxAmount2026;
+      return getters._finalSummary2026.isMinimumTaxApplied;
     },
-
     payableTax2026(state, getters) {
-      return Math.max(0, getters.totalTax2026 - getters.totalTds - getters.investmentRebate2026);
+      return getters._finalSummary2026.payable;
     },
 
-    // Comparison getters: compare current selected year vs the next year
-    // Primary comparison: FY 2025-26 (current) vs FY 2026-27 (new)
+    // Comparison getters: defaults to FY 2025-26 vs FY 2026-27; user can pick any pair via dual-year dropdowns
+    comparisonFromYear(state) {
+      return state.comparisonFromYear || DEFAULT_COMPARISON_FROM_YEAR;
+    },
+    comparisonToYear(state) {
+      return state.comparisonToYear || DEFAULT_COMPARISON_TO_YEAR;
+    },
+    comparisonFromThreshold(state, getters) {
+      const y = getters.comparisonFromYear;
+      if (y === '2026-27') return getters.taxFreeThreshold2026;
+      if (y === '2025-26') return getters.taxFreeThreshold2025;
+      return getters.taxFreeThreshold2024;
+    },
+    comparisonToThreshold(state, getters) {
+      const y = getters.comparisonToYear;
+      if (y === '2026-27') return getters.taxFreeThreshold2026;
+      if (y === '2025-26') return getters.taxFreeThreshold2025;
+      return getters.taxFreeThreshold2024;
+    },
+    comparisonFromTax(state, getters) {
+      const y = getters.comparisonFromYear;
+      if (y === '2026-27') return getters.totalTax2026;
+      if (y === '2025-26') return getters.totalTax2025;
+      return getters.totalTax2024;
+    },
+    comparisonToTax(state, getters) {
+      const y = getters.comparisonToYear;
+      if (y === '2026-27') return getters.totalTax2026;
+      if (y === '2025-26') return getters.totalTax2025;
+      return getters.totalTax2024;
+    },
+    comparisonFromPayable(state, getters) {
+      const y = getters.comparisonFromYear;
+      if (y === '2026-27') return getters.payableTax2026;
+      if (y === '2025-26') return getters.payableTax2025;
+      return getters.payableTax2024;
+    },
+    comparisonToPayable(state, getters) {
+      const y = getters.comparisonToYear;
+      if (y === '2026-27') return getters.payableTax2026;
+      if (y === '2025-26') return getters.payableTax2025;
+      return getters.payableTax2024;
+    },
     taxDifference(state, getters) {
-      return getters.totalTax2026 - getters.totalTax2025;
+      return getters.comparisonToTax - getters.comparisonFromTax;
     },
-
     taxSavings(state, getters) {
       const difference = getters.taxDifference;
       return difference < 0 ? Math.abs(difference) : 0;
     },
-
     additionalTax(state, getters) {
       const difference = getters.taxDifference;
       return difference > 0 ? difference : 0;
-    }
-  }
+    },
+  },
 };
 
 export default salaries;

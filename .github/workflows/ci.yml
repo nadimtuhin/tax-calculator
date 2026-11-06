@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [20.x, 22.x, 24.x]
     
     steps:
     - uses: actions/checkout@v4
@@ -28,8 +28,16 @@ jobs:
     
     - name: Run linter
       run: yarn lint
+
+    - name: Run unit tests
+      run: yarn test --forceExit
     
     - name: Build project
       run: yarn build
       env:
         NODE_OPTIONS: --openssl-legacy-provider
+
+    - name: Install and test MCP server
+      run: |
+        npm --prefix packages/mcp ci
+        npm --prefix packages/mcp test
