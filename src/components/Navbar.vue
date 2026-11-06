@@ -1,94 +1,101 @@
 <template>
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  
+
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="navbar-container">
       <!-- Brand section -->
       <div class="navbar-brand-section">
         <router-link to="/" class="navbar-brand" aria-label="BD Tax Calculator - Go to calculator">
-          <span class="brand-icon">🇧🇩</span>
-          <span class="brand-text">BD Tax Calculator</span>
+          <span class="brand-icon" aria-hidden="true">
+            <svg class="brand-mark" viewBox="0 0 64 64" width="30" height="30" fill="none" focusable="false">
+              <rect x="2" y="2" width="60" height="60" rx="14" class="brand-mark-bg" />
+              <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" class="brand-mark-rim" />
+              <g transform="translate(0,64) scale(0.00625,-0.00625)">
+                <path fill="#ffffff" d="M2330 8445 l0 -555 420 0 420 0 0 -370 0 -370 -640 0 -640 0 0 -555 0 -555 640 0 639 0 4 -1822 c3 -1814 3 -1824 25 -1934 109 -567 420 -902 947 -1021 138 -31 445 -42 632 -24 1134 115 2398 947 3064 2018 379 609 545 1207 526 1893 -17 591 -170 1055 -466 1413 -217 262 -544 458 -897 536 -225 50 -247 51 -1455 51 l-1129 0 0 925 0 925 -1045 0 -1045 0 0 -555z m4269 -2433 c383 -102 607 -444 628 -957 19 -466 -128 -872 -464 -1280 -349 -424 -871 -793 -1413 -1000 -296 -113 -518 -162 -822 -180 l-108 -7 0 1726 0 1727 1048 -4 c1045 -3 1047 -3 1131 -25z" />
+              </g>
+              <circle cx="36.46" cy="33.40" r="5.08" fill="#f42a41" />
+            </svg>
+          </span>
+          <span class="brand-wordmark">
+            <span class="brand-text">BD Tax Calculator</span>
+            <span class="brand-badge">FY 25–27</span>
+          </span>
         </router-link>
       </div>
-      
-      <!-- Main navigation -->
-      <ul class="navbar-nav" role="menubar">
-        <!-- No navigation items for now -->
-      </ul>
-      
+
       <!-- Action buttons -->
       <div class="navbar-actions">
         <div class="action-buttons">
           <div v-if="$route.name === 'Home'" class="data-actions">
-            <button 
-              @click="populateRandomData" 
-              class="action-btn action-btn-random" 
+            <button
+              @click="populateRandomData"
+              class="action-btn action-btn-random"
               aria-label="Fill with random sample data"
               title="Random Data"
             >
-              <span class="btn-icon">🎲</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/><circle cx="12" cy="12" r="1"/></svg>
               <span class="btn-text">Random</span>
             </button>
-            <button 
-              @click="exportData" 
-              class="action-btn" 
+            <button
+              @click="exportData"
+              class="action-btn"
               aria-label="Export your tax data"
               title="Export Data"
             >
-              <span class="btn-icon">📤</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
               <span class="btn-text">Export</span>
             </button>
-            <button 
-              @click="triggerFileInput" 
-              class="action-btn" 
+            <button
+              @click="triggerFileInput"
+              class="action-btn"
               aria-label="Import tax data from file"
               title="Import Data"
             >
-              <span class="btn-icon">📥</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>
               <span class="btn-text">Import</span>
             </button>
-            <button 
-              @click="resetData" 
-              class="action-btn action-btn-danger" 
+            <button
+              @click="resetData"
+              class="action-btn action-btn-danger"
               aria-label="Reset all tax data"
               title="Reset Data"
             >
-              <span class="btn-icon">🔄</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/></svg>
               <span class="btn-text">Reset</span>
             </button>
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="importData" 
+            <input
+              type="file"
+              ref="fileInput"
+              @change="importData"
               accept=".json"
               style="display: none;"
               aria-label="Choose file to import"
             >
           </div>
-          
+
           <!-- Star modal button for localhost -->
-          <button 
-            v-if="isLocalhost" 
-            @click="openStarModal" 
-            class="action-btn star-btn" 
+          <button
+            v-if="isLocalhost"
+            @click="openStarModal"
+            class="action-btn star-btn"
             aria-label="Open star modal"
             title="Open Star Modal"
           >
-            <span class="btn-icon">⭐</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
             <span class="btn-text">Star</span>
           </button>
-          
+
           <!-- GitHub link -->
-          <a 
-            href="https://github.com/nadimtuhin/pathao-tax-calculator" 
-            target="_blank" 
+          <a
+            href="https://github.com/nadimtuhin/tax-calculator"
+            target="_blank"
             rel="noopener noreferrer"
-            class="action-btn github-btn" 
+            class="action-btn github-btn"
             aria-label="View source code on GitHub"
             title="GitHub Repository"
           >
-            <span class="btn-icon">🐙</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.7 11.7 0 0 0-6.2 0C6.6 2.8 5.600 3.100 5.600 3.100a4.200 4.200 0 0 0-.1 3.200A4.600 4.600 0 0 0 4.200 9.500c0 4.600 2.700 5.700 5.500 6-.6.6-.6 1.200-.5 2V21"/></svg>
             <span class="btn-text">GitHub</span>
           </a>
         </div>
@@ -98,8 +105,15 @@
 </template>
 
 <script>
+import { confirmToast, showToast } from '@/utils/toast'
+
 export default {
   name: 'Navbar',
+  data() {
+    return {
+      resetPending: false,
+    };
+  },
   computed: {
     isLocalhost() {
       return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -112,7 +126,7 @@ export default {
         window.showStarModal();
       } else {
         console.warn('StarModal not available');
-        alert('StarModal component not found or not ready');
+        showToast('StarModal component not found or not ready', { variant: 'error' })
       }
     },
     populateRandomData() {
@@ -170,7 +184,7 @@ export default {
         this.$store.commit('changeInvestment', { index, value: amount });
       });
       
-      alert('Random data populated! 🎲');
+      showToast('Random data populated! 🎲', { variant: 'success' })
     },
     
     triggerFileInput() {
@@ -198,20 +212,33 @@ export default {
       URL.revokeObjectURL(url);
     },
     
-    resetData() {
-      if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
-        this.$store.commit('resetSalaries');
-        this.$store.commit('resetInvestments');
-        this.$store.commit('changeBonus', 0);
-        this.$store.commit('changeBonus2', 0);
-        this.$store.commit('setShowBonus2', false);
-        this.$store.commit('changeOthers', 0);
+    async resetData() {
+      if (this.resetPending) {
+        return
+      }
+      this.resetPending = true
+      try {
+        const confirmed = await confirmToast(
+          'Are you sure you want to reset all data? This action cannot be undone.',
+          { confirmLabel: 'Confirm reset', cancelLabel: 'Cancel', variant: 'warn' }
+        )
+        if (!confirmed) {
+          return
+        }
+        this.$store.commit('resetSalaries')
+        this.$store.commit('resetInvestments')
+        this.$store.commit('changeBonus', 0)
+        this.$store.commit('changeBonus2', 0)
+        this.$store.commit('setShowBonus2', false)
+        this.$store.commit('changeOthers', 0)
         this.$store.commit('updateTaxpayerProfile', {
           category: 'general',
           age: null,
           location: 'dhaka',
-        });
-        alert('All data has been reset!');
+        })
+        showToast('All data has been reset!', { variant: 'success' })
+      } finally {
+        this.resetPending = false
       }
     },
     
@@ -245,9 +272,9 @@ export default {
           if (data.taxpayerProfile) {
             this.$store.commit('updateTaxpayerProfile', data.taxpayerProfile);
           }
-          alert('Data imported successfully!');
+          showToast('Data imported successfully!', { variant: 'success' })
         } catch (error) {
-          alert('Error importing data. Please check the file format.');
+          showToast('Error importing data. Please check the file format.', { variant: 'error' })
         }
       };
       reader.readAsText(file);
@@ -258,314 +285,255 @@ export default {
 </script>
 
 <style scoped>
-/* Skip link for accessibility */
 .skip-link {
   position: absolute;
-  top: -40px;
-  left: 6px;
-  background: #000;
-  color: #fff;
-  padding: 8px;
-  text-decoration: none;
-  border-radius: 4px;
+  top: -48px;
+  left: var(--space-3);
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   z-index: 9999;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .skip-link:focus {
-  top: 6px;
+  top: var(--space-2);
 }
 
-/* Main navbar */
 .navbar {
-  background: #ffffff;
-  border-bottom: 2px solid #e1e5e9;
+  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-container {
-  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
   display: flex;
   align-items: center;
-  min-height: 64px;
-}
-
-/* Brand section */
-.navbar-brand-section {
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 60px;
 }
 
 .navbar-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a365d;
+  gap: 10px;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
   text-decoration: none;
-  transition: all 0.2s ease;
-  padding: 8px 12px;
-  border-radius: 6px;
+  transition: opacity 0.15s;
 }
 
 .navbar-brand:hover {
-  color: #2c5282;
-  background-color: #f7fafc;
-  transform: translateY(-1px);
-}
-
-.navbar-brand:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
+  color: var(--text);
+  opacity: 0.88;
 }
 
 .brand-icon {
-  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.brand-mark {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.brand-mark-bg {
+  fill: #0a5c3a;
+}
+
+.brand-mark-rim {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-mark-bg {
+    fill: #0d6942;
+  }
+
+  .brand-mark-rim {
+    stroke: #2c8c62;
+  }
+}
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .brand-text {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
 }
 
-/* Navigation */
-.navbar-nav {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 8px;
-  margin-left: 40px;
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
 }
 
-.nav-link {
-  color: #4a5568;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 12px 32px;
-  transition: all 0.2s ease;
-  border-radius: 6px;
-  min-height: 44px;
+.action-buttons,
+.data-actions {
   display: flex;
   align-items: center;
-  min-width: 120px;
-  justify-content: center;
-}
-
-.nav-link:hover {
-  color: #2d3748;
-  background-color: #edf2f7;
-}
-
-.nav-link:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
-}
-
-.nav-link.router-link-active {
-  color: #2c5282;
-  background-color: #bee3f8;
-  font-weight: 600;
-}
-
-/* Action buttons */
-.navbar-actions {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: var(--space-1);
 }
 
 .data-actions {
-  display: flex;
-  gap: 8px;
-  margin-right: 8px;
-  padding-right: 8px;
-  border-right: 1px solid #e2e8f0;
-}
-
-.github-btn {
-  background-color: #2d3748;
-  color: #ffffff;
-}
-
-.github-btn:hover {
-  background-color: #1a202c;
-  color: #ffffff;
-}
-
-.star-btn {
-  background-color: #ffd700;
-  color: #744210;
-}
-
-.star-btn:hover {
-  background-color: #ffc107;
-  color: #533011;
+  padding-right: var(--space-2);
+  margin-right: var(--space-1);
+  border-right: 1px solid var(--border);
 }
 
 .action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  background: #f7fafc;
-  color: #4a5568;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  gap: var(--space-2);
   min-height: 44px;
   min-width: 44px;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .action-btn:hover {
-  background-color: #edf2f7;
-  color: #2d3748;
+  background: var(--surface-muted);
+  color: var(--text);
 }
 
-.action-btn:focus {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
+.github-btn {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text);
 }
 
-.action-btn:active {
-  transform: translateY(0);
-}
-
-.action-btn-danger {
-  background-color: #fed7d7;
-  color: #c53030;
+.github-btn:hover {
+  border-color: var(--border-strong);
 }
 
 .action-btn-danger:hover {
-  background-color: #feb2b2;
-  color: #9b2c2c;
-}
-
-.action-btn-random {
-  background-color: #e0f2fe;
-  color: #0277bd;
-}
-
-.action-btn-random:hover {
-  background-color: #b3e5fc;
-  color: #01579b;
+  background: var(--bad-soft);
+  color: var(--bad);
 }
 
 .btn-icon {
-  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.btn-text {
-  display: inline;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .navbar-container {
-    padding: 0 16px;
-    min-height: 56px;
-  }
-  
-  .navbar-brand {
-    font-size: 18px;
-    padding: 6px 8px;
-  }
-  
-  .brand-icon {
-    font-size: 20px;
-  }
-  
-  .navbar-nav {
-    display: none;
-  }
-  
-  .action-buttons {
-    gap: 4px;
-  }
-  
-  .action-btn {
-    padding: 6px 8px;
-    font-size: 12px;
-    min-height: 40px;
-    min-width: 40px;
-  }
-  
+@media (max-width: 860px) {
   .btn-text {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
-  
-  .btn-icon {
-    font-size: 14px;
+
+  .action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
   }
 }
 
-@media (max-width: 480px) {
-  .navbar-container {
-    padding: 0 12px;
+@media (max-width: 639px) {
+  .brand-badge {
+    display: none;
   }
-  
-  .navbar-brand {
-    font-size: 16px;
-  }
-  
+
   .brand-text {
-    display: none;
+    font-size: var(--text-base);
   }
-  
-  .action-buttons {
-    gap: 2px;
+}
+
+@media (max-width: 559px) {
+  .brand-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
-  
+
+  .navbar-container {
+    padding: 0 var(--space-2);
+  }
+
   .data-actions {
-    margin-right: 2px;
-    padding-right: 2px;
-  }
-  
-  .action-btn {
-    padding: 4px 6px;
-    min-height: 36px;
-    min-width: 36px;
+    padding-right: var(--space-1);
+    margin-right: 0;
   }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .navbar {
-    border-bottom-width: 3px;
-    border-bottom-color: #000;
+@media (max-width: 389px) {
+  .navbar-container {
+    gap: var(--space-1);
+    padding: 0 var(--space-1);
   }
-  
+
   .navbar-brand {
-    color: #000;
+    padding: 0;
   }
-  
-  .nav-link {
-    color: #000;
-  }
-  
-  .action-btn {
-    border-color: #000;
-    color: #000;
-  }
-}
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .navbar-brand,
-  .nav-link,
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
+  .action-buttons,
+  .data-actions {
+    gap: 0;
+  }
+
+  .data-actions {
+    padding-right: 0;
+    border-right: 0;
+  }
+
   .action-btn {
-    transition: none;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
   }
 }
 </style>

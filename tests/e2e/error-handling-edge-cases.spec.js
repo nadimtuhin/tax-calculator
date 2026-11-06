@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory } from './helpers/category.js';
 
 test.describe('Error Handling and Edge Cases', () => {
   test.beforeEach(async ({ page }) => {
@@ -229,9 +230,9 @@ test.describe('Error Handling and Edge Cases', () => {
       
       for (const profile of profiles) {
         // Find the select element instead of option
-        const profileSelect = page.locator('select').first();
+        const profileSelect = categoryRadios(page).first();
         if (await profileSelect.count() > 0) {
-          await profileSelect.selectOption(profile);
+          await selectCategory(page, profile);
           await page.waitForTimeout(500);
           
           // Verify calculation doesn't break - check if any table shows tax info

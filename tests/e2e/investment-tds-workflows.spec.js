@@ -8,45 +8,13 @@ test.describe('Investment and TDS Workflow Testing', () => {
   });
 
   test.describe('Investment Rebate Calculations', () => {
-    test('should calculate 15% rebate on qualified investments', async ({ page }) => {
-      // Set up taxpayer with sufficient income
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('100000'); // 1.2M annually
-      await page.waitForTimeout(500);
+    test('should calculate Section 78 10% rebate on capped DPS investment', async ({ page }) => {
+      await page.getByLabel('July salary').fill('100000'); // 1.2M gross -> 800k taxable (3% = 24,000)
+      await page.getByLabel('DPS amount').fill('150000'); // DPS capped at 120,000 -> 10% = 12,000
+      await page.waitForTimeout(300);
 
-      // Navigate to investment section or find investment inputs
-      const investmentInputs = page.locator('input[type="number"]').filter({
-        hasText: /invest/i
-      });
-
-      if (await investmentInputs.count() === 0) {
-        // Try to find investment inputs by looking for related labels or sections
-        const investmentSection = page.locator('text=/investment/i').first();
-        if (await investmentSection.count() > 0) {
-          await investmentSection.click();
-        }
-      }
-
-      // Look for specific investment types
-      const allInputs = page.locator('input[type="number"]');
-      
-      // Add DPS investment (typically first investment type)
-      const investmentAmount = 150000;
-      if (await allInputs.count() >= 2) {
-        await allInputs.nth(1).fill(investmentAmount.toString());
-        await page.waitForTimeout(500);
-      }
-
-      // Verify investment rebate calculation
-      const rebateRows = page.locator('tr, .row').filter({
-        hasText: /rebate|investment/i
-      });
-
-      if (await rebateRows.count() > 0) {
-        const rebateText = await rebateRows.first().textContent();
-        const expectedRebate = Math.min(investmentAmount * 0.15, 37500); // 15% with cap
-        expect(rebateText).toContain(expectedRebate.toString());
-      }
+      const rebatePill = page.locator('.section-pill-accent').filter({ hasText: /Rebate/ });
+      await expect(rebatePill).toContainText('12,000');
     });
 
     test('should apply maximum rebate cap correctly', async ({ page }) => {

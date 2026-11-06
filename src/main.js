@@ -6,5 +6,6 @@ import router from "./router";
 
 // Import CSS reset
 import "./assets/styles/reset.css";
+import "./assets/styles/tokens.css";
 
 createApp(App).use(store).use(router).mount("#app");
