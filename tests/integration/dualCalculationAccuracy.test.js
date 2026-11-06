@@ -44,31 +44,35 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         const slabs2025 = calculateTaxSlabs2025(threshold2025);
         const breakdown2025 = calculateTaxBreakdown2025(taxableSalary, slabs2025);
         const calculatedTax2025 = breakdown2025.reduce((sum, slab) => sum + slab.slabCut, 0);
-        const totalTax2025 = Math.max(calculatedTax2025, store.getters.minimumTaxAmount2025);
+        const totalTax2025 = taxableSalary > threshold2025
+          ? Math.max(calculatedTax2025, store.getters.minimumTaxAmount2025)
+          : 0;
 
         // 2026-27 calculations
         const threshold2026 = store.getters.taxFreeThreshold2026;
         const slabs2026 = calculateTaxSlabs2026(threshold2026);
         const breakdown2026 = calculateTaxBreakdown2026(taxableSalary, slabs2026);
         const calculatedTax2026 = breakdown2026.reduce((sum, slab) => sum + slab.slabCut, 0);
-        const totalTax2026 = Math.max(calculatedTax2026, store.getters.minimumTaxAmount2026);
+        const totalTax2026 = taxableSalary > threshold2026
+          ? Math.max(calculatedTax2026, store.getters.minimumTaxAmount2026)
+          : 0;
 
         // Verify store matches direct calculation
         expect(totalTax2025).toBe(store.getters.totalTax2025);
         expect(totalTax2026).toBe(store.getters.totalTax2026);
 
-        // 2026-27 threshold is 25k higher
-        expect(threshold2026 - threshold2025).toBe(25000);
+        // Finance Act 2026 Schedule 1 sets matching 400k-family thresholds for both AY 2026-27 and AY 2027-28
+        expect(threshold2026 - threshold2025).toBe(0);
       });
     });
 
     test('should have correct threshold differences for all categories', () => {
       const categories = [
-        { category: 'general', threshold2025: 375000, threshold2026: 400000 },
-        { category: 'female', threshold2025: 425000, threshold2026: 450000 },
-        { category: 'disabled', threshold2025: 500000, threshold2026: 525000 },
-        { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 550000 },
-        { category: 'third_gender', threshold2025: 500000, threshold2026: 525000 }
+        { category: 'general', threshold2025: 400000, threshold2026: 400000 },
+        { category: 'female', threshold2025: 450000, threshold2026: 450000 },
+        { category: 'disabled', threshold2025: 525000, threshold2026: 525000 },
+        { category: 'freedom_fighter', threshold2025: 550000, threshold2026: 550000 },
+        { category: 'third_gender', threshold2025: 525000, threshold2026: 525000 }
       ];
 
       categories.forEach(({ category, threshold2025, threshold2026 }) => {
@@ -97,18 +101,14 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
         store.commit('changeInvestment', { index: 0, value: investment });
 
         const taxableSalary = store.getters.taxableSalary;
-        const totalInvestment = store.getters.totalInvestment;
+        const eligibleInv2025 = store.getters.eligibleInvestment2025;
+        const eligibleInv2026 = store.getters.eligibleInvestment2026;
 
-        // FY 2025-26: min(3% income, 15% investment, 10L)
-        const expectedRebate2025 = Math.round(Math.max(0, Math.min(
-          taxableSalary * 0.03,
-          totalInvestment * 0.15,
-          1000000
-        )));
+        // Both FY 2025-26 and FY 2026-27 use enacted FA 2026 Section 78: min(3% income, 10% eligible investment, 7.5L)
+        const expectedRebate2025 = calculateInvestmentRebate2026(taxableSalary, eligibleInv2025);
         expect(store.getters.investmentRebate2025).toBe(expectedRebate2025);
 
-        // FY 2026-27: min(3% income, 10% investment, 7.5L)
-        const expectedRebate2026 = calculateInvestmentRebate2026(taxableSalary, totalInvestment);
+        const expectedRebate2026 = calculateInvestmentRebate2026(taxableSalary, eligibleInv2026);
         expect(store.getters.investmentRebate2026).toBe(expectedRebate2026);
 
         // 2026-27 rebate is always <= 2025-26 rebate (lower rate + lower cap)
@@ -140,7 +140,8 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
           age: 30,
           location
         });
-        store.commit('changeSubsequentSalaries', { index: 0, value: 10000 }); // very low
+        // Gross 612k (51k/mo) -> 408k taxable (> 400k threshold, slab tax 800 < 5000 min tax)
+        store.commit('changeSubsequentSalaries', { index: 0, value: 51000 });
 
         const minimumTax2025 = store.getters.minimumTaxAmount2025;
         const minimumTax2026 = store.getters.minimumTaxAmount2026;
@@ -161,27 +162,27 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
     const categoryTests = [
       {
         category: 'general',
-        threshold2025: 375000,
+        threshold2025: 400000,
         threshold2026: 400000
       },
       {
         category: 'female',
-        threshold2025: 425000,
+        threshold2025: 450000,
         threshold2026: 450000
       },
       {
         category: 'disabled',
-        threshold2025: 500000,
+        threshold2025: 525000,
         threshold2026: 525000
       },
       {
         category: 'freedom_fighter',
-        threshold2025: 525000,
+        threshold2025: 550000,
         threshold2026: 550000
       },
       {
         category: 'third_gender',
-        threshold2025: 500000,
+        threshold2025: 525000,
         threshold2026: 525000
       }
     ];
@@ -193,7 +194,8 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
           age: 35,
           location: 'dhaka'
         });
-        store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
+        // Gross 1,080,000 (90k/mo) -> 720k taxable (> all category thresholds up to 550k)
+        store.commit('changeSubsequentSalaries', { index: 0, value: 90000 });
 
         const actualThreshold2025 = store.getters.taxFreeThreshold2025;
         const actualThreshold2026 = store.getters.taxFreeThreshold2026;
@@ -202,7 +204,7 @@ describe('Dual Tax Calculation Accuracy Integration', () => {
 
         expect(actualThreshold2025).toBe(threshold2025);
         expect(actualThreshold2026).toBe(threshold2026);
-        expect(actualThreshold2026 - actualThreshold2025).toBe(25000);
+        expect(actualThreshold2026 - actualThreshold2025).toBe(0);
 
         // Taxes should be non-negative
         expect(totalTax2025).toBeGreaterThan(0);

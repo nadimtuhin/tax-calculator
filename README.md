@@ -35,6 +35,8 @@ yarn dev
 
 Open `http://localhost:8080`.
 
+**Use from Claude, Hermes, or OpenCode (MCP server):** This repo ships an MCP server in [`packages/mcp`](packages/mcp/README.md) (`@nadimtuhin/tax-calculator-mcp`) sharing the exact same tax engine (`src/utils/taxEngine.js`). Run `cd packages/mcp && npm install`, then point your MCP client at `packages/mcp/bin/tax-calculator-mcp.js` (or `npx -y @nadimtuhin/tax-calculator-mcp`) to call `calculate_tax`, `get_rules`, `list_years`, and `compare_years`.
+
 <br>
 
 ![What you get](https://raw.githubusercontent.com/nadimtuhin/tax-calculator/master/docs/images/h-how.svg)

@@ -1,70 +1,15 @@
-<style scoped>
-  table input {
-    width: 120px;
-  }
-  
-  table {
-    width: 100%;
-    font-size: 14px;
-  }
-  
-  th, td {
-    padding: 5px;
-    text-align: center;
-  }
-  
-  th {
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  
-  .add-bonus-btn {
-    background: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-left: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  
-  .add-bonus-btn:hover {
-    background: #45a049;
-    transform: scale(1.1);
-  }
-  
-  .remove-bonus-btn {
-    background: #f44336;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-left: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  
-  .remove-bonus-btn:hover {
-    background: #da190b;
-    transform: scale(1.1);
-  }
-</style>
-
 <template>
 <div>
-  <h2>Enter salary information</h2>
-  <table>
+  <header class="section-header">
+    <div class="section-heading-group">
+      <span class="section-eyebrow">Step 02 · Monthly Earnings &amp; TDS</span>
+      <h2>Enter salary information</h2>
+    </div>
+    <span class="section-pill amount">Gross <strong>৳{{ Number(totalSalary || 0).toLocaleString() }}</strong></span>
+  </header>
+  <p class="unit-note">All amounts in ৳ (BDT). Scroll the grid sideways on small screens.</p>
+  <div class="grid-scroll" tabindex="0" role="region" aria-label="Monthly salary grid">
+  <table class="salary-grid">
     <thead>
       <tr>
         <th></th>
@@ -90,6 +35,7 @@
           max="999999"
           class="input"
           step="1000"
+          :aria-label="`${month.id} salary`"
           :value="months[index]['salary']"
           @input="changeSubsequentSalaries($event, index)"
         >
@@ -100,6 +46,7 @@
           min="0"
           step="500"
           type="number"
+          :aria-label="`${month.id} TDS`"
           :value="months[index]['tds']"
           @input="changeSubsequentTds($event, index)"
         >
@@ -112,6 +59,7 @@
             min="0"
             step="500"
             type="number"
+            :aria-label="`${month.id} ${part}`"
             :value="months[index].breakdown[part]"
             @input="changeBreakdown($event, index, part)"
           >
@@ -133,14 +81,15 @@
           </button>
         </td>
         <td>
-          <input
+          <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
+            aria-label="Bonus"
             type="number"
             min="0"
             max="999999"
             step="1000"
             :value="bonus"
             @input="changeBonus"
-          >
+          ></span>
         </td>
       </tr>
       <tr v-if="showBonus2">
@@ -156,31 +105,34 @@
           </button>
         </td>
         <td>
-          <input
+          <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
+            aria-label="Second bonus"
             type="number"
             min="0"
             max="999999"
             step="1000"
             :value="bonus2"
             @input="changeBonus2"
-          >
+          ></span>
         </td>
       </tr>
       <tr>
-        <td>Others (Additional Income)</td>
+        <td class="row-label">Others (Additional Income)</td>
         <td>
-          <input
+          <span class="money"><span class="money-prefix" aria-hidden="true">৳</span><input
+            aria-label="Others"
             type="number"
             min="0"
             max="999999"
             step="1000"
             :value="others"
             @input="changeOthers"
-          >
+          ></span>
         </td>
       </tr>
     </tbody>
   </table>
+  </div>
 </div>
 </template>
 
@@ -248,3 +200,139 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.unit-note {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.grid-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.grid-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.salary-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.salary-grid th,
+.salary-grid td {
+  padding: var(--space-2) var(--space-1);
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.salary-grid th {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.salary-grid .row-label {
+  white-space: normal;
+  min-width: 7rem;
+}
+
+.salary-grid tr:last-child td {
+  border-bottom: 0;
+}
+
+.salary-grid td:first-child,
+.salary-grid th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.salary-grid th:first-child {
+  background: var(--surface-muted);
+}
+
+.salary-grid input {
+  width: 74px;
+  min-height: 36px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.salary-grid input:disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.salary-grid input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.money {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.money-prefix {
+  position: absolute;
+  left: var(--space-2);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.money input {
+  width: 88px;
+  padding-left: calc(var(--space-2) + 1.1em);
+}
+
+.add-bonus-btn,
+.remove-bonus-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.add-bonus-btn {
+  color: var(--accent);
+}
+
+.remove-bonus-btn {
+  color: var(--bad);
+}
+
+.add-bonus-btn:hover {
+  background: var(--accent-soft);
+}
+
+.remove-bonus-btn:hover {
+  background: var(--bad-soft);
+}
+</style>

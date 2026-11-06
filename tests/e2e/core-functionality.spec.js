@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { categoryRadios, selectCategory, selectedCategory } from './helpers/category.js';
 
 test.describe('Core Tax Calculator Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -43,13 +44,13 @@ test.describe('Core Tax Calculator Functionality', () => {
 
   test('should allow taxpayer profile selection', async ({ page }) => {
     // Look for profile selection elements
-    const profileSelect = page.locator('select').first();
+    const profileSelect = categoryRadios(page).first();
     if (await profileSelect.count() > 0) {
-      await profileSelect.selectOption('female');
+      await selectCategory(page, 'female');
       await page.waitForTimeout(500);
       
       // Verify selection worked
-      const selectedValue = await profileSelect.inputValue();
+      const selectedValue = await selectedCategory(page);
       expect(selectedValue).toBe('female');
     }
   });
