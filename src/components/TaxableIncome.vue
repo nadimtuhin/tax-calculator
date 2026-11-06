@@ -1,113 +1,102 @@
 <template>
 <div>
-<h2>Taxable income breakdown</h2>
-<table class="table">
+<header class="section-header">
+  <div class="section-heading-group">
+    <span class="section-eyebrow">Step 03 · Exemptions &amp; Net Base</span>
+    <h2>Taxable income breakdown</h2>
+  </div>
+  <span class="section-pill amount">Taxable <strong>৳{{ Number(taxableSalary || 0).toLocaleString() }}</strong></span>
+</header>
+<div class="table-scroll">
+<table class="income-table">
   <thead>
     <tr>
-      <th></th>
-      <th>Total</th>
-      <th>Tax exempted</th>
-      <th>Taxable</th>
+      <th>Component</th>
+      <th>Annual Total</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>Basic</strong></td>
       <td>{{totalBasic}}</td>
-      <td>0</td>
-      <td>{{totalBasic}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>House</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('house')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'house'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
-            <strong>House Rent Exemption:</strong><br>
-            • 50% of basic salary OR actual house allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳3,00,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>House</strong></td>
       <td>{{totalHouse}}</td>
-      <td>{{houseExempt}}</td>
-      <td>{{totalHouse - houseExempt}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>Medical</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('medical')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'medical'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
-            <strong>Medical Allowance Exemption:</strong><br>
-            • 10% of basic salary OR actual medical allowance<br>
-            • Whichever is lower<br>
-            • Maximum: ৳1,20,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>Medical</strong></td>
       <td>{{totalMedical}}</td>
-      <td>{{medicalExempt}}</td>
-      <td>{{totalMedical - medicalExempt}}</td>
     </tr>
     <tr>
-      <td>
-        <strong>Transport</strong>
-        <button style="background: #2196f3; color: white; border: none; padding: 2px 4px; margin-left: 5px; cursor: pointer; border-radius: 50%; font-size: 10px; line-height: 1;" @click="toggleTooltip('transport')">
-          ?
-        </button>
-        <div v-if="showTooltip === 'transport'" class="tooltip-overlay" @click="showTooltip = null">
-          <div class="tooltip-modal" @click.stop>
-            <button class="tooltip-close" @click="showTooltip = null">&times;</button>
-            <strong>Transport Allowance Exemption:</strong><br>
-            • Actual transport allowance received<br>
-            • Maximum: ৳30,000 per year
-          </div>
-        </div>
-      </td>
+      <td><strong>Transport</strong></td>
       <td>{{totalTransport}}</td>
-      <td>{{transportExempt}}</td>
-      <td>{{totalTransport - transportExempt}}</td>
     </tr>
     <tr>
       <td><strong>Others (Breakdown)</strong></td>
       <td>{{totalOthersBreakdown}}</td>
-      <td>0</td>
-      <td>{{totalOthersBreakdown}}</td>
     </tr>
     <tr>
-      <td><strong>Others (Lump Sum)</strong></td>
-      <td>{{others}}</td>
-      <td>0</td>
+      <td><strong>Others (Lump Sum / LFA / Employer RPF)</strong></td>
       <td>{{others}}</td>
     </tr>
     <tr>
       <td><strong>Bonus</strong></td>
-      <td>{{bonus}}</td>
-      <td>0</td>
       <td>{{bonus}}</td>
     </tr>
     <tr v-if="bonus2 > 0">
       <td><strong>Bonus</strong></td>
       <td>{{bonus2}}</td>
-      <td>0</td>
-      <td>{{bonus2}}</td>
     </tr>
-    <tr>
+    <tr class="subtotal-row">
       <td><strong>Gross Salary</strong></td>
       <td><strong>{{totalSalary}}</strong></td>
-      <td><strong>{{totalExempt}}</strong></td>
+    </tr>
+    <tr class="exemption-row">
+      <td>
+        <strong>Statutory Exemption (1/3 of gross, max ৳{{exemptionCap.toLocaleString()}})</strong>
+        <button
+          type="button"
+          class="help-btn"
+          ref="triggerExemption"
+          aria-label="About employment income exemption"
+          :aria-expanded="showTooltip === 'exemption'"
+          @click="toggleTooltip('exemption')"
+        >?</button>
+        <div v-if="showTooltip === 'exemption'" class="tooltip-overlay" @click="closeTooltip('exemption')">
+          <div
+            ref="modalExemption"
+            class="tooltip-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Employment Income Exemption"
+            tabindex="-1"
+            @click.stop
+          >
+            <button
+              ref="closeExemption"
+              class="tooltip-close"
+              type="button"
+              aria-label="Close"
+              @click="closeTooltip('exemption')"
+            >&times;</button>
+            <strong>Employment Income Exemption (ITA 2023):</strong><br>
+            • Single pool under Sixth Schedule Part 1 Para 27<br>
+            • 1/3 of gross employment income OR ৳{{exemptionCap.toLocaleString()}} per year, whichever is lower<br>
+            • Replaces repealed ITO 1984 separate house, medical &amp; transport caps<br>
+            • Gross includes basic, house, medical, transport, bonuses, LFA &amp; employer RPF
+          </div>
+        </div>
+      </td>
+      <td>-{{totalExempt}}</td>
+    </tr>
+    <tr>
+      <td><strong>Taxable Salary</strong></td>
       <td><strong>{{taxableSalary}}</strong></td>
     </tr>
   </tbody>
 </table>
+</div>
 </div>
 </template>
 
@@ -121,10 +110,68 @@ export default {
       showTooltip: null
     }
   },
+  mounted() {
+    window.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleKeydown);
+  },
   methods: {
+    capitalize(type) {
+      return `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
+    },
     toggleTooltip(type) {
-      console.log('Toggling tooltip:', type, 'Current:', this.showTooltip);
-      this.showTooltip = this.showTooltip === type ? null : type;
+      if (this.showTooltip === type) {
+        this.closeTooltip(type);
+        return;
+      }
+      this.showTooltip = type;
+      this.$nextTick(() => {
+        const refKey = `close${this.capitalize(type)}`;
+        this.$refs[refKey]?.focus?.();
+      });
+    },
+    closeTooltip(type) {
+      const active = type || this.showTooltip;
+      this.showTooltip = null;
+      if (active) {
+        this.$nextTick(() => {
+          const refKey = `trigger${this.capitalize(active)}`;
+          this.$refs[refKey]?.focus?.();
+        });
+      }
+    },
+    handleKeydown(event) {
+      if (!this.showTooltip) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.closeTooltip(this.showTooltip);
+        return;
+      }
+      if (event.key === 'Tab') {
+        const modal = this.$refs[`modal${this.capitalize(this.showTooltip)}`];
+        if (!modal) return;
+        const focusables = Array.from(
+          modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        ).filter(el => !el.disabled);
+        if (focusables.length === 0) {
+          event.preventDefault();
+          modal.focus?.();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement;
+        if (event.shiftKey) {
+          if (activeEl === first || !modal.contains(activeEl)) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (activeEl === last || !modal.contains(activeEl)) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
   },
   computed: {
@@ -147,6 +194,7 @@ export default {
       houseExempt: 'houseExempt',
       medicalExempt: 'medicalExempt',
       transportExempt: 'transportExempt',
+      exemptionCap: 'exemptionCap',
       taxableSalary: 'taxableSalary',
       totalExempt: 'totalExempt',
     }),
@@ -155,46 +203,78 @@ export default {
 </script>
 
 <style scoped>
-.tooltip {
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
+.table-scroll {
+  overflow-x: auto;
+}
+
+.income-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.income-table th {
+  padding: var(--space-2) var(--space-3);
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.income-table td {
+  padding: var(--space-3);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.income-table th:first-child,
+.income-table td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.income-table .subtotal-row td {
+  border-top: 1px solid var(--border-strong);
+}
+
+.income-table .exemption-row td {
+  color: var(--good);
+  font-weight: 600;
+}
+
+.income-table tr:last-child td {
+  border-bottom: 0;
+  background: var(--surface-muted);
+  font-weight: 700;
+}
+
+.help-btn {
+  width: 24px;
+  height: 24px;
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--info);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
 
-.tooltip-icon {
-  font-size: 14px;
-  font-weight: bold;
-  opacity: 0.8;
-  transition: all 0.2s;
-  background: #e3f2fd;
-  padding: 4px 6px;
-  border-radius: 50%;
-  border: 1px solid #90caf9;
-  display: inline-block;
-  min-width: 20px;
-  text-align: center;
-  color: #1976d2;
-}
-
-.tooltip-icon:hover {
-  opacity: 1;
-  background: #bbdefb;
-  transform: scale(1.1);
-}
-
-.tooltip-icon.active {
-  background: #2196f3;
-  color: white;
-  border-color: #1976d2;
+.help-btn:hover {
+  background: var(--surface-muted);
 }
 
 .tooltip-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -203,85 +283,37 @@ export default {
 }
 
 .tooltip-modal {
-  background: #2d3748;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 320px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: var(--space-5);
+  border-radius: var(--radius);
+  max-width: min(400px, 90vw);
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+  line-height: 1.6;
+  text-align: left;
+  font-weight: 400;
+  white-space: normal;
 }
 
 .tooltip-close {
   position: absolute;
-  top: 8px;
-  right: 12px;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
-  color: #cbd5e0;
-  font-size: 20px;
+  color: var(--text-muted);
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tooltip-close:hover {
-  color: white;
-}
-
-.tooltip-content {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #2d3748;
-  color: white;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.4;
-  white-space: nowrap;
-  z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin-bottom: 8px;
-  min-width: 250px;
-}
-
-.tooltip-content::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #2d3748 transparent transparent transparent;
-}
-
-.tooltip-content strong {
-  color: #ffd700;
-  display: block;
-  margin-bottom: 4px;
-}
-
-@media (max-width: 768px) {
-  .tooltip-content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-width: 280px;
-    max-width: 90vw;
-    white-space: normal;
-  }
-  
-  .tooltip-content::after {
-    display: none;
-  }
+  color: var(--text);
 }
 </style>

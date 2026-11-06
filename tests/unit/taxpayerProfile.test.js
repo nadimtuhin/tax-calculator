@@ -35,17 +35,22 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should render all taxpayer categories', () => {
-      const categorySelects = wrapper.findAll('select');
-      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
-      const options = categorySelect.findAll('option');
-      
-      expect(options).toHaveLength(6);
-      expect(options.at(0).text()).toBe('General (Male)');
-      expect(options.at(1).text()).toBe('Female');
-      expect(options.at(2).text()).toBe('Senior Citizen (65+)');
-      expect(options.at(3).text()).toBe('Disabled Person');
-      expect(options.at(4).text()).toBe('War-wounded Freedom Fighter / July Warrior');
-      expect(options.at(5).text()).toBe('Third Gender');
+      const radios = wrapper.findAll('input[type="radio"][name="taxpayer-category"]');
+      const labels = radios.map(radio => wrapper.find(`label[for="${radio.attributes('id')}"]`).text());
+
+      expect(radios).toHaveLength(6);
+      expect(radios.map(radio => radio.attributes('value'))).toEqual([
+        'general', 'female', 'senior', 'disabled', 'freedom_fighter', 'third_gender',
+      ]);
+      expect(labels).toEqual([
+        'General (Male)',
+        'Female',
+        'Senior Citizen (65+)',
+        'Disabled Person',
+        'War-wounded Freedom Fighter / July Warrior',
+        'Third Gender',
+      ]);
+      expect(wrapper.find('select option[value="general"]').exists()).toBe(false);
     });
 
     test('should render parent-of-disabled checkbox that combines with category', async () => {
@@ -55,7 +60,7 @@ describe('TaxpayerProfile Component', () => {
       wrapper.vm.selectedCategory = 'female';
       await checkbox.setValue(true);
       expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'female', parentOfDisabled: true });
-      expect(wrapper.vm.threshold).toBe(475000); // FY 2025-26: 425000 + 50000
+      expect(wrapper.vm.threshold).toBe(500000); // FY 2025-26: 450000 + 50000
       expect(wrapper.vm.categoryName).toBe('Female + Parent of Disabled Child');
 
       wrapper.vm.selectedFiscalYear = '2026-27';
@@ -67,10 +72,22 @@ describe('TaxpayerProfile Component', () => {
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
       expect(store.getters.taxFreeThreshold2026).toBe(600000);
-      expect(store.getters.taxFreeThreshold2025).toBe(575000);
+      expect(store.getters.taxFreeThreshold2025).toBe(600000);
 
       await checkbox.setValue(false);
       expect(store.getters.taxFreeThreshold2026).toBe(550000);
+    });
+
+    test('should support first-time return filer BDT 1,000 minimum tax toggle in FY 2025-26 and FY 2026-27', async () => {
+      const firstTimeToggle = wrapper.find('#first-time-filer');
+      expect(firstTimeToggle.exists()).toBe(true);
+
+      await firstTimeToggle.setValue(true);
+      expect(store.state.salaries.taxpayerProfile.firstTimeFiler).toBe(true);
+      expect(wrapper.vm.minimumTax).toBe(1000);
+      expect(store.getters.minimumTaxAmount2025).toBe(1000);
+      expect(store.getters.minimumTaxAmount2026).toBe(1000);
+      expect(store.getters.minimumTaxAmount2024).toBe(5000); // FY 2024-25 unaffected
     });
 
     test('should migrate legacy parent_disabled category to general + flag', () => {
@@ -116,48 +133,55 @@ describe('TaxpayerProfile Component', () => {
     });
 
     test('should calculate correct threshold for different categories', async () => {
-      // Default fiscal year is 2025-26; thresholds are +25k vs 2024-25
+      // Default fiscal year is 2025-26; thresholds are 400k-family per Finance Act 2026 Schedule 1
       // Test general category
       wrapper.vm.selectedCategory = 'general';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(375000);
+      expect(wrapper.vm.threshold).toBe(400000);
 
       // Test female category
       wrapper.vm.selectedCategory = 'female';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(425000);
+      expect(wrapper.vm.threshold).toBe(450000);
 
       // Test senior category
       wrapper.vm.selectedCategory = 'senior';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(425000);
+      expect(wrapper.vm.threshold).toBe(450000);
 
       // Test disabled category
       wrapper.vm.selectedCategory = 'disabled';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(500000);
+      expect(wrapper.vm.threshold).toBe(525000);
 
       // Test parent of disabled child
       wrapper.vm.selectedCategory = 'parent_disabled';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(425000); // 375000 + 50000
+      expect(wrapper.vm.threshold).toBe(450000); // 400000 + 50000
 
       // Test freedom fighter
       wrapper.vm.selectedCategory = 'freedom_fighter';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(525000);
+      expect(wrapper.vm.threshold).toBe(550000);
 
       // Test third gender
       wrapper.vm.selectedCategory = 'third_gender';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.threshold).toBe(500000);
+      expect(wrapper.vm.threshold).toBe(525000);
+
+      // Verify FY 2024-25 remains untouched at 350k-family
+      wrapper.vm.selectedFiscalYear = '2024-25';
+      wrapper.vm.selectedCategory = 'general';
+      wrapper.vm.updateProfile();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.threshold).toBe(350000);
     });
 
     test('should calculate correct minimum tax for different locations', async () => {
@@ -199,9 +223,7 @@ describe('TaxpayerProfile Component', () => {
 
   describe('User Interactions', () => {
     test('should update store when category changes', async () => {
-      const categorySelects = wrapper.findAll('select');
-      const categorySelect = categorySelects.find(select => select.html().includes('General (Male)'));
-      await categorySelect.setValue('female');
+      await wrapper.find('input[type="radio"][value="female"]').setValue();
       
       const storeProfile = store.state.salaries.taxpayerProfile;
       expect(storeProfile.category).toBe('female');
@@ -259,8 +281,8 @@ describe('TaxpayerProfile Component', () => {
       await wrapper.vm.$nextTick();
 
       const thresholdAmount = wrapper.find('.threshold-amount');
-      // Default fiscal year is 2025-26 (general threshold = 375,000)
-      expect(thresholdAmount.text()).toBe('BDT 375,000');
+      // Default fiscal year is 2025-26 (general threshold = 400,000)
+      expect(thresholdAmount.text()).toBe('BDT 400,000');
     });
 
     test('should display formatted minimum tax amount', async () => {
@@ -274,15 +296,15 @@ describe('TaxpayerProfile Component', () => {
     test('should update threshold display when category changes', async () => {
       const thresholdAmount = wrapper.find('.threshold-amount');
 
-      // Start with general category — default is now 2025-26, so 375,000
-      expect(thresholdAmount.text()).toBe('BDT 375,000');
+      // Start with general category — default is 2025-26, so 400,000
+      expect(thresholdAmount.text()).toBe('BDT 400,000');
 
       // Change to female category
       wrapper.vm.selectedCategory = 'female';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
 
-      expect(thresholdAmount.text()).toBe('BDT 425,000');
+      expect(thresholdAmount.text()).toBe('BDT 450,000');
     });
   });
 
@@ -290,8 +312,8 @@ describe('TaxpayerProfile Component', () => {
     test('should handle invalid category gracefully', async () => {
       wrapper.vm.selectedCategory = 'invalid_category';
       await wrapper.vm.$nextTick();
-      // Default year is 2025-26, so general threshold is 375,000
-      expect(wrapper.vm.threshold).toBe(375000); // Should default to general
+      // Default year is 2025-26, so general threshold is 400,000
+      expect(wrapper.vm.threshold).toBe(400000); // Should default to general
       expect(wrapper.vm.categoryName).toBe('General');
     });
 

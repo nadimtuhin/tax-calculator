@@ -94,7 +94,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
       expect(updatedThreshold2025).toBeGreaterThan(initialThreshold2025);
       expect(updatedThreshold2026).toBeGreaterThan(initialThreshold2026);
-      expect(updatedThreshold2025).toBe(425000); // Female FY 2025-26
+      expect(updatedThreshold2025).toBe(450000); // Female FY 2025-26
       expect(updatedThreshold2026).toBe(450000); // Female FY 2026-27
     });
 
@@ -147,10 +147,10 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const threshold2025 = calculation2025.vm.taxFreeThreshold;
       const threshold2026 = calculation2026.vm.taxFreeThreshold;
 
-      // General taxpayer: 375k (2025-26) vs 400k (2026-27)
-      expect(threshold2025).toBe(375000);
+      // General taxpayer: 400k in both FY 2025-26 (AY 2026-27) and FY 2026-27 (AY 2027-28)
+      expect(threshold2025).toBe(400000);
       expect(threshold2026).toBe(400000);
-      expect(threshold2026 - threshold2025).toBe(25000);
+      expect(threshold2026 - threshold2025).toBe(0);
     });
 
     test('should show flat minimum tax in both years', async () => {
@@ -218,11 +218,11 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
   describe('Different Taxpayer Categories', () => {
     const categories = [
-      { category: 'general', threshold2025: 375000, threshold2026: 400000 },
-      { category: 'female', threshold2025: 425000, threshold2026: 450000 },
-      { category: 'disabled', threshold2025: 500000, threshold2026: 525000 },
-      { category: 'freedom_fighter', threshold2025: 525000, threshold2026: 550000 },
-      { category: 'third_gender', threshold2025: 500000, threshold2026: 525000 }
+      { category: 'general', threshold2025: 400000, threshold2026: 400000 },
+      { category: 'female', threshold2025: 450000, threshold2026: 450000 },
+      { category: 'disabled', threshold2025: 525000, threshold2026: 525000 },
+      { category: 'freedom_fighter', threshold2025: 550000, threshold2026: 550000 },
+      { category: 'third_gender', threshold2025: 525000, threshold2026: 525000 }
     ];
 
     categories.forEach(({ category, threshold2025, threshold2026 }) => {
@@ -239,7 +239,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
 
         expect(calculation2025.vm.taxFreeThreshold).toBe(threshold2025);
         expect(calculation2026.vm.taxFreeThreshold).toBe(threshold2026);
-        expect(threshold2026 - threshold2025).toBe(25000); // Consistent 25K increase
+        expect(threshold2026 - threshold2025).toBe(0); // Matching Finance Act 2026 Schedule 1 thresholds
       });
     });
   });
@@ -250,8 +250,9 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
       const taxComparison = wrapper.findComponent({ name: 'TaxComparison' });
 
-      expect(calculation2025.vm.totalTax).toBe(calculation2025.vm.minimumTaxAmount);
-      expect(calculation2026.vm.totalTax).toBe(calculation2026.vm.minimumTaxAmount);
+      // Zero income -> zero tax (minimum tax applies only when taxable income > threshold)
+      expect(calculation2025.vm.totalTax).toBe(0);
+      expect(calculation2026.vm.totalTax).toBe(0);
       expect(taxComparison.vm.taxDifference).toBeDefined();
     });
 
@@ -275,7 +276,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
       // Should default to general taxpayer
-      expect(calculation2025.vm.taxFreeThreshold).toBe(375000);
+      expect(calculation2025.vm.taxFreeThreshold).toBe(400000);
       expect(calculation2026.vm.taxFreeThreshold).toBe(400000);
     });
   });
@@ -295,7 +296,7 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       const calculation2026 = wrapper.findComponent({ name: 'calculation-2026' });
 
       // All components should reflect the changes
-      expect(calculation2025.vm.taxFreeThreshold).toBe(425000); // Female 2025-26
+      expect(calculation2025.vm.taxFreeThreshold).toBe(450000); // Female 2025-26
       expect(calculation2026.vm.taxFreeThreshold).toBe(450000); // Female 2026-27
       expect(calculation2025.vm.investmentRebate).toBeGreaterThan(0);
       expect(calculation2026.vm.investmentRebate).toBeGreaterThan(0);
@@ -309,12 +310,22 @@ describe('Side-by-Side Tax Comparison Integration', () => {
       expect(calculation2025.vm.totalTax).toBeDefined();
       expect(calculation2026.vm.totalTax).toBeDefined();
 
-      // But they should react to same store changes
-      store.commit('changeSubsequentSalaries', { index: 0, value: 50000 });
+      // Gross 900k (75k/mo) -> 600k taxable (> 400k threshold)
+      store.commit('changeSubsequentSalaries', { index: 0, value: 75000 });
       await wrapper.vm.$nextTick();
 
       expect(calculation2025.vm.totalTax).toBeGreaterThan(0);
       expect(calculation2026.vm.totalTax).toBeGreaterThan(0);
+    });
+    test('switches side-by-side invoice components dynamically when Mobbin period dropdowns change', async () => {
+      expect(wrapper.findComponent({ name: 'calculation-2025' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'calculation-2026' }).exists()).toBe(true);
+
+      await wrapper.find('#compare-from-year').setValue('2024-25');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findComponent({ name: 'calculation-2024' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'calculation-2026' }).exists()).toBe(true);
     });
   });
 });
