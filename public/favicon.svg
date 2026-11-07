@@ -2,10 +2,6 @@
   <style>
     .bg { fill: #0a5c3a; }
     .rim { fill: none; stroke: transparent; stroke-width: 1.5; }
-    @media (prefers-color-scheme: dark) {
-      .bg { fill: #0d6942; }
-      .rim { stroke: #2c8c62; }
-    }
   </style>
   <rect x="2" y="2" width="60" height="60" rx="14" class="bg"/>
   <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" class="rim"/>

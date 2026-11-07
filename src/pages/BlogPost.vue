@@ -1,0 +1,175 @@
+<template>
+  <div v-if="post" class="article-page">
+    <article class="article-container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <router-link to="/blog">Tax Guides</router-link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ post.title }}</span>
+      </nav>
+
+      <header class="article-header">
+        <h1>{{ post.title }}</h1>
+        <p class="article-lead">{{ post.excerpt }}</p>
+      </header>
+
+      <aside class="disclaimer-banner" role="note">
+        <strong>Not tax advice:</strong> This article is educational information only. Verify current law and deadlines through official NBR publications or a qualified professional.
+      </aside>
+
+      <div class="article-body">
+        <section v-for="section in post.sections" :key="section.heading" class="article-section">
+          <h2>{{ section.heading }}</h2>
+          <p v-for="(paragraph, index) in section.content" :key="index" v-html="renderMarkdown(paragraph)"></p>
+        </section>
+      </div>
+
+      <section class="sources-section" aria-labelledby="sources-heading">
+        <h2 id="sources-heading">Official Sources</h2>
+        <p>Statutory references and sources supporting this guide:</p>
+        <ul>
+          <li v-for="source in post.citations" :key="source">
+            <a :href="sourceUrl(source)" target="_blank" rel="noopener noreferrer">{{ source }}</a>
+          </li>
+        </ul>
+        <p class="source-caution">Sources are cited for reference only. Always check current legislation and official circulars before making tax decisions.</p>
+      </section>
+
+      <footer class="article-footer">
+        <router-link to="/blog" class="back-link">← Back to Tax Guides</router-link>
+      </footer>
+    </article>
+  </div>
+  <div v-else class="not-found">
+    <h1>Guide Not Found</h1>
+    <p>This guide does not exist.</p>
+    <router-link to="/blog">Browse all tax guides →</router-link>
+  </div>
+</template>
+
+<script>
+import { getBlogPost } from '@/data/blogPosts'
+
+export default {
+  name: 'BlogPost',
+  props: {
+    slug: {
+      type: String,
+      default: null
+    }
+  },
+  computed: {
+    post() {
+      return getBlogPost(this.slug || this.$route.params.slug)
+    }
+  },
+  watch: {
+    post: {
+      immediate: true,
+      handler(post) {
+        if (post) {
+          document.title = `${post.title} | BD Tax Calculator`
+          const description = document.querySelector('meta[name="description"]')
+          if (description) description.content = post.excerpt
+        }
+      }
+    }
+  },
+  methods: {
+    sourceUrl(citation) {
+      // Citations end with the official URL; return it or nothing.
+      const match = citation.match(/https:\/\/\S+$/)
+      return match ? match[0] : undefined
+    },
+    renderMarkdown(text) {
+      // Allow only basic inline markdown syntax generated from trusted static article data.
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.article-page {
+  min-height: calc(100vh - 64px);
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  background: var(--bg);
+}
+
+.article-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.breadcrumb {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-5);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.breadcrumb a { color: var(--accent); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.article-header { margin-bottom: var(--space-5); }
+.article-header h1 {
+  margin-bottom: var(--space-3);
+  color: var(--text);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+.article-lead { color: var(--text-muted); font-size: var(--text-lg); line-height: 1.55; }
+
+.disclaimer-banner {
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  background: var(--warn-soft);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.article-section { margin-bottom: var(--space-5); }
+.article-section h2, .sources-section h2 {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-xl);
+  letter-spacing: -0.015em;
+}
+.article-section p { margin-bottom: var(--space-3); line-height: 1.7; }
+.article-section p :deep(strong) { font-weight: 650; }
+.article-section p :deep(em) { font-style: italic; }
+
+.sources-section {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+.sources-section p { margin-bottom: var(--space-3); color: var(--text-muted); }
+.sources-section ul { padding-left: 1.5rem; }
+.sources-section li { margin-bottom: var(--space-2); overflow-wrap: anywhere; }
+.sources-section a { color: var(--accent); }
+.source-caution { margin-top: var(--space-3); font-size: var(--text-sm); }
+
+.article-footer { padding-top: var(--space-5); margin-top: var(--space-5); border-top: 1px solid var(--border); }
+.back-link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+
+.not-found { max-width: 760px; margin: var(--space-6) auto; padding: var(--space-5); }
+.not-found p { margin: var(--space-3) 0; }
+.not-found a { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .article-container { padding: var(--space-4); }
+}
+</style>

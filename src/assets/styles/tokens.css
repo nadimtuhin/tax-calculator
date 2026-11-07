@@ -45,33 +45,6 @@
   --text-hero: clamp(2.25rem, 7vw, 3.5rem);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1411;
-    --surface: #17201b;
-    --surface-muted: #1c2721;
-    --border: #2a362f;
-    --border-strong: #3d4c43;
-    --text: #e8eee9;
-    --text-muted: #a3afa8;
-
-    --accent: #6fdca6;
-    --accent-hover: #8be8b9;
-    --accent-soft: #163a29;
-    --on-accent: #06140d;
-
-    --good: #6fdca6;
-    --good-soft: #163a29;
-    --warn: #f4c26b;
-    --warn-soft: #3d2c0d;
-    --bad: #ff9c92;
-    --bad-soft: #4a1a16;
-    --info: #8ab8ee;
-
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  }
-}
 
 body {
   background-color: var(--bg);

@@ -24,6 +24,12 @@
         </router-link>
       </div>
 
+      <!-- Primary nav links -->
+      <nav class="primary-nav" aria-label="Site pages">
+        <router-link to="/blog" class="nav-link">Blog</router-link>
+        <router-link to="/referrals" class="nav-link">Lawyer Referral</router-link>
+      </nav>
+
       <!-- Action buttons -->
       <div class="navbar-actions">
         <div class="action-buttons">
@@ -364,16 +370,6 @@ export default {
   stroke-width: 1.5;
 }
 
-@media (prefers-color-scheme: dark) {
-  .brand-mark-bg {
-    fill: #0d6942;
-  }
-
-  .brand-mark-rim {
-    stroke: #2c8c62;
-  }
-}
-
 .brand-wordmark {
   display: inline-flex;
   align-items: center;
@@ -399,6 +395,36 @@ export default {
   font-weight: 700;
   letter-spacing: 0.03em;
   line-height: 1.4;
+}
+
+.primary-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.nav-link.router-link-active {
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .action-buttons,
@@ -476,6 +502,19 @@ export default {
 }
 
 @media (max-width: 639px) {
+  .navbar-container {
+    flex-wrap: wrap;
+  }
+
+  .primary-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    border-top: 1px solid var(--border);
+    margin-left: 0;
+    padding-bottom: var(--space-1);
+  }
+
   .brand-badge {
     display: none;
   }
