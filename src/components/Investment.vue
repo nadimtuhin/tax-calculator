@@ -168,6 +168,7 @@ export default {
 </script>
 
 <style scoped>
+/* ponytail: Native HTML table for Section 78 investment lines. Upgrade to card-based form if individual investment documentation uploads are added. */
 .empty-state {
   margin-bottom: var(--space-4);
   padding: var(--space-4);

@@ -151,6 +151,7 @@ export default {
 </script>
 
 <style scoped>
+/* ponytail: Native HTML form controls with disabled attribute. Upgrade to dynamic form state management if backend submission is enabled. */
 .referrals-page {
   background-color: var(--bg);
   min-height: calc(100vh - 64px);
@@ -158,7 +159,7 @@ export default {
 }
 
 .referrals-container {
-  max-width: 840px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
@@ -248,9 +249,9 @@ export default {
 
 .status-banner {
   background-color: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-left: 5px solid var(--warn);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--radius);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-5);
   box-shadow: var(--shadow);

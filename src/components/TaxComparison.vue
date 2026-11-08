@@ -339,6 +339,7 @@ export default {
 </script>
 
 <style scoped>
+/* ponytail: Single sticky verdict card with CSS grid comparison tiles. Upgrade to modal dialog if more breakdown charts are added. */
 .tax-comparison-summary {
   background: var(--surface);
   border: 1px solid var(--border);

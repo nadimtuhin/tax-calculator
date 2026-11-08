@@ -129,6 +129,7 @@ export default {
 </script>
 
 <style scoped>
+/* ponytail: 65-character max-width container for reading column. Upgrade to sidebar layout if table-of-contents is needed. */
 .article-page {
   min-height: calc(100vh - 64px);
   padding: var(--space-5) var(--space-4) var(--space-6);
@@ -136,9 +137,9 @@ export default {
 }
 
 .article-container {
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: var(--space-5);
+  padding: var(--space-6) var(--space-5);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -229,12 +230,12 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 var(--space-4);
   background: var(--accent);
   color: var(--on-accent);
   border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -264,7 +265,14 @@ export default {
     align-items: flex-start;
   }
 }
-.back-link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
 .back-link:hover { text-decoration: underline; }
 
 .not-found { max-width: 760px; margin: var(--space-6) auto; padding: var(--space-5); }

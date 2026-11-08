@@ -25,11 +25,11 @@
       </div>
 
       <!-- Primary nav links -->
-      <nav class="primary-nav" aria-label="Site pages">
+      <div class="primary-nav" aria-label="Site pages">
         <router-link to="/" class="nav-link" exact>Calculator</router-link>
         <router-link to="/blog" class="nav-link" :class="{ 'router-link-active': $route.path.startsWith('/blog') }">Blog</router-link>
         <router-link to="/referrals" class="nav-link">Lawyer Referral</router-link>
-      </nav>
+      </div>
 
       <!-- Action buttons -->
       <div class="navbar-actions">
@@ -292,6 +292,7 @@ export default {
 </script>
 
 <style scoped>
+/* ponytail: Flexbox navbar with CSS wrap. Upgrade to full mobile drawer component if site navigation exceeds 4 primary routes. */
 .skip-link {
   position: absolute;
   top: -48px;
