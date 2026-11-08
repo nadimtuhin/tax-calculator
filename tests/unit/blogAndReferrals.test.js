@@ -1,10 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import fs from 'fs'
+import path from 'path'
 import Blog from '@/pages/Blog.vue'
 import BlogPost from '@/pages/BlogPost.vue'
 import Referrals from '@/pages/Referrals.vue'
 import { BLOG_POSTS, getBlogPost } from '@/data/blogPosts'
 import appRouter from '@/router/index'
+import { calculateInvestmentRebateForYear } from '@/utils/taxEngine'
 
 function createTestRouter() {
   return createRouter({
@@ -36,7 +39,7 @@ describe('Blog and Statutory Guides', () => {
 
       // Ensure every post has a disclaimer
       const hasDisclaimer = post.sections.some(
-        (s) => /disclaimer/i.test(s.heading) || s.content.some((c) => /not tax advice/i.test(c))
+        (s) => /disclaimer/i.test(s.heading) || s.content.some((c) => /not formal tax or legal advice|not formal tax advice|not tax advice/i.test(c))
       )
       expect(hasDisclaimer).toBe(true)
     })
@@ -52,6 +55,19 @@ describe('Blog and Statutory Guides', () => {
     expect(fullContent).toContain('3% of taxable income')
     expect(fullContent).toContain('10% of qualifying investment')
     expect(fullContent).toContain('7,50,000')
+  })
+
+  test('Section 78 worked numerical example matches the calculator engine exactly', () => {
+    // Article states: Taxable income A = BDT 15,00,000, eligible investment B = BDT 2,50,000
+    // 3% of income = 45,000; 10% of investment = 25,000; cap = 7,50,000 -> lowest is 25,000
+    const taxableIncome = 1500000
+    const eligibleInvestment = 250000
+
+    const rebate2025 = calculateInvestmentRebateForYear('2025-26', taxableIncome, eligibleInvestment)
+    const rebate2026 = calculateInvestmentRebateForYear('2026-27', taxableIncome, eligibleInvestment)
+
+    expect(rebate2025).toBe(25000)
+    expect(rebate2026).toBe(25000)
   })
 
   test('Fiscal Year vs Assessment Year guide clearly maps income year to assessment year', () => {
@@ -95,7 +111,7 @@ describe('Blog and Statutory Guides', () => {
     expect(calcLink.attributes('href')).toBe('/')
   })
 
-  test('BlogPost.vue renders article content, official citations, and calculator callout', async () => {
+  test('BlogPost.vue renders article content, official citations, and calculator callout without v-html injection', async () => {
     const router = createTestRouter()
     await router.push('/blog/fiscal-year-vs-assessment-year-bangladesh')
 
@@ -114,6 +130,7 @@ describe('Blog and Statutory Guides', () => {
     expect(wrapper.find('.sources-section').exists()).toBe(true)
     expect(wrapper.find('.sources-section a').attributes('href')).toBe('https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf')
 
+    // Confirm calculator callout exists
     const calcCallout = wrapper.find('.calculator-callout')
     expect(calcCallout.exists()).toBe(true)
     expect(calcCallout.find('.callout-btn').attributes('href')).toBe('/')
@@ -173,6 +190,10 @@ describe('Lawyer Referrals Page & Form Safety', () => {
 
   test('Form cannot be submitted and performs zero network or storage actions', async () => {
     const localStorageSpy = jest.spyOn(Storage.prototype, 'setItem')
+    const originalFetch = global.fetch
+    const fetchSpy = jest.fn()
+    global.fetch = fetchSpy
+
     const router = createTestRouter()
     const wrapper = mount(Referrals, {
       global: {
@@ -184,7 +205,10 @@ describe('Lawyer Referrals Page & Form Safety', () => {
     await form.trigger('submit')
 
     expect(localStorageSpy).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+
     localStorageSpy.mockRestore()
+    global.fetch = originalFetch
   })
 })
 
@@ -205,5 +229,23 @@ describe('Application Router & Route Metadata', () => {
 
     const referralsRoute = appRouter.getRoutes().find((r) => r.name === 'Referrals')
     expect(referralsRoute.meta.title).toContain('Lawyer Referral Service')
+  })
+})
+
+describe('Light Theme & Accessibility Tokens', () => {
+  test('pure light theme is enforced with no dark-mode media queries in tokens.css', () => {
+    const tokensPath = path.resolve(__dirname, '../../src/assets/styles/tokens.css')
+    const content = fs.readFileSync(tokensPath, 'utf8')
+
+    expect(content).toContain('color-scheme: light')
+    expect(content).not.toContain('prefers-color-scheme')
+  })
+
+  test('public/index.html includes color-scheme light meta', () => {
+    const indexPath = path.resolve(__dirname, '../../public/index.html')
+    const content = fs.readFileSync(indexPath, 'utf8')
+
+    expect(content).toContain('content="light"')
+    expect(content).not.toContain('prefers-color-scheme')
   })
 })

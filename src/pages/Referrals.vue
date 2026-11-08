@@ -2,10 +2,10 @@
   <div class="referrals-page">
     <div class="referrals-container">
       <header class="referrals-hero">
-        <span class="hero-eyebrow">Direct Referral Service</span>
-        <h1>Connect with an Independent Bangladesh Tax Lawyer</h1>
+        <span class="hero-eyebrow">Referral Service Overview</span>
+        <h1>Independent Bangladesh Tax Lawyer Referrals</h1>
         <p class="hero-subtitle">
-          If your tax situation involves complex income sources, audit scrutiny from the Deputy Commissioner of Taxes, or company-level filing questions, we can connect you with an independent licensed tax lawyer in Bangladesh.
+          An informational overview of tax lawyer referrals in Bangladesh for complex income, NBR audit scrutiny, or corporate tax questions. Online inquiry submissions are currently paused.
         </p>
       </header>
 
@@ -17,20 +17,20 @@
         </div>
         <div class="disclosure-body">
           <p>
-            <strong>Nadim operates this referral and intermediary service as an individual, not as a law firm.</strong>
-            We do not provide legal representation, legal advice, or formal tax opinions. Any legal counsel or formal representation is provided directly and independently by qualified, licensed advocates or tax consultants whom you choose to engage.
+            <strong>Nadim operates this referral and intermediary service as an individual, not as a law firm or legal adviser.</strong>
+            We do not provide legal representation, legal advice, or formal tax opinions. Any legal counsel or formal representation is provided directly and independently by qualified advocates or tax consultants whom you choose to engage.
           </p>
           <ul class="disclosure-points">
-            <li><strong>Manual Review:</strong> Inquiries are personally reviewed by Nadim before any lawyer introduction is made, ensuring your question matches an appropriate legal practitioner.</li>
+            <li><strong>Informational Intermediary:</strong> When submissions are active, inquiries are reviewed by Nadim solely for topical categorization prior to any practitioner introduction.</li>
             <li><strong>No Guaranteed Outcomes:</strong> We make no representations or guarantees regarding legal outcomes, tax savings, or fee arrangements.</li>
-            <li><strong>No Vetting or Invented Endorsements:</strong> We connect users with licensed practitioners based on topical relevance. We do not publish artificial testimonials, fictitious case studies, or fixed pricing schedules. Any professional fee is negotiated directly between you and the attorney.</li>
-            <li><strong>Monetization Transparency:</strong> This platform may receive a referral fee or nominal consideration from participating practitioners for completed introductions. This does not alter the independence of legal counsel.</li>
+            <li><strong>No Vetting or Invented Endorsements:</strong> We do not publish artificial testimonials, fictitious case studies, or fixed pricing schedules. Nadim does not independently vet or audit practitioners; any professional engagement or fee is negotiated directly between you and the advocate.</li>
+            <li><strong>No Platform Fees:</strong> No fees or commissions are charged to or collected from users on this platform.</li>
           </ul>
         </div>
       </section>
 
       <!-- Secure Submission Status Banner: Paused / Unavailable -->
-      <section class="status-banner" role="status" aria-live="polite">
+      <section class="status-banner" role="region" aria-label="Submission status">
         <div class="status-indicator">
           <span class="status-dot paused"></span>
           <strong>Direct Submissions Currently Paused</strong>
@@ -46,15 +46,15 @@
       <!-- Referral Request Concept Form -->
       <section class="form-section" aria-labelledby="form-heading">
         <div class="form-header">
-          <h2 id="form-heading">Request an Introduction</h2>
+          <h2 id="form-heading">Request an Introduction (Concept Form)</h2>
           <p class="form-guidance">
-            Review the form below to understand the minimal information needed once online routing resumes.
+            The form below illustrates the minimal information that will be required once online routing resumes. All controls are strictly disabled.
           </p>
         </div>
 
-        <div class="privacy-warning" role="alert">
+        <aside class="privacy-warning" aria-label="Privacy safeguard">
           <strong>Privacy Safeguard:</strong> Please do <em>not</em> share Taxpayer Identification Numbers (TIN), National ID (NID) numbers, bank account numbers, confidential payroll slips, or detailed personal balance sheets. We only collect high-level topical context.
-        </div>
+        </aside>
 
         <form class="referral-form" @submit.prevent>
           <div class="form-group">
@@ -313,8 +313,9 @@ export default {
 }
 
 .privacy-warning {
-  background-color: var(--accent-soft);
-  border: 1px solid var(--border);
+  background-color: var(--warn-soft);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--warn);
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-xs);

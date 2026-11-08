@@ -19,7 +19,12 @@
       <div class="article-body">
         <section v-for="section in post.sections" :key="section.heading" class="article-section">
           <h2>{{ section.heading }}</h2>
-          <p v-for="(paragraph, index) in section.content" :key="index" v-html="renderMarkdown(paragraph)"></p>
+          <p v-for="(paragraph, index) in section.content" :key="index">
+            <template v-for="(token, tIndex) in formatTokens(paragraph)" :key="tIndex">
+              <strong v-if="token.type === 'bold'">{{ token.value }}</strong>
+              <span v-else>{{ token.value }}</span>
+            </template>
+          </p>
         </section>
       </div>
 
@@ -28,7 +33,10 @@
         <p>Statutory references and sources supporting this guide:</p>
         <ul>
           <li v-for="source in post.citations" :key="source">
-            <a :href="sourceUrl(source)" target="_blank" rel="noopener noreferrer">{{ source }}</a>
+            <span class="citation-text">{{ citationText(source) }} </span>
+            <a :href="sourceUrl(source)" target="_blank" rel="noopener noreferrer" class="citation-link" :aria-label="`Open official NBR source for: ${citationText(source)}`">
+              [Official NBR Source ↗]
+            </a>
           </li>
         </ul>
         <p class="source-caution">Sources are cited for reference only. Always check current legislation and official circulars before making tax decisions.</p>
@@ -92,11 +100,25 @@ export default {
       const match = citation.match(/https:\/\/\S+$/)
       return match ? match[0] : undefined
     },
-    renderMarkdown(text) {
-      // Allow only basic inline markdown syntax generated from trusted static article data.
-      return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    citationText(citation) {
+      return citation.replace(/\s*https:\/\/\S+$/, '')
+    },
+    formatTokens(text) {
+      const tokens = []
+      const regex = /\*\*(.*?)\*\*/g
+      let lastIndex = 0
+      let match
+      while ((match = regex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+          tokens.push({ type: 'text', value: text.substring(lastIndex, match.index) })
+        }
+        tokens.push({ type: 'bold', value: match[1] })
+        lastIndex = regex.lastIndex
+      }
+      if (lastIndex < text.length) {
+        tokens.push({ type: 'text', value: text.substring(lastIndex) })
+      }
+      return tokens
     }
   }
 }

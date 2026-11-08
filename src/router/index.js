@@ -55,11 +55,11 @@ const router = createRouter({
   routes
 })
 
-const setMeta = (name, content) => {
-  let el = document.querySelector(`meta[name="${name}"]`)
+const setMeta = (name, content, attribute = 'name') => {
+  let el = document.querySelector(`meta[${attribute}="${name}"]`)
   if (!el) {
     el = document.createElement('meta')
-    el.setAttribute('name', name)
+    el.setAttribute(attribute, name)
     document.head.appendChild(el)
   }
   el.setAttribute('content', content)
@@ -71,9 +71,16 @@ const CANONICAL_ORIGIN = 'https://tax.nadimtuhin.com'
 
 router.afterEach((to) => {
   const { title, description } = to.meta || {}
-  if (title) document.title = title
-  if (description) setMeta('description', description)
-  setMeta('robots', 'index, follow')
+  const routeUrl = `${CANONICAL_ORIGIN}${to.fullPath === '/' ? '/' : to.path}`
+  if (title) {
+    document.title = title
+    setMeta('og:title', title, 'property')
+  }
+  if (description) {
+    setMeta('description', description)
+    setMeta('og:description', description, 'property')
+  }
+  setMeta('og:url', routeUrl, 'property')
 
   const canonical =
     document.querySelector('link[rel="canonical"]') ||
@@ -83,7 +90,7 @@ router.afterEach((to) => {
       document.head.appendChild(link)
       return link
     })()
-  canonical.setAttribute('href', `${CANONICAL_ORIGIN}${to.fullPath === '/' ? '/' : to.path}`)
+  canonical.setAttribute('href', routeUrl)
 })
 
 export default router

@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #f3f2ee;
   --surface: #ffffff;
   --surface-muted: #f7f6f2;
@@ -44,7 +45,6 @@
   --text-xl: 1.375rem;
   --text-hero: clamp(2.25rem, 7vw, 3.5rem);
 }
-
 
 body {
   background-color: var(--bg);

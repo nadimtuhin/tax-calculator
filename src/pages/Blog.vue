@@ -27,7 +27,7 @@
         </router-link>
       </section>
 
-      <main class="posts-grid" aria-label="List of tax guides">
+      <section class="posts-grid" aria-label="List of tax guides">
         <article
           v-for="post in posts"
           :key="post.slug"
@@ -47,7 +47,7 @@
             </router-link>
           </footer>
         </article>
-      </main>
+      </section>
     </div>
   </div>
 </template>
@@ -214,14 +214,6 @@ export default {
 .post-card:hover {
   border-color: var(--border-strong);
   box-shadow: 0 4px 20px rgba(23, 32, 27, 0.08);
-}
-
-.post-meta {
-  display: flex;
-  gap: var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  margin-bottom: var(--space-2);
 }
 
 .post-card h2 {

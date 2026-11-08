@@ -6,10 +6,10 @@
  *    published by National Board of Revenue (NBR):
  *    https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf
  *  - Section 2(15) "income year" (আয় বর্ষ) & Section 2(24) "assessment year" (করবর্ষ)
- *  - Section 2(23) "Tax Day" (কর দিবস)
+ *  - Section 2(23)(a) "Tax Day" (কর দিবস)
  *  - Section 78 "General tax rebate in respect of certain investments and expenditure"
  *    as amended by the Finance Act, 2024 (Act No. IX of 2024), Section 61
- *  - Sixth Schedule Part 3 (eligible investments, savings certificates, DPS, life insurance)
+ *  - Sixth Schedule Part 3 (eligible investments and allowable expenditure)
  *  - Section 166 (Return of income) & Section 167 (Statement of assets and liabilities)
  *
  * Not tax advice. General educational information only.
@@ -22,7 +22,7 @@ export const BLOG_POSTS = [
     excerpt:
       'Why the year you earn income and the year you file it are different, and how Section 2 of the Income Tax Act, 2023 defines each.',
     citations: [
-      'Income Tax Act, 2023 (Act No. XII of 2023), Section 2(15) "income year", Section 2(24) "assessment year", Section 2(23) "Tax Day" — NBR authentic English text (S.R.O. 404-Law/2025): https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf',
+      'Income Tax Act, 2023 (Act No. XII of 2023), Section 2(15) "income year", Section 2(24) "assessment year", Section 2(23)(a) "Tax Day" — NBR authentic text (S.R.O. 404-Law/2025): https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf',
     ],
     sections: [
       {
@@ -41,10 +41,10 @@ export const BLOG_POSTS = [
         ],
       },
       {
-        heading: 'Tax Day statutory deadlines',
+        heading: 'Tax Day statutory deadline',
         content: [
           'Under Section 2(23)(a) of the Income Tax Act, 2023, "Tax Day" for an individual taxpayer is the **30th day of November** following the end of the income year.',
-          'For individuals who have not previously submitted a tax return, Section 2(23)(c) specifies the 30th day of June of the relevant assessment year. The National Board of Revenue (NBR) occasionally issues public statutory circulars extending filing deadlines; check official NBR announcements for your specific year.',
+          'The National Board of Revenue (NBR) periodically publishes circulars regarding return submission windows and any official filing extensions. Taxpayers should consult current NBR notifications for their specific filing year.',
         ],
       },
       {
@@ -73,7 +73,7 @@ export const BLOG_POSTS = [
       {
         heading: 'Rebate vs exemption: direct tax reduction',
         content: [
-          'A **tax rebate** directly reduces the final tax amount payable to the government (a dollar-for-dollar reduction). In contrast, an **exemption** reduces total gross income before tax slabs are applied.',
+          'A **tax rebate** directly reduces the final tax amount payable to the government (a taka-for-taka reduction). In contrast, an **exemption** reduces total gross income before tax slabs are applied.',
           'Under Section 78 of the Income Tax Act, 2023, resident individuals and non-resident Bangladeshi individuals who invest in eligible instruments are entitled to an investment tax rebate deducted from their computed tax.',
         ],
       },
@@ -99,7 +99,7 @@ export const BLOG_POSTS = [
       {
         heading: 'Qualifying investments under Sixth Schedule Part 3',
         content: [
-          'Allowable instruments include approved employee provident funds, deposit pension schemes (DPS) within statutory monthly limits, life insurance policies (up to 10% of sum assured), government treasury securities, and designated listed shares or mutual funds.',
+          'Allowable instruments under Part 3 of the Sixth Schedule include approved employee provident funds, deposit pension schemes (DPS) within statutory monthly limits, life insurance policies, government securities, and listed securities.',
         ],
       },
       {
@@ -116,35 +116,35 @@ export const BLOG_POSTS = [
     excerpt:
       'A practical documentation checklist for salaried individuals before filing under the Income Tax Act, 2023.',
     citations: [
-      'Income Tax Act, 2023 (Act No. XII of 2023), Section 2(23) "Tax Day", Section 166 "Return of income", and Section 167 "Statement of assets and liabilities" — NBR authentic English text (S.R.O. 404-Law/2025): https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf',
+      'Income Tax Act, 2023 (Act No. XII of 2023), Section 2(23)(a) "Tax Day", Section 166 "Return of income", and Section 167 "Statement of assets and liabilities" — NBR authentic text (S.R.O. 404-Law/2025): https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf',
     ],
     sections: [
       {
         heading: 'Gather income year records',
         content: [
           'Collect all documentation spanning 1 July through 30 June of the relevant income year:',
-          '• **Salary and TDS certificate:** An official statement from your employer detailing basic pay, allowances, and tax deducted at source under Sections 86 and 87.',
-          '• **Bank statements and certificates:** Interest/profit certificates showing gross interest and tax deducted at source under Section 102.',
-          '• **Investment certificates:** Official receipts for DPS, life insurance premiums, provident fund contributions, and government securities under Sixth Schedule Part 3.',
+          '• **Salary and tax deduction statement:** An official certificate or breakdown from your employer detailing gross salary, allowances, and tax deducted at source.',
+          '• **Bank certificates:** Profit or interest statements showing gross return and tax deducted at source.',
+          '• **Investment certificates:** Official deposit statements or receipts for qualifying investments under Sixth Schedule Part 3 (such as DPS, provident fund, insurance, or treasury bonds).',
         ],
       },
       {
-        heading: 'Verify wealth and asset statement thresholds (IT-10B)',
+        heading: 'Statement of assets and liabilities (Section 167)',
         content: [
-          'Under Section 167 of the Income Tax Act, 2023, submission of a Statement of Assets, Liabilities and Lifestyle (Form IT-10B) is mandatory if your total gross wealth exceeds statutory limits, or if you own motor vehicles, house property in city corporation areas, or foreign assets.',
-          'Keep copies of property deeds, vehicle registrations, and loan statements ready.',
+          'Under Section 167 of the Income Tax Act, 2023, submission of a Statement of Assets and Liabilities (Form IT-10B) may be required depending on statutory net wealth thresholds and prescribed asset criteria (such as ownership of motor vehicles or real property).',
+          'Taxpayers should review current NBR filing guidelines or consult the prescribed return package to verify if IT-10B submission applies to their individual profile.',
         ],
       },
       {
         heading: 'Calendar your filing timeline',
         content: [
-          'File on or before Tax Day (30 November for individuals under Section 2(23)(a)) to avoid interest or penalty assessments under Section 174. Early preparation ensures ample time to reconcile discrepancies between employer TDS certificates and bank deduction records.',
+          'Individual returns under Section 166 are due by Tax Day (30 November under Section 2(23)(a)), unless an official extension is notified by NBR. Gathering documents well in advance of Tax Day helps ensure accurate reconciliation between employer certificates and bank deduction records.',
         ],
       },
       {
         heading: 'When to seek licensed counsel',
         content: [
-          'If your return involves cross-border remittances, dispute notices from the Deputy Commissioner of Taxes, or substantial asset reconciliations, consult a licensed tax advocate. Visit our referral service page for information on connecting with independent practitioners.',
+          'If your return involves complex asset reconciliations, multiple business streams, or assessment notices from tax authorities, consider consulting an independent licensed advocate or income tax practitioner. Visit our referral overview page for details.',
         ],
       },
       {
