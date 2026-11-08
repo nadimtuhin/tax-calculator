@@ -132,6 +132,13 @@
           </div>
         </form>
       </section>
+
+      <!-- Navigation Links -->
+      <footer class="referrals-footer">
+        <router-link to="/" class="footer-nav-link">← Return to BD Tax Calculator</router-link>
+        <span class="footer-divider" aria-hidden="true">·</span>
+        <router-link to="/blog" class="footer-nav-link">Read Tax Guides &amp; Statutory Notes →</router-link>
+      </footer>
     </div>
   </div>
 </template>
@@ -416,6 +423,32 @@ export default {
 .action-note {
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+.referrals-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  flex-wrap: wrap;
+}
+
+.footer-nav-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-nav-link:hover,
+.footer-nav-link:focus-visible {
+  text-decoration: underline;
+}
+
+.footer-divider {
+  color: var(--border-strong);
 }
 
 @media (max-width: 600px) {

@@ -16,6 +16,17 @@
         </div>
       </section>
 
+      <!-- Calculator Callout -->
+      <section class="calculator-banner" aria-label="Interactive Tax Calculator">
+        <div class="calculator-banner-content">
+          <h2>Interactive BD Tax Calculator</h2>
+          <p>Estimate your taxable salary, progressive tax slabs, monthly TDS, and Section 78 investment rebate in seconds.</p>
+        </div>
+        <router-link to="/" class="calculator-banner-btn">
+          Open Tax Calculator <span aria-hidden="true">→</span>
+        </router-link>
+      </section>
+
       <main class="posts-grid" aria-label="List of tax guides">
         <article
           v-for="post in posts"
@@ -127,6 +138,62 @@ export default {
 
 .disclaimer-text strong {
   color: var(--text);
+}
+
+.calculator-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow);
+}
+
+.calculator-banner-content h2 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--space-1);
+}
+
+.calculator-banner-content p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.calculator-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.calculator-banner-btn:hover,
+.calculator-banner-btn:focus-visible {
+  background: var(--accent-hover);
+}
+
+@media (max-width: 640px) {
+  .calculator-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .posts-grid {

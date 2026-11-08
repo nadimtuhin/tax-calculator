@@ -26,6 +26,7 @@
 
       <!-- Primary nav links -->
       <nav class="primary-nav" aria-label="Site pages">
+        <router-link to="/" class="nav-link">Calculator</router-link>
         <router-link to="/blog" class="nav-link">Blog</router-link>
         <router-link to="/referrals" class="nav-link">Lawyer Referral</router-link>
       </nav>

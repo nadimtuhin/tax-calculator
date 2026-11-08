@@ -70,6 +70,8 @@ describe('Navbar Component', () => {
       history: createWebHistory(),
       routes: [
         { path: '/', name: 'Home', component: { template: '<div>Home</div>' } },
+        { path: '/blog', name: 'Blog', component: { template: '<div>Blog</div>' } },
+        { path: '/referrals', name: 'Referrals', component: { template: '<div>Referrals</div>' } },
         { path: '/tax-guide', name: 'TaxGuide', component: { template: '<div>Tax Guide</div>' } }
       ]
     });

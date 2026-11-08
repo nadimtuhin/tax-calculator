@@ -34,8 +34,20 @@
         <p class="source-caution">Sources are cited for reference only. Always check current legislation and official circulars before making tax decisions.</p>
       </section>
 
+      <!-- Calculator Callout -->
+      <section class="calculator-callout" aria-label="Interactive Tax Calculator">
+        <div class="callout-text">
+          <strong>Ready to calculate your tax or rebate?</strong>
+          <p>Run instant calculations for FY 2025–26 and FY 2026–27 using our interactive tool.</p>
+        </div>
+        <router-link to="/" class="callout-btn">
+          Open Tax Calculator <span aria-hidden="true">→</span>
+        </router-link>
+      </section>
+
       <footer class="article-footer">
         <router-link to="/blog" class="back-link">← Back to Tax Guides</router-link>
+        <router-link to="/" class="back-link">Go to Calculator →</router-link>
       </footer>
     </article>
   </div>
@@ -161,7 +173,71 @@ export default {
 .sources-section a { color: var(--accent); }
 .source-caution { margin-top: var(--space-3); font-size: var(--text-sm); }
 
-.article-footer { padding-top: var(--space-5); margin-top: var(--space-5); border-top: 1px solid var(--border); }
+.calculator-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.callout-text strong {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.callout-text p {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.callout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 38px;
+  padding: 0 var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.callout-btn:hover,
+.callout-btn:focus-visible {
+  background: var(--accent-hover);
+}
+
+.article-footer {
+  padding-top: var(--space-5);
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 600px) {
+  .calculator-callout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 .back-link { color: var(--accent); font-weight: 600; text-decoration: none; }
 .back-link:hover { text-decoration: underline; }
 
