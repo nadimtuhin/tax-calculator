@@ -73,7 +73,7 @@ export default {
 }
 
 .blog-container {
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
@@ -196,31 +196,62 @@ export default {
   }
 }
 
+/* ponytail: CSS grid 3-column on desktop and single column on mobile. Upgrade to masonry if varying excerpt length distorts layout. */
 .posts-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-4);
 }
 
+@media (min-width: 640px) {
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .posts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .post-card {
+  display: flex;
+  flex-direction: column;
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-5);
   box-shadow: var(--shadow);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .post-card:hover {
   border-color: var(--border-strong);
-  box-shadow: 0 4px 20px rgba(23, 32, 27, 0.08);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-card {
+    transition: none;
+  }
+
+  .post-card:hover {
+    transform: none;
+  }
+}
+
+.card-header {
+  margin-bottom: var(--space-2);
 }
 
 .post-card h2 {
-  font-size: var(--text-xl);
+  font-size: 1.125rem;
   font-weight: 650;
   letter-spacing: -0.015em;
-  margin-bottom: var(--space-2);
+  line-height: 1.35;
+  margin: 0;
 }
 
 .post-title-link {
@@ -236,21 +267,23 @@ export default {
 
 .post-excerpt {
   color: var(--text-muted);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   line-height: 1.55;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-grow: 1;
 }
 
 .card-footer {
   display: flex;
   justify-content: flex-start;
+  margin-top: auto;
 }
 
 .read-more-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--space-4);
   background: var(--surface-muted);
   border: 1px solid var(--border);
