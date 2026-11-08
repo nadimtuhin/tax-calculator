@@ -90,6 +90,10 @@ export default {
           document.title = `${post.title} | BD Tax Calculator`
           const description = document.querySelector('meta[name="description"]')
           if (description) description.content = post.excerpt
+          const ogTitle = document.querySelector('meta[property="og:title"]')
+          if (ogTitle) ogTitle.content = `${post.title} | BD Tax Calculator`
+          const ogDesc = document.querySelector('meta[property="og:description"]')
+          if (ogDesc) ogDesc.content = post.excerpt
         }
       }
     }

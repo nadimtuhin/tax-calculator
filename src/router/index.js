@@ -29,6 +29,7 @@ const routes = [
     path: '/blog/:slug',
     name: 'BlogPost',
     component: BlogPost,
+    props: true,
     meta: {
       // Title/description are set per-article inside BlogPost.
       title: 'Blog — Bangladesh Personal Income Tax Guides | BD Tax Calculator',
@@ -43,7 +44,7 @@ const routes = [
     meta: {
       title: 'Lawyer Referral Service | BD Tax Calculator',
       description:
-        'Request an introduction to an independent Bangladesh tax lawyer through Nadim\u2019s referral/intermediary service. Not a law firm; no legal advice.'
+        'Informational overview of tax lawyer referrals in Bangladesh. Online submissions are currently paused; no tax or legal advice provided.'
     }
   },
   // Back-compat: anything else goes home.
@@ -71,7 +72,7 @@ const CANONICAL_ORIGIN = 'https://tax.nadimtuhin.com'
 
 router.afterEach((to) => {
   const { title, description } = to.meta || {}
-  const routeUrl = `${CANONICAL_ORIGIN}${to.fullPath === '/' ? '/' : to.path}`
+  const routeUrl = `${CANONICAL_ORIGIN}${to.path}`
   if (title) {
     document.title = title
     setMeta('og:title', title, 'property')

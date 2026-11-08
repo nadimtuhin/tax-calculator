@@ -18,13 +18,14 @@
         <div class="disclosure-body">
           <p>
             <strong>Nadim operates this referral and intermediary service as an individual, not as a law firm or legal adviser.</strong>
-            We do not provide legal representation, legal advice, or formal tax opinions. Any legal counsel or formal representation is provided directly and independently by qualified advocates or tax consultants whom you choose to engage.
+            No tax advice or legal advice is provided through this page or referral service. We do not provide legal representation, legal opinions, or tax counseling. Any legal counsel or formal representation is provided directly and independently by qualified advocates or tax consultants whom you choose to engage.
           </p>
           <ul class="disclosure-points">
             <li><strong>Informational Intermediary:</strong> When submissions are active, inquiries are reviewed by Nadim solely for topical categorization prior to any practitioner introduction.</li>
             <li><strong>No Guaranteed Outcomes:</strong> We make no representations or guarantees regarding legal outcomes, tax savings, or fee arrangements.</li>
             <li><strong>No Vetting or Invented Endorsements:</strong> We do not publish artificial testimonials, fictitious case studies, or fixed pricing schedules. Nadim does not independently vet or audit practitioners; any professional engagement or fee is negotiated directly between you and the advocate.</li>
-            <li><strong>No Platform Fees:</strong> No fees or commissions are charged to or collected from users on this platform.</li>
+            <li><strong>Zero Platform Fees or Compensation:</strong> No fees or commissions are charged to or collected from users on this platform, and Nadim receives no referral fee, commission, or payment of any kind from participating practitioners.</li>
+            <li><strong>Not Tax Advice:</strong> All content on this site is purely educational and informational.</li>
           </ul>
         </div>
       </section>

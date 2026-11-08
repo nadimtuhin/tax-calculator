@@ -26,8 +26,8 @@
 
       <!-- Primary nav links -->
       <nav class="primary-nav" aria-label="Site pages">
-        <router-link to="/" class="nav-link">Calculator</router-link>
-        <router-link to="/blog" class="nav-link">Blog</router-link>
+        <router-link to="/" class="nav-link" exact>Calculator</router-link>
+        <router-link to="/blog" class="nav-link" :class="{ 'router-link-active': $route.path.startsWith('/blog') }">Blog</router-link>
         <router-link to="/referrals" class="nav-link">Lawyer Referral</router-link>
       </nav>
 
@@ -421,6 +421,11 @@ export default {
 .nav-link:hover {
   background: var(--surface-muted);
   color: var(--text);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .nav-link.router-link-active {

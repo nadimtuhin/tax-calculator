@@ -154,6 +154,15 @@ describe('Blog and Statutory Guides', () => {
 })
 
 describe('Lawyer Referrals Page & Form Safety', () => {
+  let localStorageSpy
+  let originalFetch
+  let fetchSpy
+
+  afterEach(() => {
+    if (localStorageSpy) localStorageSpy.mockRestore()
+    if (originalFetch) global.fetch = originalFetch
+  })
+
   test('Referrals page renders disclosure, disabled submission state, and navigation links', async () => {
     const router = createTestRouter()
     await router.push('/referrals')
@@ -164,13 +173,15 @@ describe('Lawyer Referrals Page & Form Safety', () => {
       }
     })
 
-    // Verify disclosure and intermediary statements
+    // Verify disclosure, intermediary, and no-tax-advice statements
     expect(wrapper.text()).toContain('Nadim operates this referral and intermediary service as an individual, not as a law firm')
+    expect(wrapper.text()).toContain('No tax advice or legal advice is provided through this page or referral service')
     expect(wrapper.text()).toContain('Direct Submissions Currently Paused')
     expect(wrapper.text()).toContain('Submission Temporarily Unavailable')
+    expect(wrapper.text()).toContain('Zero Platform Fees or Compensation')
 
-    // Verify all input fields are strictly disabled
-    const inputs = wrapper.findAll('input, select, textarea, button.submit-button')
+    // Verify all input fields and all buttons are strictly disabled
+    const inputs = wrapper.findAll('input, select, textarea, button')
     expect(inputs.length).toBeGreaterThan(0)
     inputs.forEach((input) => {
       expect(input.attributes('disabled')).toBeDefined()
@@ -189,9 +200,9 @@ describe('Lawyer Referrals Page & Form Safety', () => {
   })
 
   test('Form cannot be submitted and performs zero network or storage actions', async () => {
-    const localStorageSpy = jest.spyOn(Storage.prototype, 'setItem')
-    const originalFetch = global.fetch
-    const fetchSpy = jest.fn()
+    localStorageSpy = jest.spyOn(Storage.prototype, 'setItem')
+    originalFetch = global.fetch
+    fetchSpy = jest.fn()
     global.fetch = fetchSpy
 
     const router = createTestRouter()
@@ -206,9 +217,6 @@ describe('Lawyer Referrals Page & Form Safety', () => {
 
     expect(localStorageSpy).not.toHaveBeenCalled()
     expect(fetchSpy).not.toHaveBeenCalled()
-
-    localStorageSpy.mockRestore()
-    global.fetch = originalFetch
   })
 })
 
@@ -247,5 +255,23 @@ describe('Light Theme & Accessibility Tokens', () => {
 
     expect(content).toContain('content="light"')
     expect(content).not.toContain('prefers-color-scheme')
+  })
+
+  test('entire src/ and public/ trees have zero prefers-color-scheme queries', () => {
+    function searchDir(dir) {
+      const files = fs.readdirSync(dir)
+      for (const file of files) {
+        const full = path.join(dir, file)
+        const stat = fs.statSync(full)
+        if (stat.isDirectory()) {
+          searchDir(full)
+        } else if (/\.(css|vue|html|js)$/.test(file)) {
+          const content = fs.readFileSync(full, 'utf8')
+          expect(content).not.toContain('prefers-color-scheme')
+        }
+      }
+    }
+    searchDir(path.resolve(__dirname, '../../src'))
+    searchDir(path.resolve(__dirname, '../../public'))
   })
 })
