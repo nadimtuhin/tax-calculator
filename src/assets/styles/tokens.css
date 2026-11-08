@@ -1,5 +1,4 @@
 :root {
-  /* ponytail: CSS custom properties provide native theme tokens without runtime styling overhead. Upgrade to full CSS design system if multi-theme is needed. */
   color-scheme: light;
   --bg: #f8f9fa;
   --surface: #ffffff;
@@ -8,7 +7,6 @@
   --border-strong: #d1d5db;
   --text: #111827;
   --text-muted: #4b5563;
-  --text-subtle: #6b7280;
 
   --accent: #0a5c3a;
   --accent-hover: #07492e;

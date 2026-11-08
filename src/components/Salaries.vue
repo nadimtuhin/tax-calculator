@@ -202,7 +202,6 @@ export default {
 </script>
 
 <style scoped>
-/* ponytail: Native HTML table with horizontal scroll wrapper for monthly earnings. Upgrade to virtualized data grid if multi-year monthly editing is required. */
 .unit-note {
   margin: 0 0 var(--space-3);
   font-size: var(--text-sm);

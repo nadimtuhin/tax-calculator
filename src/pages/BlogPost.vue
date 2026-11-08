@@ -129,7 +129,7 @@ export default {
 </script>
 
 <style scoped>
-/* ponytail: 65-character max-width container for reading column. Upgrade to sidebar layout if table-of-contents is needed. */
+/* ponytail: Constrained reading column for optimal line length. Upgrade to sidebar layout if table-of-contents is needed. */
 .article-page {
   min-height: calc(100vh - 64px);
   padding: var(--space-5) var(--space-4) var(--space-6);

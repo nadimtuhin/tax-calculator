@@ -33,9 +33,6 @@
           :key="post.slug"
           class="post-card"
         >
-          <div class="card-badge-row" aria-hidden="true">
-            <span class="card-tag">Statutory Guide</span>
-          </div>
           <header class="card-header">
             <h2>
               <router-link :to="`/blog/${post.slug}`" class="post-title-link">
@@ -235,22 +232,14 @@ export default {
   transform: translateY(-2px);
 }
 
-.card-badge-row {
-  margin-bottom: var(--space-3);
-}
+@media (prefers-reduced-motion: reduce) {
+  .post-card {
+    transition: none;
+  }
 
-.card-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  color: var(--accent);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  .post-card:hover {
+    transform: none;
+  }
 }
 
 .card-header {

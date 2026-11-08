@@ -216,7 +216,6 @@ export default {
 </script>
 
 <style scoped>
-/* ponytail: Native accessible radio chips and toggle switches. Upgrade to design-system component library if multi-brand theming is introduced. */
 .taxpayer-profile {
   display: flex;
   flex-direction: column;

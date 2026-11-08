@@ -89,7 +89,6 @@ export default {
 </script>
 
 <style scoped>
-/* ponytail: Two-pane CSS grid on desktop, single-column stack on mobile. Upgrade to resizable panes if user customization is requested. */
 #home-page {
   color: var(--text);
   min-height: 100vh;

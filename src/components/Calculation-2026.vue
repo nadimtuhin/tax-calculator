@@ -88,7 +88,6 @@ export default {
 </script>
 
 <style scoped>
-/* ponytail: Native HTML table for progressive slab calculation breakdown. Upgrade to interactive waterfall chart if visual tax progression graph is requested. */
 .invoice {
   width: 100%;
   border-collapse: collapse;
