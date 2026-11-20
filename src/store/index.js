@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import createPersistedState from "vuex-persistedstate";
 
 import salaries from "./salaries";
+import { resolveDisabledDependentCount } from "../utils/fa2026Rules.js";
 
 const appVersion = '0.8';
 
@@ -45,15 +46,22 @@ export function migratePersistedState(saved) {
     };
   });
 
+  const mergedProfile = {
+    ...freshSalaries.taxpayerProfile,
+    ...(persistedSalaries.taxpayerProfile || {}),
+  };
+  // A previously saved boolean `parentOfDisabled` becomes a dependent count of 1.
+  mergedProfile.disabledDependentCount = resolveDisabledDependentCount(mergedProfile);
+  mergedProfile.parentOfDisabled = mergedProfile.disabledDependentCount > 0;
+
   return {
     ...saved,
     salaries: {
       ...freshSalaries,
       ...persistedSalaries,
-      taxpayerProfile: {
-        ...freshSalaries.taxpayerProfile,
-        ...(persistedSalaries.taxpayerProfile || {}),
-      },
+      taxpayerProfile: mergedProfile,
+      earlyRedemptionRebateRepayable: Math.max(0, Number(persistedSalaries.earlyRedemptionRebateRepayable) || 0),
+      solarElectricityBill: Math.max(0, Number(persistedSalaries.solarElectricityBill) || 0),
       comparisonFromYear: persistedSalaries.comparisonFromYear || freshSalaries.comparisonFromYear,
       comparisonToYear: persistedSalaries.comparisonToYear || freshSalaries.comparisonToYear,
       currentYear:

@@ -25,19 +25,6 @@
       </div>
     </fieldset>
 
-    <label class="switch-row" for="parent-of-disabled">
-      <span class="switch-text">Parent / guardian of a person with disability (+BDT 50,000)</span>
-      <input
-        id="parent-of-disabled"
-        class="switch-input"
-        type="checkbox"
-        role="switch"
-        v-model="parentOfDisabled"
-        @change="updateProfile"
-      >
-      <span class="switch-track" aria-hidden="true"></span>
-    </label>
-
     <label class="switch-row" for="first-time-filer">
       <span class="switch-text">First-time return filer (BDT 1,000 minimum tax in FY 2025–26 &amp; 2026–27)</span>
       <input
@@ -89,6 +76,22 @@
       </div>
     </div>
 
+    <div class="profile-field disabled-dependents">
+      <label for="disabled-dependent-count">
+        Physically challenged children / dependents (+BDT 50,000 each, FY 2025–26 &amp; 2026–27)
+      </label>
+      <input
+        id="disabled-dependent-count"
+        type="number"
+        v-model.number="disabledDependentCount"
+        @input="updateProfile"
+        min="0"
+        max="20"
+        step="1"
+      >
+      <small>If both parents are taxpayers, only one of them can claim this (ACNABIN Finance Act 2026 booklet s.1.3, p.3). Earlier years allow one flat BDT 50,000.</small>
+    </div>
+
     <div v-if="age >= 65 && selectedCategory !== 'senior'" class="age-notice-row">
       <small class="age-notice">
         Note: You qualify for Senior Citizen category
@@ -113,6 +116,10 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import { SUPPORTED_FISCAL_YEARS, resolveDefaultFiscalYear } from '../utils/taxEngine';
+import {
+  normalizeDisabledDependentCount,
+  resolveDisabledDependentCount,
+} from '../utils/fa2026Rules';
 
 export default {
   name: 'TaxpayerProfile',
@@ -121,7 +128,7 @@ export default {
     return {
       age: 30,
       selectedCategory: 'general',
-      parentOfDisabled: false,
+      disabledDependentCount: 0,
       firstTimeFiler: false,
       selectedLocation: 'dhaka',
       selectedFiscalYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
@@ -162,7 +169,9 @@ export default {
         third_gender: 'Third Gender',
       };
       const name = names[this.selectedCategory] || 'General';
-      return this.parentOfDisabled ? `${name} + Parent of Disabled Child` : name;
+      const count = normalizeDisabledDependentCount(this.disabledDependentCount);
+      if (count === 0) return name;
+      return `${name} + Parent of ${count} Disabled ${count === 1 ? 'Child' : 'Children'}`;
     },
   },
 
@@ -173,12 +182,12 @@ export default {
     
     if (currentProfile) {
       this.selectedCategory = currentProfile.category || 'general';
-      this.parentOfDisabled = !!currentProfile.parentOfDisabled;
+      this.disabledDependentCount = resolveDisabledDependentCount(currentProfile);
       this.firstTimeFiler = !!currentProfile.firstTimeFiler;
       // Migrate legacy single-category profile to the combinable flag
       if (this.selectedCategory === 'parent_disabled') {
         this.selectedCategory = 'general';
-        this.parentOfDisabled = true;
+        this.disabledDependentCount = Math.max(1, this.disabledDependentCount);
       }
       this.age = currentProfile.age || 30;
       this.selectedLocation = currentProfile.location || 'dhaka';
@@ -204,7 +213,7 @@ export default {
         category: this.selectedCategory,
         age: parseInt(this.age),
         location: this.selectedLocation,
-        parentOfDisabled: this.parentOfDisabled,
+        disabledDependentCount: normalizeDisabledDependentCount(this.disabledDependentCount),
         firstTimeFiler: this.firstTimeFiler,
       });
       

@@ -243,6 +243,7 @@ describe('fiscal year default wiring', () => {
       age: 38,
       location: 'chittagong',
       parentOfDisabled: true,
+      disabledDependentCount: 1,
       firstTimeFiler: false,
     });
     expect(migrated.salaries.months[0].salary).toBe(80000);

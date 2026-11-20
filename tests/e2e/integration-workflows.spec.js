@@ -236,7 +236,7 @@ test.describe('End-to-End User Workflows', () => {
     }
 
     // Step 3: Verify rebate is applied
-    const rebateRow = page.locator('tr').filter({ hasText: /rebate|investment/i }).first();
+    const rebateRow = page.locator('tr').filter({ hasText: /total.*(rebate|investment)/i }).first();
     if (await rebateRow.count() > 0) {
       await expect(rebateRow).toBeVisible();
       const rebateText = await rebateRow.textContent();

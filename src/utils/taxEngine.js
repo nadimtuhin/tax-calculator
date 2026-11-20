@@ -3,6 +3,7 @@ import {
   calculateTaxSlabs2025,
   getTaxFreeThreshold2025,
   getMinimumTax2025,
+  calculateInvestmentRebate2025Statutory,
   TAX_FREE_THRESHOLDS_2025,
   PARENT_OF_DISABLED_ALLOWANCE_2025,
   MINIMUM_TAX_2025,
@@ -18,6 +19,11 @@ import {
   MINIMUM_TAX_2026,
   MINIMUM_TAX_FIRST_TIME_2026,
 } from './taxSlabs2026.js';
+import {
+  calculateRebateIncomeBase,
+  resolveDisabledDependentCount,
+  DONATION_ROW_NAME,
+} from './fa2026Rules.js';
 import { getDefaultFiscalYear, resolveDefaultFiscalYear } from './fiscalYear.js';
 
 export { getDefaultFiscalYear, resolveDefaultFiscalYear };
@@ -149,6 +155,7 @@ export const INVESTMENT_INSTRUMENT_CAPS_BY_YEAR = {
     savings_certificate: 500000,
     mutual_fund: 500000,
     others: null,
+    philanthropic_donation: 0,
   },
   '2024-25': {
     dps: 120000,
@@ -157,6 +164,7 @@ export const INVESTMENT_INSTRUMENT_CAPS_BY_YEAR = {
     savings_certificate: 500000,
     mutual_fund: 500000,
     others: null,
+    philanthropic_donation: 0,
   },
   '2025-26': {
     dps: 120000,
@@ -165,6 +173,7 @@ export const INVESTMENT_INSTRUMENT_CAPS_BY_YEAR = {
     savings_certificate: 500000,
     mutual_fund: null,
     others: null,
+    philanthropic_donation: 0,
   },
   '2026-27': {
     dps: 120000,
@@ -173,6 +182,7 @@ export const INVESTMENT_INSTRUMENT_CAPS_BY_YEAR = {
     savings_certificate: 500000,
     mutual_fund: null,
     others: null,
+    philanthropic_donation: null,
   },
 };
 
@@ -409,7 +419,21 @@ export function normalizeInvestmentTypeKey(name) {
   if (key === 'savings certificate' || key === 'savings_certificate' || key === 'sanchaypatra') {
     return 'savings_certificate';
   }
-  if (key === 'mutual fund' || key === 'mutual_fund') return 'mutual_fund';
+  if (
+    key === 'mutual fund' ||
+    key === 'mutual_fund' ||
+    key === 'unit certificate' ||
+    key === 'unit_certificate' ||
+    key === 'etf' ||
+    key === 'exchange-traded fund' ||
+    key === 'collective investment scheme' ||
+    key === 'collective_investment_scheme'
+  ) {
+    return 'mutual_fund';
+  }
+  if (key === DONATION_ROW_NAME.toLowerCase() || key === 'philanthropic_donation') {
+    return 'philanthropic_donation';
+  }
   return 'others';
 }
 
@@ -434,6 +458,7 @@ export function calculateCappedInvestmentFromList(investmentsList = [], year = D
     savings_certificate: 0,
     mutual_fund: 0,
     others: 0,
+    philanthropic_donation: 0,
   };
   let lifePolicyValue = null;
 
@@ -471,8 +496,14 @@ export function calculateCappedInvestmentFromList(investmentsList = [], year = D
  *   - FY 2023-24 & FY 2024-25 (3% income / 15% investment, cap 10L): min(20% of taxable, BDT 6,666,667)
  *   - FY 2025-26 & FY 2026-27 (3% income / 10% investment, cap 7.5L): min(30% of taxable, BDT 7,500,000)
  */
-export function calculateMaxRebateableInvestment(taxableIncome, year = DEFAULT_FISCAL_YEAR) {
-  const safeIncome = Math.max(0, Number(taxableIncome) || 0);
+export function calculateMaxRebateableInvestment(
+  taxableIncome,
+  year = DEFAULT_FISCAL_YEAR,
+  baseExclusions = {}
+) {
+  const safeIncome = usesFa2026RebateBase(year)
+    ? calculateRebateIncomeBase(taxableIncome, baseExclusions)
+    : Math.max(0, Number(taxableIncome) || 0);
   if (safeIncome <= 0) return 0;
   const rule = REBATE_RULES_BY_YEAR[year] || REBATE_RULES_BY_YEAR[DEFAULT_FISCAL_YEAR];
   return Math.round(
@@ -494,7 +525,7 @@ export function getTaxFreeThresholdForYear(year, taxpayerProfile = {}) {
     return getTaxFreeThreshold2026(taxpayerProfile);
   }
 
-  const { category, parentOfDisabled } = taxpayerProfile;
+  const { category } = taxpayerProfile;
   const thresholds = TAX_FREE_THRESHOLDS_BY_YEAR[year] || TAX_FREE_THRESHOLDS_BY_YEAR['2024-25'];
   const isLegacyParent = category === 'parent_disabled';
   const parentExtra = Number(thresholds.parent_disabled) || 0;
@@ -503,7 +534,8 @@ export function getTaxFreeThresholdForYear(year, taxpayerProfile = {}) {
     ? thresholds.general
     : thresholds[category] || thresholds.general;
 
-  if (parentOfDisabled || isLegacyParent) {
+  // Years before FY 2025-26 keep the single flat allowance whatever the dependent count.
+  if (resolveDisabledDependentCount(taxpayerProfile) > 0) {
     baseThreshold += parentExtra;
   }
 
@@ -565,9 +597,21 @@ export function sumSlabTax(breakdown) {
   return Math.round(breakdown.reduceRight((carry, item) => carry + +item.slabCut, 0));
 }
 
-export function calculateInvestmentRebateForYear(year, taxableIncome, eligibleInvestment) {
+export function usesFa2026RebateBase(year) {
+  return year === '2025-26' || year === '2026-27';
+}
+
+export function calculateInvestmentRebateForYear(
+  year,
+  taxableIncome,
+  eligibleInvestment,
+  baseExclusions = {}
+) {
   if (year === '2026-27') {
-    return calculateInvestmentRebate2026(taxableIncome, eligibleInvestment);
+    return calculateInvestmentRebate2026(taxableIncome, eligibleInvestment, baseExclusions);
+  }
+  if (year === '2025-26') {
+    return calculateInvestmentRebate2025Statutory(taxableIncome, eligibleInvestment, baseExclusions);
   }
   const rules = REBATE_RULES_BY_YEAR[year] || REBATE_RULES_BY_YEAR['2024-25'];
   const incomeCap = taxableIncome * rules.taxableIncomeRate;
@@ -594,14 +638,18 @@ export function calculateFinalTaxSummary(
   options = {}
 ) {
   const { taxableIncome, taxFreeThreshold } = options;
+  const otherRebate = Math.max(0, Number(options.otherRebate) || 0);
+  const rebateClawback = Math.max(0, Number(options.rebateClawback) || 0);
   const isAboveThreshold =
     typeof taxableIncome === 'number' && typeof taxFreeThreshold === 'number'
       ? taxableIncome > taxFreeThreshold
       : calculatedTax > 0;
 
   const effectiveMinimumTax = isAboveThreshold ? minimumTax : 0;
-  const taxAfterRebate = Math.max(0, calculatedTax - investmentRebate);
-  const totalTax = isAboveThreshold ? Math.max(taxAfterRebate, effectiveMinimumTax) : 0;
+  const taxAfterRebate = Math.max(0, calculatedTax - investmentRebate - otherRebate);
+  const taxBeforeClawback = isAboveThreshold ? Math.max(taxAfterRebate, effectiveMinimumTax) : 0;
+  // Repayment of a rebate claimed earlier is owed whatever the current-year income (booklet s.1.43 p.22).
+  const totalTax = taxBeforeClawback + rebateClawback;
   const isMinimumTaxApplied = isAboveThreshold && taxAfterRebate < effectiveMinimumTax;
   const payable = Math.max(0, totalTax - totalTds);
   const excessTds = Math.max(0, totalTds - totalTax);
@@ -616,6 +664,8 @@ export function calculateFinalTaxSummary(
     payable,
     totalTds,
     investmentRebate,
+    otherRebate,
+    rebateClawback,
     excessTds,
   };
 }
@@ -637,6 +687,8 @@ export function resolveEffectiveProfile(
     age = null,
     parent_of_disabled = false,
     parentOfDisabled,
+    disabledDependentCount,
+    disabled_dependent_count,
     location = 'dhaka',
     first_time_filer = false,
     firstTimeFiler,
@@ -661,7 +713,12 @@ export function resolveEffectiveProfile(
 
   const isLegacyParent = category === 'parent_disabled';
   const baseCategory = isLegacyParent ? 'general' : category;
-  const parentFlag = Boolean(parentOfDisabled ?? parent_of_disabled) || isLegacyParent;
+  const dependentCount = resolveDisabledDependentCount({
+    category,
+    parentOfDisabled: parentOfDisabled ?? parent_of_disabled,
+    disabledDependentCount: disabledDependentCount ?? disabled_dependent_count,
+  });
+  const parentFlag = dependentCount > 0;
   const firstTime = Boolean(firstTimeFiler ?? first_time_filer);
   const autoPromotesAge = Boolean(FISCAL_YEAR_METADATA[fiscalYear]?.autoPromotesAge65);
 
@@ -683,6 +740,7 @@ export function resolveEffectiveProfile(
     effectiveCategory,
     age: age ?? null,
     parentOfDisabled: parentFlag,
+    disabledDependentCount: dependentCount,
     location,
     firstTimeFiler: firstTime,
   };
