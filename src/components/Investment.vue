@@ -154,7 +154,7 @@
       :value="zakatDonation"
       @input="setZakatDonation($event)"
     />
-    <small>FY 2026-27 only. Entered by you: the booklet text was not checked, so no cap or rate is applied and the treatment (exclusion from income) is unconfirmed. Excluded: BDT {{ zakatDonationExclusion.toLocaleString() }}.</small>
+    <small>FY 2026-27 only. Entered by you: the booklet text was not checked, so no cap or rate is applied and the treatment (exclusion from income) is unconfirmed. Do not also enter the same amount in the donation row above. Excluded: BDT {{ zakatDonationExclusion.toLocaleString() }}.</small>
   </label>
   <label v-if="isSolarYear" class="extras-field" for="solar-electricity-bill">
     <span>Solar electricity bill paid in the income year (BDT) - 5% rebate</span>

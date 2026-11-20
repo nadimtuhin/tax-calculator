@@ -62,3 +62,34 @@ describe('Zakat Management donation exclusion', () => {
     }
   });
 });
+
+describe('year separation in comparison getters', () => {
+  test('exclusions entered in FY 2026-27 do not leak into FY 2024-25 or FY 2025-26 columns', () => {
+    const store = makeStore('2026-27');
+    const before = {
+      y24: store.getters.taxBreakdown2024,
+      y25: store.getters.payableTax2025,
+      y26: store.getters.payableTax2026,
+    };
+    store.commit('setGroupInsuranceReimbursement', 40000);
+    store.commit('setZakatDonation', 20000);
+    expect(store.getters.taxBreakdown2024).toEqual(before.y24);
+    expect(store.getters.taxableSalary2024).toBe(store.getters.taxableSalaryBeforeExclusions);
+    expect(store.getters.taxableSalary2025).toBe(store.getters.taxableSalaryBeforeExclusions - 40000);
+    expect(store.getters.taxableSalary2026).toBe(store.getters.taxableSalaryBeforeExclusions - 60000);
+    expect(store.getters.taxableSalary).toBe(store.getters.taxableSalary2026);
+    expect(store.getters.payableTax2026).toBeLessThanOrEqual(before.y26);
+    expect(store.getters.payableTax2025).toBeLessThanOrEqual(before.y25);
+  });
+});
+
+describe('persistence', () => {
+  test('migratePersistedState keeps and clamps both inputs', () => {
+    const { migratePersistedState } = require('@/store');
+    const out = migratePersistedState({
+      salaries: { groupInsuranceReimbursement: '5000', zakatDonation: -3 },
+    });
+    expect(out.salaries.groupInsuranceReimbursement).toBe(5000);
+    expect(out.salaries.zakatDonation).toBe(0);
+  });
+});
