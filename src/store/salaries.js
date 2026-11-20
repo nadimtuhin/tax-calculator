@@ -21,6 +21,8 @@ import {
 } from '../utils/taxEngine.js';
 import {
   DONATION_ROW_NAME,
+  calculateGroupInsuranceExclusion,
+  calculateZakatDonationExclusion,
   calculateSolarElectricityRebate,
   resolveDisabledDependentCount,
 } from '../utils/fa2026Rules.js';
@@ -64,6 +66,8 @@ const salaries = {
     },
     earlyRedemptionRebateRepayable: 0,
     solarElectricityBill: 0,
+    groupInsuranceReimbursement: 0,
+    zakatDonation: 0,
     currentYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
     comparisonFromYear: DEFAULT_COMPARISON_FROM_YEAR,
     comparisonToYear: DEFAULT_COMPARISON_TO_YEAR,
@@ -153,6 +157,12 @@ const salaries = {
     },
     setSolarElectricityBill(state, value) {
       state.solarElectricityBill = Math.max(0, Number(value) || 0);
+    },
+    setGroupInsuranceReimbursement(state, value) {
+      state.groupInsuranceReimbursement = Math.max(0, Number(value) || 0);
+    },
+    setZakatDonation(state, value) {
+      state.zakatDonation = Math.max(0, Number(value) || 0);
     },
     setCurrentYear(state, year) {
       state.currentYear = year;
@@ -253,8 +263,28 @@ const salaries = {
     totalExempt(state, getters) {
       return calculateEmploymentExemption(getters.totalSalary, state.currentYear);
     },
+    groupInsuranceExclusion(state, getters) {
+      return calculateGroupInsuranceExclusion(
+        state.groupInsuranceReimbursement,
+        state.currentYear,
+        getters.totalSalary
+      );
+    },
+    zakatDonationExclusion(state, getters) {
+      return calculateZakatDonationExclusion(
+        state.zakatDonation,
+        state.currentYear,
+        getters.totalSalary - getters.totalExempt - getters.groupInsuranceExclusion
+      );
+    },
     taxableSalary(state, getters) {
-      return Math.max(0, getters.totalSalary - getters.totalExempt);
+      return Math.max(
+        0,
+        getters.totalSalary -
+          getters.totalExempt -
+          getters.groupInsuranceExclusion -
+          getters.zakatDonationExclusion
+      );
     },
 
     // Sixth Schedule Part 3 investments & Section 78 rebate (year-aware)
