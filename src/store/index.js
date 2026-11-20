@@ -31,9 +31,16 @@ export function migratePersistedState(saved) {
       }))
     : freshSalaries.months;
 
+  const freshNames = new Set(freshSalaries.investments.map((row) => row.name));
   const mergedInvestments = freshSalaries.investments.map((freshInv, idx) => {
+    // The index fallback only serves renamed legacy rows; a saved row that still has a current name
+    // belongs to that name, so it must not leak into a newly added row at the same index.
+    const byIndex = Array.isArray(persistedSalaries.investments)
+      ? persistedSalaries.investments[idx]
+      : undefined;
     const prev = Array.isArray(persistedSalaries.investments)
-      ? persistedSalaries.investments.find((item) => item?.name === freshInv.name) || persistedSalaries.investments[idx]
+      ? persistedSalaries.investments.find((item) => item?.name === freshInv.name) ||
+        (byIndex && !freshNames.has(byIndex.name) ? byIndex : undefined)
       : undefined;
     if (!prev) return freshInv;
     return {

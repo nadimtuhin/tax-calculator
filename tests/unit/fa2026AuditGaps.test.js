@@ -229,6 +229,29 @@ describe('FA 2026 audit gaps', () => {
       expect(names).toEqual(expect.arrayContaining(['Unit certificate', 'ETF', 'Collective investment scheme']));
     });
 
+    test('legacy six-row list migrates without copying Others into a new row', () => {
+      const legacy = [
+        { name: 'DPS', amount: 20000, maximum: 120000 },
+        { name: 'Life insurance premium', amount: 0, policyValue: null, maximum: 99999999 },
+        { name: 'Stocks', amount: 0, maximum: 99999999 },
+        { name: 'Savings certificate', amount: 30000, maximum: 500000 },
+        { name: 'Mutual fund', amount: 40000, maximum: 99999999 },
+        { name: 'Others', amount: 100000, maximum: 99999999 },
+      ];
+      const migrated = migratePersistedState({ salaries: { investments: legacy } }).salaries.investments;
+      const amountOf = (name) => migrated.find((row) => row.name === name).amount;
+      expect(amountOf('Others')).toBe(100000);
+      expect(amountOf('Mutual fund')).toBe(40000);
+      for (const name of ['Unit certificate', 'ETF', 'Collective investment scheme', DONATION_ROW_NAME]) {
+        expect(amountOf(name)).toBe(0);
+      }
+      for (const year of ['2024-25', '2025-26', '2026-27']) {
+        expect(calculateCappedInvestmentFromList(migrated, year)).toBe(
+          calculateCappedInvestmentFromList(legacy, year)
+        );
+      }
+    });
+
     test('a previously saved investment list gains the new rows on migration', () => {
       const migrated = migratePersistedState({
         salaries: { investments: [{ name: 'DPS', amount: 50000, maximum: 120000 }] },
