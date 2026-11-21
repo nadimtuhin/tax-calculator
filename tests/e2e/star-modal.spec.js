@@ -170,7 +170,10 @@ test.describe('StarModal Component', () => {
     await expect(neverBtn).toBeVisible();
   });
 
-  test('should support keyboard navigation', async ({ page }) => {
+  test('should support keyboard navigation', async ({ page, browserName }) => {
+    // Safari only tabs to buttons and links with Option held
+    const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
+    const shiftTab = browserName === 'webkit' ? 'Alt+Shift+Tab' : 'Shift+Tab';
     await page.goto('/');
     await expect(page.locator('.star-modal-overlay')).toBeVisible({ timeout: 3000 });
     
@@ -178,16 +181,16 @@ test.describe('StarModal Component', () => {
     await page.locator('.close-btn').focus();
     await expect(page.locator('.close-btn')).toBeFocused();
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tab);
     await expect(page.locator('.star-modal .star-btn')).toBeFocused();
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tab);
     await expect(page.locator('.star-modal .later-btn')).toBeFocused();
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tab);
     await expect(page.locator('.star-modal .never-btn')).toBeFocused();
 
-    for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+Tab');
+    for (let i = 0; i < 3; i++) await page.keyboard.press(shiftTab);
     await expect(page.locator('.close-btn')).toBeFocused();
 
     // Press Enter on close button

@@ -96,9 +96,10 @@ test.describe('Salary Breakdown Functionality', () => {
     await setMonthly(page, 'house', 40000);
     await expectHeadingAmount(page, FY_2025, 45000);
 
-    // Adding another part raises it: taxable 860,000 -> +9,000 at 15%
+    // Adding another part raises it: gross 1.32M, exemption 440k -> taxable 880k
+    // 400k at 0 + 300k at 10% + 180k at 15% = 30,000 + 27,000
     await setMonthly(page, 'medical', 10000);
-    await expectHeadingAmount(page, FY_2025, 54000);
+    await expectHeadingAmount(page, FY_2025, 57000);
   });
 
   test('should work with keyboard navigation', async ({ page }) => {

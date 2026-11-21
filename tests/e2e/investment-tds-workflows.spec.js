@@ -25,6 +25,8 @@ const expectBothYears = async (page, amount) => {
 
 test.describe('Investment and TDS Workflow Testing', () => {
   test.beforeEach(async ({ page }) => {
+    // The star prompt appears after 1.5s and would cover the form
+    await page.addInitScript(() => localStorage.setItem('tax-calculator-never-star', 'true'));
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('main')).toBeVisible();

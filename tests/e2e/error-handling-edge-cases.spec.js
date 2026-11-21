@@ -134,8 +134,9 @@ test.describe('Error Handling and Edge Cases', () => {
   });
 
   test.describe('Browser and Device Compatibility', () => {
-    test('should work with keyboard-only navigation', async ({ page }) => {
-      await page.keyboard.press('Tab');
+    test('should work with keyboard-only navigation', async ({ page, browserName }) => {
+      // Safari only tabs to links with Option held; form fields tab normally
+      await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
       await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
 
       await page.getByLabel('July basic', { exact: true }).focus();
@@ -146,8 +147,11 @@ test.describe('Error Handling and Edge Cases', () => {
       await expect(panelTotal(page)).toHaveText('8000');
     });
 
-    test('should handle copy-paste operations', async ({ page, context }) => {
-      await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    test('should handle copy-paste operations', async ({ page, context, browserName }) => {
+      // Only Chromium knows the clipboard permission names; the other engines paste without a grant
+      if (browserName === 'chromium') {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+      }
       const salaryInput = page.getByLabel('July basic', { exact: true });
 
       await salaryInput.click();
