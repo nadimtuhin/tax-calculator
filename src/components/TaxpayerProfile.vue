@@ -406,6 +406,17 @@ export default {
   width: 100%;
 }
 
+.profile-field select {
+  /* Native Safari menus ignore min-height and padding; draw the control so it keeps its 44px tap target */
+  appearance: none;
+  padding-right: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
 .profile-field input:focus,
 .profile-field select:focus {
   outline: 2px solid var(--accent);
