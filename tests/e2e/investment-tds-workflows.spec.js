@@ -1,442 +1,171 @@
 import { test, expect } from '@playwright/test';
+import { selectCategory } from './helpers/category.js';
+import {
+  FY_2025,
+  FY_2026,
+  calcPanel,
+  rowAmount,
+  setMonthly,
+  expectHeadingAmount,
+} from './helpers/fa2026-calc-ui.js';
+
+// Section 78 rebate = min(3% of taxable income, 10% of eligible investment, 750,000).
+// Taxable salary = gross - min(gross / 3, 500,000).
+
+const setInvestment = (page, name, amount) =>
+  page.getByRole('spinbutton', { name: `${name} amount`, exact: true }).fill(String(amount));
+
+const expectPanelRow = (page, fy, label, amount) =>
+  expect.poll(() => rowAmount(page, fy, label)).toBe(amount);
+
+const expectBothYears = async (page, amount) => {
+  await expectHeadingAmount(page, FY_2025, amount);
+  await expectHeadingAmount(page, FY_2026, amount);
+};
 
 test.describe('Investment and TDS Workflow Testing', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('main')).toBeVisible();
+    await expect(calcPanel(page, FY_2025)).toBeVisible();
   });
 
   test.describe('Investment Rebate Calculations', () => {
     test('should calculate Section 78 10% rebate on capped DPS investment', async ({ page }) => {
-      await page.getByLabel('July salary').fill('100000'); // 1.2M gross -> 800k taxable (3% = 24,000)
-      await page.getByLabel('DPS amount').fill('150000'); // DPS capped at 120,000 -> 10% = 12,000
-      await page.waitForTimeout(300);
+      await setMonthly(page, 'basic', 100000); // 1.2M gross -> 800k taxable (3% = 24,000)
+      await setInvestment(page, 'DPS', 150000); // DPS capped at 120,000 -> 10% = 12,000
 
       const rebatePill = page.locator('.section-pill-accent').filter({ hasText: /Rebate/ });
       await expect(rebatePill).toContainText('12,000');
+      // Slab tax 45,000 - 12,000
+      await expectBothYears(page, 33000);
     });
 
     test('should apply maximum rebate cap correctly', async ({ page }) => {
-      // Set high income
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('150000'); // 1.8M annually
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 100000); // taxable 800k -> 3% cap = 24,000
+      await setInvestment(page, 'Stocks', 500000); // 10% of 500,000 = 50,000, above the 3% cap
 
-      // Add investment exceeding rebate limit
-      const allInputs = page.locator('input[type="number"]');
-      const highInvestment = 500000; // Should hit the rebate cap
-
-      if (await allInputs.count() >= 2) {
-        await allInputs.nth(1).fill(highInvestment.toString());
-        await page.waitForTimeout(1000);
-      }
-
-      // Check total rebate doesn't exceed maximum
-      const rebateRows = page.locator('tr').filter({
-        hasText: /total.*rebate|rebate.*total/i
-      });
-
-      if (await rebateRows.count() > 0) {
-        const rebateText = await rebateRows.first().textContent();
-        const rebateAmount = parseInt(rebateText.match(/\d+/)?.[0] || '0');
-        
-        // Should not exceed 1.25 lakh for investments
-        expect(rebateAmount).toBeLessThanOrEqual(125000);
-      }
+      await expectPanelRow(page, FY_2025, 'Tax rebate on investment', -24000);
+      await expectPanelRow(page, FY_2026, 'Tax rebate on investment', -24000);
+      await expectBothYears(page, 21000);
     });
 
     test('should handle multiple investment types correctly', async ({ page }) => {
-      // Set income
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('80000');
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 80000); // 960k gross -> 640k taxable, slab tax 24,000
+      await setInvestment(page, 'DPS', 50000);
+      await setInvestment(page, 'Stocks', 30000);
+      await setInvestment(page, 'Mutual fund', 25000);
+      await setInvestment(page, 'Savings certificate', 40000);
 
-      // Add multiple investment types
-      const allInputs = page.locator('input[type="number"]');
-      const investments = [50000, 30000, 25000, 40000]; // Various investment amounts
-
-      for (let i = 0; i < investments.length && i + 1 < await allInputs.count(); i++) {
-        await allInputs.nth(i + 1).fill(investments[i].toString());
-        await page.waitForTimeout(200);
-      }
-
-      await page.waitForTimeout(1000);
-
-      // Verify total investment sum
-      const totalInvestmentRow = page.locator('tr').filter({
-        hasText: /total.*investment/i
-      });
-
-      if (await totalInvestmentRow.count() > 0) {
-        const totalText = await totalInvestmentRow.first().textContent();
-        const expectedTotal = investments.reduce((sum, inv) => sum + inv, 0);
-        expect(totalText).toContain(expectedTotal.toLocaleString());
-      }
+      // 145,000 eligible -> 10% = 14,500 (below the 3% cap of 19,200)
+      await expectPanelRow(page, FY_2025, 'Tax rebate on investment', -14500);
+      await expectBothYears(page, 9500);
     });
 
     test('should calculate rebate correctly for different taxpayer profiles', async ({ page }) => {
-      const profiles = ['general', 'female', 'senior'];
-      
-      for (const profile of profiles) {
-        // Set profile
-        const profileSelect = page.locator('select, input[value="' + profile + '"]').first();
-        if (await profileSelect.count() > 0) {
-          if (await profileSelect.evaluate(el => el.tagName.toLowerCase()) === 'select') {
-            await profileSelect.selectOption(profile);
-          } else {
-            await profileSelect.click();
-          }
-          await page.waitForTimeout(500);
-        }
+      await setMonthly(page, 'basic', 100000);
+      await setInvestment(page, 'DPS', 100000); // 10% = 10,000 under every profile
 
-        // Set consistent salary
-        const salaryInput = page.locator('input[type="number"]').first();
-        await salaryInput.fill('70000');
-        await page.waitForTimeout(300);
-
-        // Add investment
-        const allInputs = page.locator('input[type="number"]');
-        if (await allInputs.count() >= 2) {
-          await allInputs.nth(1).fill('100000');
-          await page.waitForTimeout(500);
-        }
-
-        // Verify rebate calculation is consistent across profiles
-        const rebateRows = page.locator('tr').filter({
-          hasText: /rebate/i
-        });
-
-        if (await rebateRows.count() > 0) {
-          const rebateText = await rebateRows.first().textContent();
-          expect(rebateText).toMatch(/\d+/); // Should contain numbers
-        }
+      for (const profile of ['general', 'female', 'senior', 'disabled']) {
+        await selectCategory(page, profile);
+        await expectPanelRow(page, FY_2025, 'Tax rebate on investment', -10000);
       }
     });
   });
 
   test.describe('TDS (Tax Deducted at Source) Calculations', () => {
     test('should deduct TDS from final tax liability', async ({ page }) => {
-      // Set salary that creates tax liability
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('60000'); // 720k annually
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 60000); // total tax 8,000
+      await setMonthly(page, 'TDS', 500); // 500 x 12 = 6,000
 
-      // Get initial tax calculation
-      const totalTaxElement = page.locator('h2, .total-tax').first();
-      let initialTax = '';
-      if (await totalTaxElement.count() > 0) {
-        initialTax = await totalTaxElement.textContent();
-      }
-
-      // Add TDS amount
-      const tdsInputs = page.locator('input[type="number"]').filter({
-        hasText: /tds|deduct/i
-      });
-
-      const tdsAmount = 15000;
-      if (await tdsInputs.count() > 0) {
-        await tdsInputs.first().fill(tdsAmount.toString());
-        await page.waitForTimeout(1000);
-      } else {
-        // Try to find TDS input by looking for TDS section
-        const allInputs = page.locator('input[type="number"]');
-        if (await allInputs.count() >= 3) {
-          await allInputs.nth(2).fill(tdsAmount.toString());
-          await page.waitForTimeout(1000);
-        }
-      }
-
-      // Verify TDS is shown in summary
-      const tdsRow = page.locator('tr').filter({
-        hasText: /deducted.*source|tds/i
-      });
-
-      if (await tdsRow.count() > 0) {
-        const tdsText = await tdsRow.textContent();
-        expect(tdsText).toContain(tdsAmount.toString());
-      }
-
-      // Verify payable amount is reduced by TDS
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
-
-      if (await payableRow.count() > 0) {
-        await expect(payableRow).toBeVisible();
-      }
+      await expectPanelRow(page, FY_2025, 'Tax deducted at source', -6000);
+      await expectPanelRow(page, FY_2025, 'Payable', 2000);
+      await expectPanelRow(page, FY_2026, 'Payable', 2000);
     });
 
     test('should handle TDS exceeding tax liability', async ({ page }) => {
-      // Set low income with high TDS
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('35000'); // 420k annually, low tax
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 60000); // total tax 8,000
+      await setMonthly(page, 'TDS', 1000); // 12,000 deducted
 
-      // Add high TDS amount
-      const allInputs = page.locator('input[type="number"]');
-      const highTds = 50000;
-
-      if (await allInputs.count() >= 3) {
-        await allInputs.nth(2).fill(highTds.toString());
-        await page.waitForTimeout(1000);
-      }
-
-      // Verify payable amount can be negative (refund due)
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
-
-      if (await payableRow.count() > 0) {
-        const payableText = await payableRow.textContent();
-        // Should show negative amount or zero
-        expect(payableText).toMatch(/-?\d+/);
-      }
+      await expectPanelRow(page, FY_2025, 'Tax deducted at source', -12000);
+      // Payable is floored at zero; there is no negative refund row
+      await expectPanelRow(page, FY_2025, 'Payable', 0);
+      await expectHeadingAmount(page, FY_2025, 8000);
     });
 
     test('should calculate TDS for different income sources', async ({ page }) => {
-      // Set salary
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('50000');
-      await page.waitForTimeout(300);
+      await setMonthly(page, 'basic', 50000);
+      await page.getByLabel('Bonus', { exact: true }).fill('90000'); // gross 690k -> taxable 460k -> 6,000 tax
+      await setMonthly(page, 'TDS', 100); // 1,200 a year
 
-      // Add bonus with TDS
-      const allInputs = page.locator('input[type="number"]');
-      if (await allInputs.count() >= 4) {
-        await allInputs.nth(3).fill('100000'); // Bonus
-        await page.waitForTimeout(300);
-      }
-
-      // Add TDS from salary
-      if (await allInputs.count() >= 5) {
-        await allInputs.nth(4).fill('8000'); // Salary TDS
-        await page.waitForTimeout(500);
-      }
-
-      // Verify total TDS calculation
-      const tdsRow = page.locator('tr').filter({
-        hasText: /total.*deducted|deducted.*total/i
-      });
-
-      if (await tdsRow.count() > 0) {
-        const tdsText = await tdsRow.textContent();
-        expect(tdsText).toMatch(/\d+/);
-      }
+      await expectHeadingAmount(page, FY_2025, 6000);
+      await expectPanelRow(page, FY_2025, 'Tax deducted at source', -1200);
+      await expectPanelRow(page, FY_2025, 'Payable', 4800);
     });
   });
 
   test.describe('Combined Investment and TDS Scenarios', () => {
     test('should calculate final payable with both investment and TDS', async ({ page }) => {
-      // Set high income scenario
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('90000'); // 1.08M annually
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 90000); // 1.08M gross -> 720k taxable -> slab tax 33,000
+      await setInvestment(page, 'DPS', 120000); // rebate 12,000
+      await setMonthly(page, 'TDS', 1000); // 12,000 a year
 
-      const allInputs = page.locator('input[type="number"]');
-
-      // Add investments
-      if (await allInputs.count() >= 2) {
-        await allInputs.nth(1).fill('120000'); // Investment
-        await page.waitForTimeout(300);
-      }
-
-      // Add TDS
-      if (await allInputs.count() >= 3) {
-        await allInputs.nth(2).fill('25000'); // TDS
-        await page.waitForTimeout(300);
-      }
-
-      await page.waitForTimeout(1000);
-
-      // Verify all components in final calculation
-      const summaryRows = page.locator('tr').filter({
-        hasText: /total tax|rebate|deducted|payable/i
-      });
-
-      const summaryCount = await summaryRows.count();
-      expect(summaryCount).toBeGreaterThan(2); // Should have multiple summary rows
-
-      // Check final payable amount
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
-
-      if (await payableRow.count() > 0) {
-        const payableText = await payableRow.textContent();
-        expect(payableText).toMatch(/-?\d+/); // Should show final amount
-      }
+      await expectPanelRow(page, FY_2025, 'Tax rebate on investment', -12000);
+      await expectBothYears(page, 21000);
+      await expectPanelRow(page, FY_2025, 'Payable', 9000);
+      await expectPanelRow(page, FY_2026, 'Payable', 9000);
     });
 
     test('should update calculations in real-time', async ({ page }) => {
-      // Set initial values
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('60000');
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 100000);
+      await expectPanelRow(page, FY_2025, 'Payable', 45000);
 
-      // Get initial payable amount
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
+      await setInvestment(page, 'DPS', 80000); // rebate 8,000
+      await expectPanelRow(page, FY_2025, 'Payable', 37000);
 
-      let initialPayable = '';
-      if (await payableRow.count() > 0) {
-        initialPayable = await payableRow.textContent();
-      }
-
-      // Add investment
-      const allInputs = page.locator('input[type="number"]');
-      if (await allInputs.count() >= 2) {
-        await allInputs.nth(1).fill('80000');
-        await page.waitForTimeout(500);
-      }
-
-      // Verify payable amount changed
-      if (initialPayable && await payableRow.count() > 0) {
-        const newPayable = await payableRow.textContent();
-        expect(newPayable).not.toBe(initialPayable);
-      }
-
-      // Add TDS
-      if (await allInputs.count() >= 3) {
-        await allInputs.nth(2).fill('15000');
-        await page.waitForTimeout(500);
-      }
-
-      // Verify payable amount changed again
-      if (await payableRow.count() > 0) {
-        const finalPayable = await payableRow.textContent();
-        expect(finalPayable).toMatch(/-?\d+/);
-      }
+      await setMonthly(page, 'TDS', 1000); // 12,000 a year
+      await expectPanelRow(page, FY_2025, 'Payable', 25000);
     });
 
     test('should handle edge case of zero tax liability', async ({ page }) => {
-      // Set very low income
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('25000'); // 300k annually, below threshold
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 25000); // 300k gross -> 200k taxable, below threshold
+      await setInvestment(page, 'DPS', 50000);
+      await setMonthly(page, 'TDS', 250);
 
-      // Add high investment
-      const allInputs = page.locator('input[type="number"]');
-      if (await allInputs.count() >= 2) {
-        await allInputs.nth(1).fill('50000');
-        await page.waitForTimeout(500);
-      }
-
-      // Add some TDS
-      if (await allInputs.count() >= 3) {
-        await allInputs.nth(2).fill('3000');
-        await page.waitForTimeout(500);
-      }
-
-      // Verify minimum tax logic
-      const minimumTaxNotice = page.locator('small, .notice').filter({
-        hasText: /minimum/i
-      });
-
-      if (await minimumTaxNotice.count() > 0) {
-        await expect(minimumTaxNotice).toBeVisible();
-      }
-
-      // Verify payable amount
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
-
-      if (await payableRow.count() > 0) {
-        const payableText = await payableRow.textContent();
-        expect(payableText).toMatch(/-?\d+/);
-      }
+      await expectBothYears(page, 0);
+      await expect(page.locator('.min-tax-notice')).toHaveCount(0);
+      await expectPanelRow(page, FY_2025, 'Payable', 0);
     });
   });
 
   test.describe('Complex Calculation Scenarios', () => {
     test('should handle maximum investment with all allowances', async ({ page }) => {
-      // Set very high income
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('200000'); // 2.4M annually
-      await page.waitForTimeout(500);
+      await setMonthly(page, 'basic', 200000); // 2.4M gross, exemption 500k -> taxable 1.9M
+      await selectCategory(page, 'female'); // threshold 4.5 lakh -> slab tax 252,500
 
-      // Set to female taxpayer for higher threshold
-      const femaleOption = page.locator('option[value="female"], input[value="female"]').first();
-      if (await femaleOption.count() > 0) {
-        await femaleOption.click();
-        await page.waitForTimeout(500);
-      }
+      await setInvestment(page, 'DPS', 200000); // capped at 120,000
+      await setInvestment(page, 'Stocks', 150000);
+      await setInvestment(page, 'Mutual fund', 100000);
+      await setInvestment(page, 'Savings certificate', 75000);
+      await setMonthly(page, 'TDS', 12500); // 150,000 a year
 
-      const allInputs = page.locator('input[type="number"]');
-
-      // Add maximum investment amounts
-      const maxInvestments = [200000, 150000, 100000, 75000];
-      for (let i = 0; i < maxInvestments.length && i + 1 < await allInputs.count(); i++) {
-        await allInputs.nth(i + 1).fill(maxInvestments[i].toString());
-        await page.waitForTimeout(200);
-      }
-
-      // Add substantial TDS
-      const tdsIndex = maxInvestments.length + 1;
-      if (tdsIndex < await allInputs.count()) {
-        await allInputs.nth(tdsIndex).fill('150000');
-        await page.waitForTimeout(500);
-      }
-
-      await page.waitForTimeout(1500);
-
-      // Verify all calculations are reasonable
-      const totalTaxElement = page.locator('h2, .total-tax').first();
-      if (await totalTaxElement.count() > 0) {
-        const taxText = await totalTaxElement.textContent();
-        expect(taxText).toMatch(/\d+/);
-      }
-
-      // Verify payable amount
-      const payableRow = page.locator('tr').filter({
-        hasText: /payable/i
-      });
-
-      if (await payableRow.count() > 0) {
-        const payableText = await payableRow.textContent();
-        expect(payableText).toMatch(/-?\d+/);
-      }
+      // 445,000 eligible -> 10% = 44,500 (3% of taxable would allow 57,000)
+      await expectPanelRow(page, FY_2025, 'Tax rebate on investment', -44500);
+      await expectBothYears(page, 208000);
+      await expectPanelRow(page, FY_2025, 'Payable', 58000);
     });
 
     test('should validate calculation accuracy across profile changes', async ({ page }) => {
-      const profiles = ['general', 'female', 'senior', 'disabled'];
-      const calculationResults = {};
+      await setMonthly(page, 'basic', 100000); // taxable 800k
+      await setInvestment(page, 'DPS', 100000); // rebate 10,000
 
-      for (const profile of profiles) {
-        // Set profile
-        const profileOption = page.locator(`option[value="${profile}"], input[value="${profile}"]`).first();
-        if (await profileOption.count() > 0) {
-          if (await profileOption.evaluate(el => el.tagName.toLowerCase()) === 'select') {
-            await profileOption.selectOption(profile);
-          } else {
-            await profileOption.click();
-          }
-          await page.waitForTimeout(500);
-        }
-
-        // Set consistent income
-        const salaryInput = page.locator('input[type="number"]').first();
-        await salaryInput.fill('75000');
-        await page.waitForTimeout(500);
-
-        // Set consistent investment
-        const allInputs = page.locator('input[type="number"]');
-        if (await allInputs.count() >= 2) {
-          await allInputs.nth(1).fill('100000');
-          await page.waitForTimeout(500);
-        }
-
-        // Record calculation result
-        const totalTaxElement = page.locator('h2, .total-tax').first();
-        if (await totalTaxElement.count() > 0) {
-          calculationResults[profile] = await totalTaxElement.textContent();
-        }
+      // slab tax 45,000 / 37,500 / 27,500 minus the 10,000 rebate
+      const expected = { general: 35000, female: 27500, disabled: 17500 };
+      for (const [profile, tax] of Object.entries(expected)) {
+        await selectCategory(page, profile);
+        await expectBothYears(page, tax);
       }
-
-      // Verify different profiles give different results
-      const uniqueResults = new Set(Object.values(calculationResults));
-      expect(uniqueResults.size).toBeGreaterThan(1); // Should have different tax amounts
     });
   });
 });
