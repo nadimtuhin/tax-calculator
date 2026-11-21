@@ -21,6 +21,8 @@ import {
 } from '../utils/taxEngine.js';
 import {
   DONATION_ROW_NAME,
+  calculateGroupInsuranceExclusion,
+  calculateZakatDonationExclusion,
   calculateSolarElectricityRebate,
   resolveDisabledDependentCount,
 } from '../utils/fa2026Rules.js';
@@ -64,6 +66,8 @@ const salaries = {
     },
     earlyRedemptionRebateRepayable: 0,
     solarElectricityBill: 0,
+    groupInsuranceReimbursement: 0,
+    zakatDonation: 0,
     currentYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
     comparisonFromYear: DEFAULT_COMPARISON_FROM_YEAR,
     comparisonToYear: DEFAULT_COMPARISON_TO_YEAR,
@@ -153,6 +157,12 @@ const salaries = {
     },
     setSolarElectricityBill(state, value) {
       state.solarElectricityBill = Math.max(0, Number(value) || 0);
+    },
+    setGroupInsuranceReimbursement(state, value) {
+      state.groupInsuranceReimbursement = Math.max(0, Number(value) || 0);
+    },
+    setZakatDonation(state, value) {
+      state.zakatDonation = Math.max(0, Number(value) || 0);
     },
     setCurrentYear(state, year) {
       state.currentYear = year;
@@ -253,8 +263,26 @@ const salaries = {
     totalExempt(state, getters) {
       return calculateEmploymentExemption(getters.totalSalary, state.currentYear);
     },
-    taxableSalary(state, getters) {
+    taxableSalaryBeforeExclusions(state, getters) {
       return Math.max(0, getters.totalSalary - getters.totalExempt);
+    },
+    groupInsuranceExclusion(state, getters) {
+      return groupInsuranceFor(state, getters, state.currentYear);
+    },
+    zakatDonationExclusion(state, getters) {
+      return zakatFor(state, getters, state.currentYear);
+    },
+    taxableSalary(state, getters) {
+      return taxableSalaryFor(state, getters, state.currentYear);
+    },
+    taxableSalary2024(state, getters) {
+      return taxableSalaryFor(state, getters, '2024-25');
+    },
+    taxableSalary2025(state, getters) {
+      return taxableSalaryFor(state, getters, '2025-26');
+    },
+    taxableSalary2026(state, getters) {
+      return taxableSalaryFor(state, getters, '2026-27');
     },
 
     // Sixth Schedule Part 3 investments & Section 78 rebate (year-aware)
@@ -373,12 +401,12 @@ const salaries = {
     investmentRebate2024(state, getters) {
       return calculateInvestmentRebateForYear(
         '2024-25',
-        getters.taxableSalary,
+        getters.taxableSalary2024,
         getters.eligibleInvestment2024
       );
     },
     taxBreakdown2024(state, getters) {
-      return calculateTaxBreakdown(getters.taxableSalary, getters.taxSlabs2024);
+      return calculateTaxBreakdown(getters.taxableSalary2024, getters.taxSlabs2024);
     },
     calculatedTax2024(state, getters) {
       return sumSlabTax(getters.taxBreakdown2024);
@@ -390,7 +418,7 @@ const salaries = {
         getters.totalTds,
         getters.investmentRebate2024,
         {
-          taxableIncome: getters.taxableSalary,
+          taxableIncome: getters.taxableSalary2024,
           taxFreeThreshold: getters.taxFreeThreshold2024,
         }
       );
@@ -423,12 +451,12 @@ const salaries = {
     investmentRebate2025(state, getters) {
       return calculateInvestmentRebateForYear(
         '2025-26',
-        getters.taxableSalary,
+        getters.taxableSalary2025,
         getters.eligibleInvestment2025
       );
     },
     taxBreakdown2025(state, getters) {
-      return calculateTaxBreakdown2025(getters.taxableSalary, getters.taxSlabs2025);
+      return calculateTaxBreakdown2025(getters.taxableSalary2025, getters.taxSlabs2025);
     },
     calculatedTax2025(state, getters) {
       return sumSlabTax(getters.taxBreakdown2025);
@@ -440,7 +468,7 @@ const salaries = {
         getters.totalTds,
         getters.investmentRebate2025,
         {
-          taxableIncome: getters.taxableSalary,
+          taxableIncome: getters.taxableSalary2025,
           taxFreeThreshold: getters.taxFreeThreshold2025,
           rebateClawback: getters.earlyRedemptionRebateRepayable,
         }
@@ -474,12 +502,12 @@ const salaries = {
     investmentRebate2026(state, getters) {
       return calculateInvestmentRebateForYear(
         '2026-27',
-        getters.taxableSalary,
+        getters.taxableSalary2026,
         getters.eligibleInvestment2026
       );
     },
     taxBreakdown2026(state, getters) {
-      return calculateTaxBreakdown2026(getters.taxableSalary, getters.taxSlabs2026);
+      return calculateTaxBreakdown2026(getters.taxableSalary2026, getters.taxSlabs2026);
     },
     calculatedTax2026(state, getters) {
       return sumSlabTax(getters.taxBreakdown2026);
@@ -491,7 +519,7 @@ const salaries = {
         getters.totalTds,
         getters.investmentRebate2026,
         {
-          taxableIncome: getters.taxableSalary,
+          taxableIncome: getters.taxableSalary2026,
           taxFreeThreshold: getters.taxFreeThreshold2026,
           otherRebate: getters.solarRebate2026,
           rebateClawback: getters.earlyRedemptionRebateRepayable,
@@ -567,5 +595,23 @@ const salaries = {
     },
   },
 };
+
+const groupInsuranceFor = (state, getters, year) =>
+  calculateGroupInsuranceExclusion(state.groupInsuranceReimbursement, year, getters.totalSalary);
+
+const zakatFor = (state, getters, year) =>
+  calculateZakatDonationExclusion(
+    state.zakatDonation,
+    year,
+    getters.taxableSalaryBeforeExclusions - groupInsuranceFor(state, getters, year)
+  );
+
+const taxableSalaryFor = (state, getters, year) =>
+  Math.max(
+    0,
+    getters.taxableSalaryBeforeExclusions -
+      groupInsuranceFor(state, getters, year) -
+      zakatFor(state, getters, year)
+  );
 
 export default salaries;

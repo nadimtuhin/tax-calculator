@@ -69,6 +69,8 @@ export function migratePersistedState(saved) {
       taxpayerProfile: mergedProfile,
       earlyRedemptionRebateRepayable: Math.max(0, Number(persistedSalaries.earlyRedemptionRebateRepayable) || 0),
       solarElectricityBill: Math.max(0, Number(persistedSalaries.solarElectricityBill) || 0),
+      groupInsuranceReimbursement: Math.max(0, Number(persistedSalaries.groupInsuranceReimbursement) || 0),
+      zakatDonation: Math.max(0, Number(persistedSalaries.zakatDonation) || 0),
       comparisonFromYear: persistedSalaries.comparisonFromYear || freshSalaries.comparisonFromYear,
       comparisonToYear: persistedSalaries.comparisonToYear || freshSalaries.comparisonToYear,
       currentYear:

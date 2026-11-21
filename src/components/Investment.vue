@@ -130,6 +130,32 @@
       @input="setEarlyRedemption($event)"
     />
   </label>
+  <label v-if="usesFa2026" class="extras-field" for="group-insurance-reimbursement">
+    <span>Group-insurance medical reimbursement received (BDT) - excluded from employment income</span>
+    <input
+      id="group-insurance-reimbursement"
+      type="number"
+      min="0"
+      max="9999999"
+      step="1000"
+      :value="groupInsuranceReimbursement"
+      @input="setGroupInsurance($event)"
+    />
+    <small>Booklet s.1.11, FY 2025-26 and FY 2026-27 only. Entered by you: the booklet text was not checked for caps or conditions, so confirm them before filing. Excluded: BDT {{ groupInsuranceExclusion.toLocaleString() }}.</small>
+  </label>
+  <label v-if="isDonationYear" class="extras-field" for="zakat-donation">
+    <span>Donation to Zakat Management (BDT) - excluded from taxable income</span>
+    <input
+      id="zakat-donation"
+      type="number"
+      min="0"
+      max="9999999"
+      step="1000"
+      :value="zakatDonation"
+      @input="setZakatDonation($event)"
+    />
+    <small>FY 2026-27 only. Entered by you: the booklet text was not checked, so no cap or rate is applied and the treatment (exclusion from income) is unconfirmed. Do not also enter the same amount in the donation row above. Excluded: BDT {{ zakatDonationExclusion.toLocaleString() }}.</small>
+  </label>
   <label v-if="isSolarYear" class="extras-field" for="solar-electricity-bill">
     <span>Solar electricity bill paid in the income year (BDT) - 5% rebate</span>
     <input
@@ -164,6 +190,12 @@ export default {
     },
     setEarlyRedemption($event) {
       this.$store.commit('setEarlyRedemptionRebateRepayable', $event.target.value);
+    },
+    setGroupInsurance($event) {
+      this.$store.commit('setGroupInsuranceReimbursement', $event.target.value);
+    },
+    setZakatDonation($event) {
+      this.$store.commit('setZakatDonation', $event.target.value);
     },
     setSolarBill($event) {
       this.$store.commit('setSolarElectricityBill', $event.target.value);
@@ -205,8 +237,12 @@ export default {
       currentYear: state => state.salaries.currentYear,
       earlyRedemptionRebateRepayable: state => state.salaries.earlyRedemptionRebateRepayable || 0,
       solarElectricityBill: state => state.salaries.solarElectricityBill || 0,
+      groupInsuranceReimbursement: state => state.salaries.groupInsuranceReimbursement || 0,
+      zakatDonation: state => state.salaries.zakatDonation || 0,
     }),
     ...mapGetters({
+      groupInsuranceExclusion: 'groupInsuranceExclusion',
+      zakatDonationExclusion: 'zakatDonationExclusion',
       totalInvestment: 'totalInvestment',
       eligibleInvestment: 'eligibleInvestment',
       totalRebateableInvestment: 'totalRebateableInvestment',

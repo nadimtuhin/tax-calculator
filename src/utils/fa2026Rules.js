@@ -74,3 +74,26 @@ export function calculateRebateIncomeBase(taxableIncome, exclusions = {}) {
 export function calculateSolarElectricityRebate(solarBill) {
   return Math.round(nonNegative(solarBill) * SOLAR_ELECTRICITY_REBATE_RATE);
 }
+
+const GROUP_INSURANCE_YEARS = ['2025-26', '2026-27'];
+const ZAKAT_DONATION_YEARS = ['2026-27'];
+
+/**
+ * booklet s.1.11: group-insurance medical reimbursement is excluded from employment income for
+ * FY 2025-26 and FY 2026-27 only. Booklet text was not available to this implementation: the amount
+ * is a user input, with no cap, so the exclusion cannot exceed the salary it comes out of.
+ */
+export function calculateGroupInsuranceExclusion(amount, year, totalSalary) {
+  if (!GROUP_INSURANCE_YEARS.includes(year)) return 0;
+  return Math.min(nonNegative(amount), nonNegative(totalSalary));
+}
+
+/**
+ * Zakat Management donation exclusion (booklet s.1.46 area). Booklet text was not available: the
+ * amount is a user input, no rate or cap, applied from FY 2026-27 only to match the s.1.46 donation
+ * start (1 July 2026). It cannot exceed the income left to exclude it from.
+ */
+export function calculateZakatDonationExclusion(amount, year, incomeAfterOtherExclusions) {
+  if (!ZAKAT_DONATION_YEARS.includes(year)) return 0;
+  return Math.min(nonNegative(amount), nonNegative(incomeAfterOtherExclusions));
+}
