@@ -2,17 +2,8 @@
   <div id="home-page">
     <div class="main-content">
       <header class="page-hero">
-        <div class="hero-copy">
-          <span class="hero-eyebrow">Bangladesh Income Tax · Finance Act 2026</span>
-          <h1>Salaried Income Tax Calculator</h1>
-          <p class="hero-subtitle">
-            Estimate and compare your FY 2025–26 and FY 2026–27 (plus FY 2024–25) tax slabs, Sixth Schedule salary exemption, monthly TDS, and Section 78 investment rebate in ৳ BDT.
-          </p>
-        </div>
-        <div class="hero-meta" aria-label="Calculator highlights">
-          <span class="section-pill"><strong>AY 2026–27 &amp; 2027–28</strong> Schedule 1</span>
-          <span class="section-pill"><strong>100% Local</strong> Browser-only</span>
-        </div>
+        <h1>Salaried Income Tax Calculator</h1>
+        <p class="hero-subtitle">Enter your salary. See your tax.</p>
       </header>
 
       <div class="inputs-column">
@@ -22,12 +13,6 @@
         <div class="content-section">
           <Salaries />
         </div>
-        <div class="content-section">
-          <taxable-income />
-        </div>
-        <div class="content-section">
-          <investment />
-        </div>
       </div>
 
       <aside class="hero-column">
@@ -36,23 +21,44 @@
         </div>
       </aside>
 
-      <div class="tax-comparison-section">
-        <div class="comparison-row">
-          <div class="comparison-col">
-            <div class="content-section">
-              <calculation-2024 v-if="comparisonFromYear === '2024-25'" />
-              <calculation-2026 v-else-if="comparisonFromYear === '2026-27'" />
-              <calculation-2025 v-else />
+      <div class="more-column">
+        <Disclosure
+          id="investment"
+          title="Investment rebate"
+          :hint="hasInvestments ? 'Added' : 'Optional'"
+          :force-open="hasInvestments"
+        >
+          <div class="content-section content-section-flat">
+            <investment />
+          </div>
+        </Disclosure>
+
+        <Disclosure id="taxable" title="Taxable income" hint="Details">
+          <div class="content-section content-section-flat">
+            <taxable-income />
+          </div>
+        </Disclosure>
+
+        <Disclosure id="breakdown" title="Full tax breakdown" hint="Year by year">
+          <div class="tax-comparison-section">
+            <div class="comparison-row">
+              <div class="comparison-col">
+                <div class="content-section content-section-flat">
+                  <calculation-2024 v-if="comparisonFromYear === '2024-25'" />
+                  <calculation-2026 v-else-if="comparisonFromYear === '2026-27'" />
+                  <calculation-2025 v-else />
+                </div>
+              </div>
+              <div class="comparison-col">
+                <div class="content-section content-section-flat">
+                  <calculation-2024 v-if="comparisonToYear === '2024-25'" />
+                  <calculation-2025 v-else-if="comparisonToYear === '2025-26'" />
+                  <calculation-2026 v-else />
+                </div>
+              </div>
             </div>
           </div>
-          <div class="comparison-col">
-            <div class="content-section">
-              <calculation-2024 v-if="comparisonToYear === '2024-25'" />
-              <calculation-2025 v-else-if="comparisonToYear === '2025-26'" />
-              <calculation-2026 v-else />
-            </div>
-          </div>
-        </div>
+        </Disclosure>
       </div>
     </div>
   </div>
@@ -68,6 +74,7 @@ import Salaries from "../components/Salaries";
 import Investment from "../components/Investment";
 import TaxableIncome from "../components/TaxableIncome";
 import TaxpayerProfile from "../components/TaxpayerProfile";
+import Disclosure from "../components/Disclosure";
 
 export default {
   name: "App",
@@ -81,9 +88,21 @@ export default {
     TaxableIncome,
     Investment,
     TaxpayerProfile,
+    Disclosure,
   },
   computed: {
     ...mapGetters(["comparisonFromYear", "comparisonToYear"]),
+    hasInvestments() {
+      const state = this.$store.state.salaries || {};
+      const rows = Array.isArray(state.investments) ? state.investments : [];
+      const extras = [
+        state.earlyRedemptionRebateRepayable,
+        state.solarElectricityBill,
+        state.groupInsuranceReimbursement,
+        state.zakatDonation,
+      ];
+      return rows.some((row) => Number(row.amount) > 0) || extras.some((v) => Number(v) > 0);
+    },
   },
 };
 </script>
@@ -95,88 +114,61 @@ export default {
   background-color: var(--bg);
 }
 
-/* Desktop splits into top page hero + left inputs stack (<=772px) + right sticky verdict (380px),
-   with the two full-year invoice tables side-by-side underneath. */
+/* Mobile: one column. Desktop: inputs left, one sticky result right, optional detail below. */
 .main-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
-  max-width: 1200px;
+  gap: var(--space-5);
+  max-width: 1120px;
   margin: 0 auto;
-  padding: var(--space-5) var(--space-4) 112px;
+  padding: var(--space-6) var(--space-4) 112px;
   width: 100%;
 }
 
 .page-hero {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  padding: var(--space-1) 0 var(--space-2);
-}
-
-.hero-copy {
-  display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  max-width: 680px;
-}
-
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: var(--space-5) 0 var(--space-2);
 }
 
 .page-hero h1 {
-  font-size: clamp(1.5rem, 3vw, 2.05rem);
+  font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  color: var(--text);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
 }
 
 .hero-subtitle {
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
   color: var(--text-muted);
-  line-height: 1.5;
-  max-width: 620px;
-}
-
-.hero-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 .inputs-column,
 .hero-column,
+.more-column,
 .tax-comparison-section {
   min-width: 0;
 }
 
-.content-section {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-5);
-  box-shadow: var(--shadow);
-  margin-bottom: var(--space-4);
+.inputs-column,
+.more-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.comparison-row .content-section,
-.inputs-column > .content-section:last-child {
-  margin-bottom: 0;
+.content-section {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow);
+}
+
+.content-section-flat {
+  padding: 0;
+  box-shadow: none;
+  background: none;
 }
 
 .content-section :deep(h2) {
@@ -193,10 +185,14 @@ export default {
   margin-bottom: 0;
 }
 
+.content-section :deep(.section-eyebrow) {
+  display: none;
+}
+
 .comparison-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .comparison-col {
@@ -205,12 +201,13 @@ export default {
 
 @media (min-width: 1024px) {
   .main-content {
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     align-items: start;
     padding-bottom: var(--space-6);
   }
 
-  .page-hero {
+  .page-hero,
+  .more-column {
     grid-column: 1 / -1;
   }
 
@@ -227,15 +224,17 @@ export default {
 
   .hero-sticky {
     position: sticky;
-    top: 76px;
-  }
-
-  .tax-comparison-section {
-    grid-column: 1 / -1;
+    top: 84px;
   }
 
   .comparison-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-column {
+    order: -1;
   }
 }
 
@@ -246,10 +245,6 @@ export default {
 
   .content-section {
     padding: var(--space-4);
-  }
-
-  .hero-meta {
-    display: none;
   }
 }
 </style>

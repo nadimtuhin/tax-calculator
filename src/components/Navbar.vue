@@ -309,10 +309,10 @@ export default {
 }
 
 .navbar {
-  background: var(--surface);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -386,16 +386,7 @@ export default {
 }
 
 .brand-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1.4;
+  display: none;
 }
 
 .primary-nav {
@@ -429,8 +420,7 @@ export default {
 }
 
 .nav-link.router-link-active {
-  color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--text);
 }
 
 .action-buttons,
@@ -441,9 +431,7 @@ export default {
 }
 
 .data-actions {
-  padding-right: var(--space-2);
-  margin-right: var(--space-1);
-  border-right: 1px solid var(--border);
+  padding-right: var(--space-1);
 }
 
 .action-btn {
@@ -472,9 +460,7 @@ export default {
 }
 
 .github-btn {
-  border-color: var(--border);
-  background: var(--surface-muted);
-  color: var(--text);
+  color: var(--text-muted);
 }
 
 .github-btn:hover {
@@ -490,21 +476,19 @@ export default {
   flex-shrink: 0;
 }
 
-@media (max-width: 860px) {
-  .btn-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
+.btn-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
-  .action-btn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0;
-  }
+.action-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
 }
 
 @media (max-width: 639px) {

@@ -8,6 +8,7 @@ export async function openCalculator(page) {
   await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem('tax-calculator-never-star', 'true');
+    localStorage.setItem('tax-calculator-ui-open', 'all');
   });
   await page.reload();
   await page.waitForLoadState('networkidle');
