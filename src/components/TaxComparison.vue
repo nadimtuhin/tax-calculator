@@ -1,10 +1,6 @@
 <template>
   <div class="tax-comparison-summary">
     <div class="comparison-header">
-      <div class="comparison-header-top">
-        <span class="section-eyebrow">Live Verdict</span>
-        <span class="section-pill">2-Year Delta</span>
-      </div>
       <h2>Tax Year Comparison (FY {{ fromShort }} vs FY {{ toShort }})</h2>
 
       <div class="period-picker-bar" role="group" aria-label="Compare fiscal years">
@@ -62,9 +58,13 @@
       </div>
     </div>
 
+    <div class="hero-payable" role="group" :aria-label="`Payable tax for FY ${toShort}`">
+      <span class="hero-payable-label">You pay · FY {{ toShort }}</span>
+      <strong class="hero-payable-amount amount" data-testid="hero-payable">৳{{comparisonToPayable.toLocaleString()}}</strong>
+    </div>
+
     <div class="comparison-result">
       <div v-if="taxSavings > 0" class="verdict verdict-savings">
-        <div class="verdict-amount amount" aria-hidden="true">৳{{taxSavings.toLocaleString()}}</div>
         <div class="result-badge badge-savings">
           <strong>You will save ৳{{taxSavings.toLocaleString()}} in total tax</strong>
         </div>
@@ -74,7 +74,6 @@
       </div>
 
       <div v-else-if="additionalTax > 0" class="verdict verdict-increase">
-        <div class="verdict-amount amount" aria-hidden="true">৳{{additionalTax.toLocaleString()}}</div>
         <div class="result-badge badge-increase">
           <strong>You will pay ৳{{additionalTax.toLocaleString()}} more in total tax</strong>
         </div>
@@ -84,7 +83,6 @@
       </div>
 
       <div v-else class="verdict verdict-neutral">
-        <div class="verdict-amount amount" aria-hidden="true">৳0</div>
         <div class="result-badge badge-neutral">
           <strong>No change in total tax</strong>
         </div>
@@ -341,32 +339,41 @@ export default {
 <style scoped>
 .tax-comparison-summary {
   background: var(--surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  padding: var(--space-5);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6) var(--space-5);
 }
 
 .comparison-header {
-  padding-bottom: var(--space-3);
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border);
-}
-
-.comparison-header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-5);
 }
 
 .comparison-header h2 {
   margin: 0 0 var(--space-3);
-  font-size: var(--text-base);
-  font-weight: 650;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.hero-payable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+  padding: var(--space-4) 0 var(--space-5);
+}
+
+.hero-payable-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.hero-payable-amount {
+  font-size: var(--text-hero);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
   color: var(--text);
-  letter-spacing: -0.01em;
 }
 
 .period-picker-bar {
@@ -374,10 +381,6 @@ export default {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: end;
   gap: var(--space-2);
-  padding: var(--space-2);
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 
 .period-select-group {
@@ -388,10 +391,8 @@ export default {
 }
 
 .period-select-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: var(--text-xs);
+  font-weight: 500;
   color: var(--text-muted);
   padding-left: 2px;
 }
@@ -455,42 +456,26 @@ export default {
 }
 
 .verdict {
-  border-radius: var(--radius);
-  padding: var(--space-5);
+  padding: 0;
   text-align: center;
 }
 
-.verdict-savings {
-  background: var(--good-soft);
-  color: var(--good);
-}
-
-.verdict-increase {
-  background: var(--warn-soft);
-  color: var(--warn);
-}
-
+.verdict-savings,
+.verdict-increase,
 .verdict-neutral {
-  background: var(--surface-muted);
-  color: var(--text);
+  background: none;
 }
 
-.verdict-amount {
-  font-size: var(--text-hero);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
+.verdict-savings .result-badge { color: var(--good); }
+.verdict-increase .result-badge { color: var(--warn); }
+.verdict-neutral .result-badge { color: var(--text); }
 
 .result-badge {
-  margin-top: var(--space-2);
   font-size: var(--text-base);
 }
 
 .result-text {
-  margin-top: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
+  display: none;
 }
 
 .payable-change {
@@ -509,14 +494,13 @@ export default {
 }
 
 .comparison-card {
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
+  background: var(--bg);
   border-radius: var(--radius);
   padding: var(--space-4);
 }
 
 .comparison-card.is-selected {
-  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .tile-label {

@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8080';
+
 export default defineConfig({
   testDir: './tests/e2e',
   /* Run tests in files in parallel */
@@ -18,7 +20,15 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:8080',
+    baseURL: BASE_URL,
+
+    /* Advanced sections (investment rebate, taxable income, full breakdown) are collapsed by
+       default for real users; existing specs exercise their inputs, so start them expanded.
+       tests/e2e/disclosure.spec.js covers the collapsed default. */
+    storageState: {
+      cookies: [],
+      origins: [{ origin: new URL(BASE_URL).origin, localStorage: [{ name: 'tax-calculator-ui-open', value: 'all' }] }],
+    },
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -55,7 +65,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npm run serve',
-    url: 'http://localhost:8080',
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
   },
 });
