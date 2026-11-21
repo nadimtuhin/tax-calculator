@@ -1,8 +1,14 @@
+import {
+  calculateRebateIncomeBase,
+  resolveDisabledDependentCount,
+} from './fa2026Rules.js';
+
 const LAKH = 100000;
 
 // Bangladesh Tax Slab Structure FY 2026-2027 (Finance Act 2026, enacted 6 July 2026)
 // Slabs after threshold: 3L @10%, 4L @15%, 5L @20%, 20L @25%, rest @30%
-// Same slab bands as FY 2025-26; thresholds raised by Tk 25,000 each.
+// Same slab bands and tax-free thresholds as FY 2025-26: the booklet gives one set of levels for
+// AYs 2026-27 and 2027-28 (ACNABIN Finance Act 2026 booklet s.1.1 and s.1.3, p.3).
 // Sources:
 //   PwC Finance Act 2026 Key Amendments: https://www.pwc.com/bd/en/assets/pdfs/budget/finance-act-2026-key-amendments.pdf
 //   PwC Tax Summaries Bangladesh: https://taxsummaries.pwc.com/bangladesh/individual/taxes-on-personal-income
@@ -57,22 +63,23 @@ export function calculateTaxSlabs2026(taxFreeThreshold) {
 }
 
 /**
- * Tax-free thresholds for FY 2026-2027 (AY 2027-28)
- * Each category raised by Tk 25,000 vs FY 2025-26.
- * Sources: PwC Finance Act 2026, KPMG Finance Bill 2026, Daily Star 2026 budget coverage.
+ * Tax-free thresholds for FY 2026-2027 (AY 2027-28).
+ * Identical to FY 2025-26 (AY 2026-27): the booklet lists one column for AYs 2026-27 & 2027-28
+ * (ACNABIN Finance Act 2026 booklet s.1.3, p.3).
  */
 export const TAX_FREE_THRESHOLDS_2026 = {
-  general: 400000,         // +25K from 375K
-  female: 450000,          // +25K from 425K
-  senior: 450000,          // +25K from 425K (65+ years)
-  disabled: 525000,        // +25K from 500K
-  third_gender: 525000,    // +25K from 500K
-  freedom_fighter: 550000  // +25K from 525K (gazetted war-wounded freedom fighter / July Warrior)
+  general: 400000,
+  female: 450000,
+  senior: 450000,          // 65+ years
+  disabled: 525000,
+  third_gender: 525000,
+  freedom_fighter: 550000  // gazetted war-wounded freedom fighter / gazetted July Warrior
 };
 
 /**
- * Additional allowance for a parent / legal guardian of a person with disability.
- * Added ON TOP of the taxpayer's own category threshold (one parent only),
+ * Additional allowance per physically challenged child/dependent of a parent / legal guardian
+ * (booklet s.1.3 p.3). Added ON TOP of the taxpayer's own category threshold, once per dependent
+ * (either parent may claim, not both),
  * e.g. general 400K -> 450K, female/65+ 450K -> 500K, freedom fighter 550K -> 600K.
  */
 export const PARENT_OF_DISABLED_ALLOWANCE_2026 = 50000;
@@ -99,7 +106,7 @@ export const MINIMUM_TAX_FIRST_TIME_2026 = 1000;
  * @returns {number} Tax-free threshold in BDT
  */
 export function getTaxFreeThreshold2026(taxpayerProfile) {
-  const { category, age, parentOfDisabled } = taxpayerProfile;
+  const { category, age } = taxpayerProfile;
   const isLegacyParent = category === 'parent_disabled';
   const baseCategory = isLegacyParent ? 'general' : category;
 
@@ -115,9 +122,7 @@ export function getTaxFreeThreshold2026(taxpayerProfile) {
     threshold = TAX_FREE_THRESHOLDS_2026.senior;
   }
 
-  if (parentOfDisabled || isLegacyParent) {
-    threshold += PARENT_OF_DISABLED_ALLOWANCE_2026;
-  }
+  threshold += resolveDisabledDependentCount(taxpayerProfile) * PARENT_OF_DISABLED_ALLOWANCE_2026;
 
   return threshold;
 }
@@ -134,21 +139,27 @@ export function getMinimumTax2026(location, isFirstTime = false) {
 }
 
 /**
- * Calculate investment rebate for FY 2026-2027.
+ * Calculate investment rebate for FY 2026-2027 (ITA 2023 s.78, booklet s.1.4 p.4).
  * Rebate = lowest of:
- *   (a) 3% of taxable income
- *   (b) 10% of eligible investment (reduced from 15% in 2025-26)
- *   (c) Tk 7,50,000 (reduced from Tk 10,00,000 in 2025-26)
- * Sources: PwC Finance Act 2026 Key Amendments; KPMG Finance Bill 2026.
+ *   (a) 3% of the rebate base: assessed income excluding exempted income, reduced-rate income,
+ *       partnership/AoP profit share and final-settlement income
+ *   (b) 10% of eligible investment/expense under Sixth Schedule Part 3
+ *   (c) Tk 7,50,000
+ * The 10% / Tk 7,50,000 limbs are the same as FY 2025-26; they replaced 15% / Tk 10,00,000 of FY 2024-25.
  *
- * @param {number} taxableIncome - Taxable income in BDT
+ * @param {number} taxableIncome - Taxable income in BDT (already net of exempt salary)
  * @param {number} totalEligibleInvestment - Total qualifying investment in BDT
+ * @param {Object} [baseExclusions] - { exemptIncome, reducedRateIncome, partnershipShare, finalSettlementIncome }
  * @returns {number} Rebate amount in BDT
  */
-export function calculateInvestmentRebate2026(taxableIncome, totalEligibleInvestment) {
-  const threePercentOfIncome = taxableIncome * 0.03;
+export function calculateInvestmentRebate2026(
+  taxableIncome,
+  totalEligibleInvestment,
+  baseExclusions = {}
+) {
+  const threePercentOfBase = calculateRebateIncomeBase(taxableIncome, baseExclusions) * 0.03;
   const tenPercentOfInvestment = totalEligibleInvestment * 0.10;
   const capTk750000 = 750000;
 
-  return Math.round(Math.max(0, Math.min(threePercentOfIncome, tenPercentOfInvestment, capTk750000)));
+  return Math.round(Math.max(0, Math.min(threePercentOfBase, tenPercentOfInvestment, capTk750000)));
 }

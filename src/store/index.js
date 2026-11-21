@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import createPersistedState from "vuex-persistedstate";
 
 import salaries from "./salaries";
+import { resolveDisabledDependentCount } from "../utils/fa2026Rules.js";
 
 const appVersion = '0.8';
 
@@ -30,9 +31,16 @@ export function migratePersistedState(saved) {
       }))
     : freshSalaries.months;
 
+  const freshNames = new Set(freshSalaries.investments.map((row) => row.name));
   const mergedInvestments = freshSalaries.investments.map((freshInv, idx) => {
+    // The index fallback only serves renamed legacy rows; a saved row that still has a current name
+    // belongs to that name, so it must not leak into a newly added row at the same index.
+    const byIndex = Array.isArray(persistedSalaries.investments)
+      ? persistedSalaries.investments[idx]
+      : undefined;
     const prev = Array.isArray(persistedSalaries.investments)
-      ? persistedSalaries.investments.find((item) => item?.name === freshInv.name) || persistedSalaries.investments[idx]
+      ? persistedSalaries.investments.find((item) => item?.name === freshInv.name) ||
+        (byIndex && !freshNames.has(byIndex.name) ? byIndex : undefined)
       : undefined;
     if (!prev) return freshInv;
     return {
@@ -45,15 +53,22 @@ export function migratePersistedState(saved) {
     };
   });
 
+  const mergedProfile = {
+    ...freshSalaries.taxpayerProfile,
+    ...(persistedSalaries.taxpayerProfile || {}),
+  };
+  // A previously saved boolean `parentOfDisabled` becomes a dependent count of 1.
+  mergedProfile.disabledDependentCount = resolveDisabledDependentCount(mergedProfile);
+  mergedProfile.parentOfDisabled = mergedProfile.disabledDependentCount > 0;
+
   return {
     ...saved,
     salaries: {
       ...freshSalaries,
       ...persistedSalaries,
-      taxpayerProfile: {
-        ...freshSalaries.taxpayerProfile,
-        ...(persistedSalaries.taxpayerProfile || {}),
-      },
+      taxpayerProfile: mergedProfile,
+      earlyRedemptionRebateRepayable: Math.max(0, Number(persistedSalaries.earlyRedemptionRebateRepayable) || 0),
+      solarElectricityBill: Math.max(0, Number(persistedSalaries.solarElectricityBill) || 0),
       comparisonFromYear: persistedSalaries.comparisonFromYear || freshSalaries.comparisonFromYear,
       comparisonToYear: persistedSalaries.comparisonToYear || freshSalaries.comparisonToYear,
       currentYear:

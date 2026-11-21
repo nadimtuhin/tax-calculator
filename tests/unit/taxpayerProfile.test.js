@@ -53,16 +53,25 @@ describe('TaxpayerProfile Component', () => {
       expect(wrapper.find('select option[value="general"]').exists()).toBe(false);
     });
 
-    test('should render parent-of-disabled checkbox that combines with category', async () => {
-      const checkbox = wrapper.find('input[type="checkbox"]');
-      expect(checkbox.exists()).toBe(true);
+    test('should render a per-child disabled-dependent count that combines with category', async () => {
+      const countInput = wrapper.find('#disabled-dependent-count');
+      expect(countInput.exists()).toBe(true);
 
       wrapper.vm.selectedCategory = 'female';
-      await checkbox.setValue(true);
-      expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'female', parentOfDisabled: true });
+      await countInput.setValue(1);
+      expect(store.state.salaries.taxpayerProfile).toMatchObject({
+        category: 'female',
+        disabledDependentCount: 1,
+        parentOfDisabled: true,
+      });
       expect(wrapper.vm.threshold).toBe(500000); // FY 2025-26: 450000 + 50000
-      expect(wrapper.vm.categoryName).toBe('Female + Parent of Disabled Child');
+      expect(wrapper.vm.categoryName).toBe('Female + Parent of 1 Disabled Child');
 
+      await countInput.setValue(3);
+      expect(store.getters.taxFreeThreshold2025).toBe(600000); // 450000 + 3 x 50000
+      expect(wrapper.vm.categoryName).toBe('Female + Parent of 3 Disabled Children');
+
+      await countInput.setValue(1);
       wrapper.vm.selectedFiscalYear = '2026-27';
       wrapper.vm.updateProfile();
       await wrapper.vm.$nextTick();
@@ -74,7 +83,7 @@ describe('TaxpayerProfile Component', () => {
       expect(store.getters.taxFreeThreshold2026).toBe(600000);
       expect(store.getters.taxFreeThreshold2025).toBe(600000);
 
-      await checkbox.setValue(false);
+      await countInput.setValue(0);
       expect(store.getters.taxFreeThreshold2026).toBe(550000);
     });
 
@@ -94,8 +103,8 @@ describe('TaxpayerProfile Component', () => {
       store.commit('updateTaxpayerProfile', { category: 'parent_disabled', age: 40, location: 'dhaka' });
       const legacy = mount(TaxpayerProfile, { global: { plugins: [store] } });
       expect(legacy.vm.selectedCategory).toBe('general');
-      expect(legacy.vm.parentOfDisabled).toBe(true);
-      expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'general', parentOfDisabled: true });
+      expect(legacy.vm.disabledDependentCount).toBe(1);
+      expect(store.state.salaries.taxpayerProfile).toMatchObject({ category: 'general', parentOfDisabled: true, disabledDependentCount: 1 });
       legacy.unmount();
     });
 

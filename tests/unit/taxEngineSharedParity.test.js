@@ -289,6 +289,7 @@ describe('Shared Tax Engine <-> Vuex Store Parity', () => {
       age: 38,
       location: 'chittagong',
       parentOfDisabled: true,
+      disabledDependentCount: 1,
       firstTimeFiler: false,
     });
     expect(migrated.salaries.currentYear).toBe('2025-26');

@@ -211,6 +211,7 @@ export default {
 
 .close-btn {
   position: absolute;
+  z-index: 1;
   top: 15px;
   right: 20px;
   background: none;

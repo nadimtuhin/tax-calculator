@@ -17,7 +17,13 @@ import {
   sumSlabTax,
   calculateInvestmentRebateForYear,
   calculateFinalTaxSummary,
+  usesFa2026RebateBase as usesFa2026Extras,
 } from '../utils/taxEngine.js';
+import {
+  DONATION_ROW_NAME,
+  calculateSolarElectricityRebate,
+  resolveDisabledDependentCount,
+} from '../utils/fa2026Rules.js';
 import calculateTaxBreakdown2025 from '../calculateTaxBreakdown2025';
 import calculateTaxBreakdown2026 from '../calculateTaxBreakdown2026';
 import calculateTaxBreakdown from '../calculateTaxBreakdown';
@@ -53,8 +59,11 @@ const salaries = {
       age: null,
       location: 'dhaka',
       parentOfDisabled: false,
+      disabledDependentCount: 0,
       firstTimeFiler: false,
     },
+    earlyRedemptionRebateRepayable: 0,
+    solarElectricityBill: 0,
     currentYear: resolveDefaultFiscalYear(new Date(), SUPPORTED_FISCAL_YEARS),
     comparisonFromYear: DEFAULT_COMPARISON_FROM_YEAR,
     comparisonToYear: DEFAULT_COMPARISON_TO_YEAR,
@@ -66,6 +75,10 @@ const salaries = {
       { name: 'Savings certificate', amount: 0, maximum: capOrInfinity(defaultCaps.savings_certificate) },
       { name: 'Mutual fund', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
       { name: 'Others', amount: 0, maximum: capOrInfinity(defaultCaps.others) },
+      { name: 'Unit certificate', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
+      { name: 'ETF', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
+      { name: 'Collective investment scheme', amount: 0, maximum: capOrInfinity(defaultCaps.mutual_fund) },
+      { name: DONATION_ROW_NAME, amount: 0, maximum: capOrInfinity(defaultCaps.philanthropic_donation) },
     ],
     parts: ['basic', 'house', 'medical', 'transport', 'others'],
     months: [
@@ -128,9 +141,18 @@ const salaries = {
         age: null,
         location: 'dhaka',
         parentOfDisabled: false,
+        disabledDependentCount: 0,
         firstTimeFiler: false,
         ...profile,
       };
+      state.taxpayerProfile.disabledDependentCount = resolveDisabledDependentCount(state.taxpayerProfile);
+      state.taxpayerProfile.parentOfDisabled = state.taxpayerProfile.disabledDependentCount > 0;
+    },
+    setEarlyRedemptionRebateRepayable(state, value) {
+      state.earlyRedemptionRebateRepayable = Math.max(0, Number(value) || 0);
+    },
+    setSolarElectricityBill(state, value) {
+      state.solarElectricityBill = Math.max(0, Number(value) || 0);
     },
     setCurrentYear(state, year) {
       state.currentYear = year;
@@ -273,6 +295,20 @@ const salaries = {
       );
     },
 
+    earlyRedemptionRebateRepayable(state) {
+      return Math.max(0, Number(state.earlyRedemptionRebateRepayable) || 0);
+    },
+    solarRebate2026(state) {
+      return calculateSolarElectricityRebate(state.solarElectricityBill);
+    },
+    // Active-year rebate add-ons apply to the two Finance Act 2026 years only.
+    activeRebateClawback(state, getters) {
+      return usesFa2026Extras(state.currentYear) ? getters.earlyRedemptionRebateRepayable : 0;
+    },
+    activeSolarRebate(state, getters) {
+      return state.currentYear === '2026-27' ? getters.solarRebate2026 : 0;
+    },
+
     // Active fiscal year (`state.currentYear`) getters
     taxFreeThreshold(state) {
       return getTaxFreeThresholdForYear(state.currentYear, state.taxpayerProfile);
@@ -306,6 +342,8 @@ const salaries = {
         {
           taxableIncome: getters.taxableSalary,
           taxFreeThreshold: getters.taxFreeThreshold,
+          otherRebate: getters.activeSolarRebate,
+          rebateClawback: getters.activeRebateClawback,
         }
       );
     },
@@ -404,6 +442,7 @@ const salaries = {
         {
           taxableIncome: getters.taxableSalary,
           taxFreeThreshold: getters.taxFreeThreshold2025,
+          rebateClawback: getters.earlyRedemptionRebateRepayable,
         }
       );
     },
@@ -454,6 +493,8 @@ const salaries = {
         {
           taxableIncome: getters.taxableSalary,
           taxFreeThreshold: getters.taxFreeThreshold2026,
+          otherRebate: getters.solarRebate2026,
+          rebateClawback: getters.earlyRedemptionRebateRepayable,
         }
       );
     },

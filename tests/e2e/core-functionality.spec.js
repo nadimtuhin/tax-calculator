@@ -21,7 +21,7 @@ test.describe('Core Tax Calculator Functionality', () => {
 
   test('should load application successfully', async ({ page }) => {
     // Check if main components are visible
-    await expect(page.locator('nav')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
     await expect(page.locator('h2').first()).toBeVisible(); // Fix: Use first() to avoid strict mode violation
     
     // Check if input fields are present
@@ -80,7 +80,7 @@ test.describe('Core Tax Calculator Functionality', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     
     // Check if page loads properly on mobile
-    await expect(page.locator('nav')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
     await expect(page.locator('main')).toBeVisible();
     
     // Check if first input is accessible
