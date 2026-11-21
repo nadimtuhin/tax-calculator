@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { categoryRadios, selectCategory, selectedCategory } from './helpers/category.js';
+import { FY_2025, setMonthly, expectHeadingAmount } from './helpers/fa2026-calc-ui.js';
 
 test.describe('Responsive Design - Dual Tax Calculator', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,9 +19,8 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
       await page.waitForTimeout(300);
     }
     
-    // Set up some test data to ensure content is loaded
-    const salaryInput = page.locator('input[type="number"]').first();
-    await salaryInput.fill('50000');
+    // Set up some test data to ensure content is loaded (the first number input is Age, not salary)
+    await page.getByRole('spinbutton', { name: 'July basic', exact: true }).fill('50000');
     await page.waitForTimeout(500);
   });
 
@@ -68,18 +68,12 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
     await expect(comparisonCols).toHaveCount(2);
     
     // Input fields should still be accessible
-    const salaryInput = page.locator('input[type="number"]').first();
+    const salaryInput = page.getByRole('spinbutton', { name: 'July basic', exact: true });
     await expect(salaryInput).toBeVisible();
-    
-    // Test that input still works
-    await salaryInput.fill('60000');
-    await page.waitForTimeout(500);
-    
-    // Check that calculations updated
-    const h2Elements = page.locator('h2');
-    const h2Texts = await h2Elements.allTextContents();
-    const hasNumbers = h2Texts.some(text => /60/.test(text)); // Should show updated tax amount
-    expect(hasNumbers).toBe(true);
+
+    // 60,000 x 12 = 720,000 gross -> taxable 480,000 -> 80,000 at 10%
+    await setMonthly(page, 'basic', 60000);
+    await expectHeadingAmount(page, FY_2025, 8000);
   });
 
   test('should stack content appropriately on mobile (375px)', async ({ page }) => {
@@ -158,9 +152,8 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
       await page.waitForTimeout(300);
       
       // Check that tables are visible and readable
-      const tables = page.locator('table');
-      const tableCount = await tables.count();
-      expect(tableCount).toBeGreaterThanOrEqual(2);
+      const tables = page.locator('table.invoice');
+      await expect(tables).toHaveCount(2);
       
       // Check that table content is accessible
       const firstTable = tables.first();
@@ -275,39 +268,6 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
     }
   });
 
-  test('should handle touch interactions on mobile', async ({ page }) => {
-    // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForTimeout(300);
-    
-    // Test touch on input fields
-    const salaryInput = page.locator('input[type="number"]').first();
-    await expect(salaryInput).toBeVisible();
-    
-    // Tap on input (touch interaction)
-    await salaryInput.tap();
-    await page.waitForTimeout(200);
-    
-    // Input should be focused
-    const isFocused = await salaryInput.evaluate(el => el === document.activeElement);
-    expect(isFocused).toBe(true);
-    
-    // Type value
-    await salaryInput.fill('85000');
-    await page.waitForTimeout(500);
-    
-    // Tap somewhere else to blur
-    const mainContent = page.locator('.main-content');
-    await mainContent.tap();
-    await page.waitForTimeout(200);
-    
-    // Check that calculations updated
-    const h2Elements = page.locator('h2');
-    const h2Texts = await h2Elements.allTextContents();
-    const hasNumbers = h2Texts.some(text => /85/.test(text) || /\d{5,}/.test(text));
-    expect(hasNumbers).toBe(true);
-  });
-
   test('should provide adequate tap targets on mobile', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
@@ -349,5 +309,24 @@ test.describe('Responsive Design - Dual Tax Calculator', () => {
         expect(buttonBox.height).toBeGreaterThanOrEqual(30);
       }
     }
+  });
+
+  test.describe('touch input', () => {
+    test.use({ hasTouch: true });
+
+    test('should handle touch interactions on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 });
+
+      const salaryInput = page.getByRole('spinbutton', { name: 'July basic', exact: true });
+      await salaryInput.scrollIntoViewIfNeeded();
+      await salaryInput.tap();
+      await expect(salaryInput).toBeFocused();
+
+      await salaryInput.fill('85000');
+      await page.locator('.main-content').tap({ position: { x: 5, y: 5 } });
+
+      // 85,000 x 12 = 1,020,000 gross -> taxable 680,000 -> 28,000 at 10%
+      await expectHeadingAmount(page, FY_2025, 28000);
+    });
   });
 });
