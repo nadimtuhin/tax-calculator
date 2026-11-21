@@ -421,6 +421,8 @@ export default {
 
 .nav-link.router-link-active {
   color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--text);
+  border-radius: 0;
 }
 
 .action-buttons,

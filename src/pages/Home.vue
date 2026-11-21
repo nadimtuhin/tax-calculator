@@ -6,6 +6,12 @@
         <p class="hero-subtitle">Enter your salary. See your tax.</p>
       </header>
 
+      <aside class="hero-column">
+        <div class="hero-sticky">
+          <tax-comparison />
+        </div>
+      </aside>
+
       <div class="inputs-column">
         <div class="content-section">
           <TaxpayerProfile />
@@ -14,12 +20,6 @@
           <Salaries />
         </div>
       </div>
-
-      <aside class="hero-column">
-        <div class="hero-sticky">
-          <tax-comparison />
-        </div>
-      </aside>
 
       <div class="more-column">
         <Disclosure
@@ -229,12 +229,6 @@ export default {
 
   .comparison-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1023px) {
-  .hero-column {
-    order: -1;
   }
 }
 

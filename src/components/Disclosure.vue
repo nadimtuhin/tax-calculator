@@ -26,7 +26,8 @@ function readOpenSet() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw === 'all') return 'all';
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     return [];
   }
@@ -42,19 +43,25 @@ export default {
   },
   data() {
     const saved = readOpenSet();
-    return { userOpen: saved === 'all' || saved.includes(this.id) };
+    return { userOpen: this.forceOpen || saved === 'all' || saved.includes(this.id) };
   },
   computed: {
     isOpen() {
-      return this.userOpen || this.forceOpen;
+      return this.userOpen;
     },
     panelId() {
       return `disclosure-${this.id}`;
     },
   },
+  watch: {
+    // Once data exists the panel opens and stays open, so clearing a field never collapses it under the user.
+    forceOpen(value) {
+      if (value) this.userOpen = true;
+    },
+  },
   methods: {
     toggle() {
-      this.userOpen = !this.isOpen;
+      this.userOpen = !this.userOpen;
       try {
         const saved = readOpenSet();
         const set = new Set(saved === 'all' ? [] : saved);
