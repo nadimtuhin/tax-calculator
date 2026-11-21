@@ -141,6 +141,49 @@ Or via `npx` if published:
 
 ---
 
+## Remote endpoint
+
+A public, stateless, read-only Streamable HTTP endpoint is served by the production site. Nothing to install, no auth, no API key:
+
+```
+https://tax.nadimtuhin.com/mcp
+https://tax.findable.page/mcp
+```
+
+**Claude (claude.ai / Claude Desktop):** Settings -> Connectors -> Add custom connector -> paste the URL above.
+
+**Claude Code:**
+
+```bash
+claude mcp add --transport http bd-tax https://tax.nadimtuhin.com/mcp
+```
+
+**OpenCode** (`opencode.json`):
+
+```json
+{
+  "mcp": {
+    "bd-tax": { "type": "remote", "url": "https://tax.nadimtuhin.com/mcp", "enabled": true }
+  }
+}
+```
+
+Quick check:
+
+```bash
+curl -s https://tax.nadimtuhin.com/mcp \
+  -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+Behaviour: `POST` only (`GET`/`DELETE` return `405` with `Allow: POST`, as no sessions or server-initiated streams exist); request bodies are capped at 256 KiB (`413`); `OPTIONS` preflight and `Access-Control-Allow-Origin: *` are enabled for browser-based clients; inputs are validated by the same zod schemas as stdio. Only the four read-only calculation tools are exposed, and no request data is stored or logged beyond Vercel's default platform logs.
+
+Rate limiting: the function applies a best-effort per-client burst limit (60 requests/minute per instance, `429` + `Retry-After`). Serverless instances do not share memory, so for hard limits add a Vercel Firewall rate-limit rule on path `/mcp` in the project dashboard (free tier includes one).
+
+Implementation: `api/mcp.mjs` wraps `createRemoteHandler()` from `packages/mcp/src/remote.js`; `vercel.json` rewrites `/mcp` to it. The tax logic is the shared `src/utils/taxEngine.js`; nothing is duplicated.
+
+---
+
 ## Optional Streamable HTTP / SSE Mode
 
 By default the binary serves stdio. Pass `--http` to run a Streamable HTTP / SSE MCP endpoint with localhost `Host` and `Origin` DNS-rebinding guards:

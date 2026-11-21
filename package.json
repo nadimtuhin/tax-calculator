@@ -25,11 +25,13 @@
     "mcp:test": "npm --prefix packages/mcp test"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
     "@vue/cli-plugin-babel": "^5.0.8",
     "vue": "^3.4.0",
     "vue-router": "^5.0.4",
     "vuex": "^4.1.0",
-    "vuex-persistedstate": "^4.1.0"
+    "vuex-persistedstate": "^4.1.0",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.6",
