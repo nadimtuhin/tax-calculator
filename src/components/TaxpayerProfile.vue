@@ -144,6 +144,9 @@ export default {
   },
 
   computed: {
+    storeProfile() {
+      return this.$store.state.salaries?.taxpayerProfile;
+    },
     ...mapGetters({
       fiscalYearOptions: 'fiscalYearOptions',
       taxFreeThreshold: 'taxFreeThreshold',
@@ -172,6 +175,23 @@ export default {
       const count = normalizeDisabledDependentCount(this.disabledDependentCount);
       if (count === 0) return name;
       return `${name} + Parent of ${count} Disabled ${count === 1 ? 'Child' : 'Children'}`;
+    },
+  },
+
+  watch: {
+    // Reset and Import write the profile straight to the store; mirror it so the form
+    // does not keep stale values that the next edit would write back.
+    storeProfile(profile) {
+      // Legacy category only mounted() knows how to migrate
+      if (!profile || profile.category === 'parent_disabled') return;
+      const { category } = profile;
+      if (category && category !== this.selectedCategory) this.selectedCategory = category;
+      if (profile.location && profile.location !== this.selectedLocation) this.selectedLocation = profile.location;
+      if (profile.age === null) this.age = 30;
+      else if (Number.isFinite(profile.age) && profile.age !== Number(this.age)) this.age = profile.age;
+      const count = resolveDisabledDependentCount(profile);
+      if (count !== normalizeDisabledDependentCount(this.disabledDependentCount)) this.disabledDependentCount = count;
+      if (!!profile.firstTimeFiler !== this.firstTimeFiler) this.firstTimeFiler = !!profile.firstTimeFiler;
     },
   },
 
