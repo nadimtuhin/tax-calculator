@@ -1,308 +1,174 @@
 import { test, expect } from '@playwright/test';
+import { selectCategory } from './helpers/category.js';
+import {
+  FY_2025,
+  calcPanel,
+  panelRow,
+  rowAmount,
+  setMonthly,
+  expectHeadingAmount,
+} from './helpers/fa2026-calc-ui.js';
+
+// Monthly basic 100,000 -> gross 1,200,000, Para 27 exemption 400,000, taxable 800,000.
+const HIGH_MONTHLY_BASIC = 100000;
 
 test.describe('Tax Calculation Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#app')).toBeVisible();
+    await expect(calcPanel(page, FY_2025)).toBeVisible();
   });
 
   test('should display tax calculation table', async ({ page }) => {
-    // Look for tax calculation table
-    const taxTable = page.locator('table, .tax-table, [data-testid="tax-table"]');
-    
-    if (await taxTable.count() > 0) {
-      await expect(taxTable.first()).toBeVisible();
-      
-      // Check for essential columns
-      const headers = page.locator('th, td strong, .header');
-      const headerTexts = [];
-      
-      for (let i = 0; i < await headers.count(); i++) {
-        headerTexts.push(await headers.nth(i).textContent());
-      }
-      
-      const hasIncomeColumn = headerTexts.some(text => text.includes('Income'));
-      const hasRateColumn = headerTexts.some(text => text.includes('rate') || text.includes('Rate'));
-      const hasTaxColumn = headerTexts.some(text => text.includes('Tax'));
-      
-      expect(hasIncomeColumn || hasRateColumn || hasTaxColumn).toBeTruthy();
-    }
+    const panel = calcPanel(page, FY_2025);
+    const table = panel.locator('table.invoice');
+    await expect(table).toBeVisible();
+
+    const headerRow = table.locator('tr').first();
+    await expect(headerRow).toContainText('Income (per year)');
+    await expect(headerRow).toContainText('New rate [%]');
+    await expect(headerRow).toContainText('Tax (BDT)');
   });
 
   test('should show progressive tax slabs for general taxpayer', async ({ page }) => {
-    // Set general taxpayer profile
-    const generalOption = page.locator('option[value="general"], input[value="general"]');
-    if (await generalOption.count() > 0) {
-      await generalOption.first().click();
-      await page.waitForTimeout(500);
-    }
-    
-    // Check tax slabs
-    const slabRows = page.locator('table tbody tr, .slab-row');
-    if (await slabRows.count() >= 2) {
-      const firstSlab = await slabRows.first().textContent();
-      const secondSlab = await slabRows.nth(1).textContent();
-      
-      // First slab should be 0% (tax-free)
-      expect(firstSlab).toContain('0');
-      expect(firstSlab).toContain('3.5');
-      
-      // Second slab should be 5%
-      expect(secondSlab).toContain('5');
-    }
+    await selectCategory(page, 'general');
+
+    const slabRows = calcPanel(page, FY_2025).locator('table.invoice tr').filter({ hasText: /lakh/ });
+    await expect(slabRows).toHaveCount(6);
+
+    // FY 2025-26 general threshold is 4 lakh at 0%, then 10% (5% bracket removed)
+    await expect(slabRows.nth(0)).toContainText('First Tk4 lakh [0-4 lakh]');
+    await expect(slabRows.nth(0).locator('td').nth(1)).toHaveText('0');
+    await expect(slabRows.nth(1)).toContainText('Next Tk3 lakh [4-7 lakh]');
+    await expect(slabRows.nth(1).locator('td').nth(1)).toHaveText('10');
   });
 
   test('should calculate tax correctly for income above threshold', async ({ page }) => {
-    // Set salary above tax-free threshold
-    const salaryInput = page.locator('input[type="number"]').first();
-    if (await salaryInput.count() > 0) {
-      await salaryInput.fill('50000'); // 600k annually, above 350k threshold
-      await page.waitForTimeout(1000);
-      
-      // Check total tax is calculated
-      const totalTax = page.locator('h2, .total-tax, [data-testid="total-tax"]').first();
-      if (await totalTax.count() > 0) {
-        const taxText = await totalTax.textContent();
-        
-        // Should show a positive tax amount
-        const hasPositiveTax = /\d+/.test(taxText) && !taxText.includes('0');
-        expect(hasPositiveTax).toBeTruthy();
-      }
-    }
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+
+    // taxable 800,000: 4L@0% + 3L@10% (30,000) + 1L@15% (15,000)
+    await expectHeadingAmount(page, FY_2025, 45000);
+    expect(await rowAmount(page, FY_2025, 'Slab tax (gross)')).toBe(45000);
   });
 
   test('should apply minimum tax for low income', async ({ page }) => {
-    // Set low salary
-    const salaryInput = page.locator('input[type="number"]').first();
-    if (await salaryInput.count() > 0) {
-      await salaryInput.fill('25000'); // 300k annually, below threshold
-      await page.waitForTimeout(1000);
-      
-      // Should show minimum tax notice
-      const minimumTaxNotice = page.locator('small, .minimum-tax-notice, [style*="red"]');
-      if (await minimumTaxNotice.count() > 0) {
-        const noticeText = await minimumTaxNotice.textContent();
-        expect(noticeText.toLowerCase()).toContain('minimum');
-      }
-    }
+    // 51,250 x 12 = 615,000 gross -> taxable 410,000: slab tax 1,000 < minimum 5,000
+    await setMonthly(page, 'basic', 51250);
+
+    await expectHeadingAmount(page, FY_2025, 5000);
+    await expect(calcPanel(page, FY_2025).locator('.min-tax-notice')).toContainText(
+      'Minimum tax applied: BDT 5000'
+    );
   });
 
   test('should calculate different tax for different profiles', async ({ page }) => {
-    // Set a salary amount
-    const salaryInput = page.locator('input[type="number"]').first();
-    if (await salaryInput.count() > 0) {
-      await salaryInput.fill('40000'); // 480k annually
-      await page.waitForTimeout(500);
-    }
-    
-    // Get tax for general taxpayer
-    const generalOption = page.locator('option[value="general"], input[value="general"]');
-    if (await generalOption.count() > 0) {
-      await generalOption.first().click();
-      await page.waitForTimeout(500);
-    }
-    
-    const totalTaxElement = page.locator('h2, .total-tax, [data-testid="total-tax"]').first();
-    let generalTax = '';
-    if (await totalTaxElement.count() > 0) {
-      generalTax = await totalTaxElement.textContent();
-    }
-    
-    // Switch to female taxpayer
-    const femaleOption = page.locator('option[value="female"], input[value="female"]');
-    if (await femaleOption.count() > 0) {
-      await femaleOption.first().click();
-      await page.waitForTimeout(500);
-      
-      if (generalTax) {
-        const femaleTax = await totalTaxElement.textContent();
-        
-        // Tax should be different (female has higher threshold)
-        expect(femaleTax).not.toBe(generalTax);
-      }
-    }
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+
+    await selectCategory(page, 'general');
+    await expectHeadingAmount(page, FY_2025, 45000);
+
+    // Female threshold is 4.5 lakh: 3L@10% (30,000) + 0.5L@15% (7,500)
+    await selectCategory(page, 'female');
+    await expectHeadingAmount(page, FY_2025, 37500);
   });
 
   test('should show tax deduction at source (TDS)', async ({ page }) => {
-    // Look for TDS input or display
-    const tdsInput = page.locator('input').filter({ hasText: /tds|deduct/i }).first();
-    const tdsRow = page.locator('tr, .row').filter({ hasText: /deduct|tds/i }).first();
-    
-    if (await tdsInput.count() > 0) {
-      await tdsInput.fill('5000');
-      await page.waitForTimeout(500);
-    }
-    
-    if (await tdsRow.count() > 0) {
-      await expect(tdsRow).toBeVisible();
-      const tdsText = await tdsRow.textContent();
-      expect(tdsText.toLowerCase()).toContain('deduct');
-    }
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+    await page.getByRole('spinbutton', { name: 'July TDS', exact: true }).fill('5000');
+
+    const tdsRow = panelRow(page, FY_2025, 'Tax deducted at source');
+    await expect(tdsRow).toBeVisible();
+    // 5,000 x 12 months
+    await expect(tdsRow).toContainText('-60000');
+    expect(await rowAmount(page, FY_2025, 'Payable')).toBe(0); // payable is floored at 0 when TDS exceeds total tax
   });
 
   test('should show investment rebate calculation', async ({ page }) => {
-    // Look for investment input or display
-    const investmentInput = page.locator('input').filter({ hasText: /invest|rebate/i }).first();
-    const investmentRow = page.locator('tr, .row').filter({ hasText: /invest|rebate/i }).first();
-    
-    if (await investmentInput.count() > 0) {
-      await investmentInput.fill('100000');
-      await page.waitForTimeout(500);
-    }
-    
-    if (await investmentRow.count() > 0) {
-      await expect(investmentRow).toBeVisible();
-      const investmentText = await investmentRow.textContent();
-      expect(investmentText.toLowerCase()).toContain('rebate');
-    }
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+    await page.getByRole('spinbutton', { name: 'DPS amount', exact: true }).fill('100000');
+
+    const rebateRow = panelRow(page, FY_2025, 'Tax rebate on investment');
+    await expect(rebateRow).toBeVisible();
+    // min(3% x 800,000 = 24,000, 10% x 100,000 = 10,000, 750,000)
+    await expect.poll(() => rowAmount(page, FY_2025, 'Tax rebate on investment')).toBe(-10000);
+    await expectHeadingAmount(page, FY_2025, 35000);
   });
 
   test('should calculate final payable amount', async ({ page }) => {
-    // Set salary, TDS, and investment
-    const inputs = page.locator('input[type="number"]');
-    
-    if (await inputs.count() >= 3) {
-      await inputs.nth(0).fill('60000'); // Salary
-      await inputs.nth(1).fill('5000');  // TDS
-      await inputs.nth(2).fill('50000'); // Investment
-      await page.waitForTimeout(1000);
-    }
-    
-    // Check payable amount row
-    const payableRow = page.locator('tr, .row').filter({ hasText: /payable/i }).first();
-    if (await payableRow.count() > 0) {
-      await expect(payableRow).toBeVisible();
-      
-      const payableText = await payableRow.textContent();
-      expect(payableText.toLowerCase()).toContain('payable');
-    }
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+    await page.getByRole('spinbutton', { name: 'July TDS', exact: true }).fill('2000');
+    await page.getByRole('spinbutton', { name: 'DPS amount', exact: true }).fill('100000');
+
+    const payableRow = panelRow(page, FY_2025, 'Payable');
+    await expect(payableRow).toBeVisible();
+    // total tax 45,000 - 10,000 rebate = 35,000; TDS 24,000 -> payable 11,000
+    await expect.poll(() => rowAmount(page, FY_2025, 'Payable')).toBe(11000);
   });
 
   test('should update calculations in real-time', async ({ page }) => {
-    const salaryInput = page.locator('input[type="number"]').first();
-    const totalTaxElement = page.locator('h2, .total-tax').first();
-    
-    if (await salaryInput.count() > 0 && await totalTaxElement.count() > 0) {
-      // Set initial salary
-      await salaryInput.fill('30000');
-      await page.waitForTimeout(500);
-      const initialTax = await totalTaxElement.textContent();
-      
-      // Increase salary
-      await salaryInput.fill('60000');
-      await page.waitForTimeout(500);
-      const increasedTax = await totalTaxElement.textContent();
-      
-      // Tax should have increased
-      expect(increasedTax).not.toBe(initialTax);
-    }
+    // 30,000 x 12 = 360,000 gross -> taxable 240,000, below threshold
+    await setMonthly(page, 'basic', 30000);
+    await expectHeadingAmount(page, FY_2025, 0);
+
+    await setMonthly(page, 'basic', HIGH_MONTHLY_BASIC);
+    await expectHeadingAmount(page, FY_2025, 45000);
   });
 
   test('should handle edge cases at slab boundaries', async ({ page }) => {
-    const salaryInput = page.locator('input[type="number"]').first();
-    
-    if (await salaryInput.count() > 0) {
-      // Test exactly at threshold (350k for general taxpayer)
-      await salaryInput.fill('29167'); // Exactly 350k annually
-      await page.waitForTimeout(500);
-      
-      const taxTable = page.locator('table, .tax-table');
-      if (await taxTable.count() > 0) {
-        await expect(taxTable.first()).toBeVisible();
-        
-        // Should show 0 calculated tax, only minimum tax
-        const slabRows = page.locator('table tbody tr, .slab-row');
-        if (await slabRows.count() > 0) {
-          const firstSlabTax = await slabRows.first().textContent();
-          expect(firstSlabTax).toContain('0');
-        }
-      }
-    }
+    // 50,000 x 12 = 600,000 gross -> taxable exactly 400,000 (the general threshold)
+    await setMonthly(page, 'basic', 50000);
+
+    await expectHeadingAmount(page, FY_2025, 0);
+    const firstSlab = calcPanel(page, FY_2025).locator('table.invoice tr').filter({ hasText: /lakh/ }).first();
+    await expect(firstSlab.locator('td').last()).toHaveText('0');
+    // Minimum tax applies only above the threshold
+    await expect(calcPanel(page, FY_2025).locator('.min-tax-notice')).toHaveCount(0);
   });
 
   test('should show tax slabs with ranges', async ({ page }) => {
-    // Check if tax slabs show ranges like [0-3.5 lakh]
-    const slabRows = page.locator('table tbody tr, .slab-row');
-    
-    if (await slabRows.count() > 0) {
-      for (let i = 0; i < Math.min(3, await slabRows.count()); i++) {
-        const slabText = await slabRows.nth(i).textContent();
-        
-        // Should contain range information
-        const hasRange = slabText.includes('[') && slabText.includes(']') && slabText.includes('lakh');
-        expect(hasRange).toBeTruthy();
-      }
+    const slabRows = calcPanel(page, FY_2025).locator('table.invoice tr').filter({ hasText: /lakh/ });
+    await expect(slabRows).toHaveCount(6);
+
+    for (let i = 0; i < 3; i++) {
+      const slabText = await slabRows.nth(i).innerText();
+      expect(slabText).toMatch(/\[[\d.]+-[\d.]+ lakh\]/);
     }
   });
 
   test('should validate input ranges', async ({ page }) => {
-    const salaryInput = page.locator('input[type="number"]').first();
-    
-    if (await salaryInput.count() > 0) {
-      // Try negative value
-      await salaryInput.fill('-1000');
-      await page.waitForTimeout(500);
-      
-      const value = await salaryInput.inputValue();
-      expect(parseInt(value)).toBeGreaterThanOrEqual(0);
-      
-      // Try very large value
-      await salaryInput.fill('9999999');
-      await page.waitForTimeout(500);
-      
-      // Should handle large numbers gracefully
-      const totalTax = page.locator('h2, .total-tax').first();
-      if (await totalTax.count() > 0) {
-        const taxText = await totalTax.textContent();
-        expect(taxText).toBeTruthy();
-      }
-    }
+    const julyBasic = page.getByRole('spinbutton', { name: 'July basic', exact: true });
+
+    await julyBasic.fill('-1000');
+    // Negative salary must never produce negative or NaN tax
+    await expectHeadingAmount(page, FY_2025, 0);
+
+    await julyBasic.fill('999999');
+    // 999,999 x 12 gross, exemption capped at 500,000 -> large but finite positive tax
+    await expect.poll(() => rowAmount(page, FY_2025, 'Slab tax (gross)')).toBeGreaterThan(0);
+    const total = await rowAmount(page, FY_2025, 'Total tax');
+    expect(Number.isFinite(total)).toBeTruthy();
   });
 
   test('should work correctly on mobile devices', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    
-    // Tax table should be responsive
-    const taxTable = page.locator('table, .tax-table');
-    if (await taxTable.count() > 0) {
-      await expect(taxTable.first()).toBeVisible();
-    }
-    
-    // Input fields should be touch-friendly
-    const salaryInput = page.locator('input[type="number"]').first();
-    if (await salaryInput.count() > 0) {
-      await salaryInput.tap();
-      await salaryInput.fill('50000');
-      await expect(salaryInput).toHaveValue('50000');
-    }
+
+    await expect(calcPanel(page, FY_2025).locator('table.invoice')).toBeVisible();
+
+    const julyBasic = page.getByRole('spinbutton', { name: 'July basic', exact: true });
+    await julyBasic.scrollIntoViewIfNeeded();
+    await julyBasic.fill('50000');
+    await expect(julyBasic).toHaveValue('50000');
   });
 
   test('should preserve calculations on page reload', async ({ page }) => {
-    const salaryInput = page.locator('input[type="number"]').first();
-    
-    if (await salaryInput.count() > 0) {
-      // Set specific values
-      await salaryInput.fill('45000');
-      await page.waitForTimeout(500);
-      
-      const totalTaxElement = page.locator('h2, .total-tax').first();
-      let originalTax = '';
-      if (await totalTaxElement.count() > 0) {
-        originalTax = await totalTaxElement.textContent();
-      }
-      
-      // Reload page
-      await page.reload();
-      await page.waitForTimeout(1000);
-      
-      // Values should be preserved
-      const preservedValue = await page.locator('input[type="number"]').first().inputValue();
-      expect(preservedValue).toBe('45000');
-      
-      if (originalTax) {
-        const preservedTax = await totalTaxElement.textContent();
-        expect(preservedTax).toBe(originalTax);
-      }
-    }
+    await setMonthly(page, 'basic', 60000);
+    await expectHeadingAmount(page, FY_2025, 8000);
+    const originalTax = await calcPanel(page, FY_2025).locator('.calc-heading-amount').innerText();
+
+    await page.reload();
+    await expect(page.locator('#app')).toBeVisible();
+
+    await expect(page.getByRole('spinbutton', { name: 'July basic', exact: true })).toHaveValue('60000');
+    await expect(calcPanel(page, FY_2025).locator('.calc-heading-amount')).toHaveText(originalTax);
   });
 });

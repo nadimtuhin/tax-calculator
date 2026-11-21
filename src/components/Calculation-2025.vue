@@ -32,6 +32,11 @@
         <td> </td>
         <td> <strong>-{{investmentRebate}}</strong> </td>
       </tr>
+      <tr v-if="rebateRepayable > 0">
+        <td> <strong>Rebate repayable (early encashment/redemption)</strong> </td>
+        <td> </td>
+        <td> <strong>+{{rebateRepayable}}</strong> </td>
+      </tr>
       <tr class="row-total">
         <td> <strong>Total tax</strong> </td> <td> </td>
         <td>
@@ -68,6 +73,7 @@ export default {
 
       // FY 2025-2026 specific getters
       investmentRebate: 'investmentRebate2025',
+      rebateRepayable: 'earlyRedemptionRebateRepayable',
       taxFreeThreshold: 'taxFreeThreshold2025',
       minimumTaxAmount: 'minimumTaxAmount2025',
       effectiveMinimumTax: 'effectiveMinimumTax2025',

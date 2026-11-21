@@ -171,6 +171,9 @@ export default {
       this.$store.commit('changeOthers', $event.target.value );
     },
     changeBreakdown($event, index, part) {
+      if (Number($event.target.value) < 0) {
+        $event.target.value = 0;
+      }
       this.$store.commit('changeParts', { index, part, value: $event.target.value } );
     },
   },

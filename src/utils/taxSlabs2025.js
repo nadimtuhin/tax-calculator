@@ -1,3 +1,5 @@
+import { calculateRebateIncomeBase, resolveDisabledDependentCount } from './fa2026Rules.js';
+
 const LAKH = 100000;
 
 // Bangladesh Tax Slab Structure FY 2025-2026 (amounts in lakh)
@@ -68,8 +70,8 @@ export const TAX_FREE_THRESHOLDS_2025 = {
 };
 
 /**
- * Additional allowance for a parent / legal guardian of a person with disability.
- * Added ON TOP of the taxpayer's own category threshold (one parent only),
+ * Additional allowance per physically challenged child/dependent of a parent / legal guardian (booklet s.1.3 p.3).
+ * Added ON TOP of the taxpayer's own category threshold, once per dependent (either parent may claim, not both),
  * e.g. general 400K -> 450K, female/65+ 450K -> 500K, freedom fighter 550K -> 600K.
  */
 export const PARENT_OF_DISABLED_ALLOWANCE_2025 = 50000;
@@ -98,7 +100,7 @@ export const MINIMUM_TAX_FIRST_TIME_2025 = 1000;
  * @returns {number} Tax-free threshold in BDT
  */
 export function getTaxFreeThreshold2025(taxpayerProfile) {
-  const { category, age, parentOfDisabled } = taxpayerProfile;
+  const { category, age } = taxpayerProfile;
   const isLegacyParent = category === 'parent_disabled';
   const baseCategory = isLegacyParent ? 'general' : category;
 
@@ -109,9 +111,7 @@ export function getTaxFreeThreshold2025(taxpayerProfile) {
     threshold = TAX_FREE_THRESHOLDS_2025.senior;
   }
 
-  if (parentOfDisabled || isLegacyParent) {
-    threshold += PARENT_OF_DISABLED_ALLOWANCE_2025;
-  }
+  threshold += resolveDisabledDependentCount(taxpayerProfile) * PARENT_OF_DISABLED_ALLOWANCE_2025;
 
   return threshold;
 }
@@ -157,9 +157,14 @@ export function getMaxRebateableInvestment2025(taxableIncome) {
  * @param {number} totalEligibleInvestment - Eligible investment after Sixth Schedule Part 3 caps
  * @returns {number} Investment rebate in BDT
  */
-export function calculateInvestmentRebate2025Statutory(taxableIncome, totalEligibleInvestment) {
-  if (taxableIncome <= 0 || totalEligibleInvestment <= 0) return 0;
-  const threePercentOfIncome = 0.03 * taxableIncome;
+export function calculateInvestmentRebate2025Statutory(
+  taxableIncome,
+  totalEligibleInvestment,
+  baseExclusions = {}
+) {
+  const rebateBase = calculateRebateIncomeBase(taxableIncome, baseExclusions);
+  if (rebateBase <= 0 || totalEligibleInvestment <= 0) return 0;
+  const threePercentOfIncome = 0.03 * rebateBase;
   const tenPercentOfInvestment = 0.10 * totalEligibleInvestment;
   const statutoryCap = 750000;
   return Math.round(Math.min(threePercentOfIncome, tenPercentOfInvestment, statutoryCap));

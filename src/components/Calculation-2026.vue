@@ -32,6 +32,16 @@
         <td> </td>
         <td> <strong>-{{investmentRebate}}</strong> </td>
       </tr>
+      <tr v-if="solarRebate > 0">
+        <td> <strong>Rebate on solar electricity bill (5%)</strong> </td>
+        <td> </td>
+        <td> <strong>-{{solarRebate}}</strong> </td>
+      </tr>
+      <tr v-if="rebateRepayable > 0">
+        <td> <strong>Rebate repayable (early encashment/redemption)</strong> </td>
+        <td> </td>
+        <td> <strong>+{{rebateRepayable}}</strong> </td>
+      </tr>
       <tr class="row-total">
         <td> <strong>Total tax</strong> </td> <td> </td>
         <td>
@@ -68,6 +78,8 @@ export default {
 
       // FY 2026-2027 specific getters
       investmentRebate: 'investmentRebate2026',
+      rebateRepayable: 'earlyRedemptionRebateRepayable',
+      solarRebate: 'solarRebate2026',
       taxFreeThreshold: 'taxFreeThreshold2026',
       minimumTaxAmount: 'minimumTaxAmount2026',
       effectiveMinimumTax: 'effectiveMinimumTax2026',

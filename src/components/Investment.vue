@@ -62,6 +62,7 @@
       </td>
       <td>
         <span v-if="isLifeInsurance(investment.name)" class="limited">{{ lifeInsuranceCapDisplay(investment) }}</span>
+        <span v-else-if="getCapForRow(investment.name) === 0" class="limited">Not eligible in this year</span>
         <span v-else-if="getCapForRow(investment.name) === null" class="unlimited">Unlimited</span>
         <span v-else class="limited">{{getCapForRow(investment.name).toLocaleString()}}</span>
       </td>
@@ -101,12 +102,56 @@
 </table>
 </div>
 
+<p v-if="usesFa2026" class="fa2026-note">
+  Unit certificates, mutual funds, ETFs and collective investment schemes have no BDT 500,000 investment limit
+  from FY 2025-26 (Finance Act 2026, ACNABIN booklet s.1.43, p.22). Savings certificates and DPS keep their own limits.
+</p>
+
+<p v-if="isDonationYear" class="fa2026-note">
+  Donations to {{ institutionList }} qualify for the investment tax rebate from 1 July 2026 (booklet s.1.46, pp.23-24).
+  The booklet states no separate rate or cap, so the amount counts with your other investments under the normal 3% / 10% / BDT 750,000 limits.
+</p>
+
+<div v-if="usesFa2026" class="fa2026-extras">
+  <p class="fa2026-note fa2026-warning">
+    <strong>Early encashment:</strong> the rebate on government securities, unit funds, mutual funds and similar
+    instruments applies only if held until maturity or the prescribed holding period. Early encashment, redemption or
+    disposal means the rebate claimed earlier must be repaid (booklet s.1.43, p.22). The booklet states no commencement date.
+  </p>
+  <label class="extras-field" for="early-redemption-repayable">
+    <span>Rebate repayable due to early encashment / redemption (BDT)</span>
+    <input
+      id="early-redemption-repayable"
+      type="number"
+      min="0"
+      max="9999999"
+      step="1000"
+      :value="earlyRedemptionRebateRepayable"
+      @input="setEarlyRedemption($event)"
+    />
+  </label>
+  <label v-if="isSolarYear" class="extras-field" for="solar-electricity-bill">
+    <span>Solar electricity bill paid in the income year (BDT) - 5% rebate</span>
+    <input
+      id="solar-electricity-bill"
+      type="number"
+      min="0"
+      max="9999999"
+      step="1000"
+      :value="solarElectricityBill"
+      @input="setSolarBill($event)"
+    />
+    <small>Rebate: BDT {{ solarRebate2026.toLocaleString() }} (booklet s.1.44(b), p.23; individuals using solar-generated electricity).</small>
+  </label>
+</div>
+
 </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from "vuex";
 import { getInvestmentCapForType, LIFE_INSURANCE_POLICY_RATE } from "../utils/taxEngine";
+import { PHILANTHROPIC_INSTITUTIONS } from "../utils/fa2026Rules";
 
 export default {
   name: "investment",
@@ -116,6 +161,12 @@ export default {
     },
     changePolicyValue($event, index) {
       this.$store.commit('changeInvestmentPolicyValue', { index, value: $event.target.value });
+    },
+    setEarlyRedemption($event) {
+      this.$store.commit('setEarlyRedemptionRebateRepayable', $event.target.value);
+    },
+    setSolarBill($event) {
+      this.$store.commit('setSolarElectricityBill', $event.target.value);
     },
     isLifeInsurance(name) {
       return String(name || '').toLowerCase().startsWith('life insurance');
@@ -132,6 +183,18 @@ export default {
     },
   },
   computed: {
+    usesFa2026() {
+      return this.currentYear === '2025-26' || this.currentYear === '2026-27';
+    },
+    isDonationYear() {
+      return this.currentYear === '2026-27';
+    },
+    isSolarYear() {
+      return this.currentYear === '2026-27';
+    },
+    institutionList() {
+      return PHILANTHROPIC_INSTITUTIONS.join('; ');
+    },
     ...mapState({
       parts: state => state.salaries.parts,
       months: state => state.salaries.months,
@@ -140,6 +203,8 @@ export default {
       others: state => state.salaries.others,
       investments: state => state.salaries.investments,
       currentYear: state => state.salaries.currentYear,
+      earlyRedemptionRebateRepayable: state => state.salaries.earlyRedemptionRebateRepayable || 0,
+      solarElectricityBill: state => state.salaries.solarElectricityBill || 0,
     }),
     ...mapGetters({
       totalInvestment: 'totalInvestment',
@@ -149,6 +214,7 @@ export default {
       rebatePercentage: 'rebatePercentage',
       rebateMaxCap: 'rebateMaxCap',
       investmentRebate: 'investmentRebate',
+      solarRebate2026: 'solarRebate2026',
 
       totalSalary: 'totalSalary',
       totalTds: 'totalTds',
@@ -168,6 +234,26 @@ export default {
 </script>
 
 <style scoped>
+.fa2026-note {
+  margin: var(--space-3) 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.fa2026-warning {
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.extras-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: var(--space-3) 0;
+  font-size: var(--text-sm);
+}
+
 .empty-state {
   margin-bottom: var(--space-4);
   padding: var(--space-4);
