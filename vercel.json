@@ -1,0 +1,9 @@
+{
+  "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }],
+  "functions": {
+    "api/mcp.mjs": {
+      "includeFiles": "{src/utils/**,packages/mcp/src/**}",
+      "maxDuration": 10
+    }
+  }
+}

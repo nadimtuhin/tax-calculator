@@ -7,3 +7,5 @@ export {
 } from './server.js';
 
 export * from './engine.js';
+
+export { createRemoteHandler } from './remote.js';
