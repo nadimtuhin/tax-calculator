@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { categoryRadios, selectCategory } from './helpers/category.js';
+import { FY_2025, FY_2026, calcPanel, panelRow, setMonthly, expectHeadingAmount } from './helpers/fa2026-calc-ui.js';
+
+const expectBothYears = async (page, amount) => {
+  await expectHeadingAmount(page, FY_2025, amount);
+  await expectHeadingAmount(page, FY_2026, amount);
+};
 
 test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   test.beforeEach(async ({ page }) => {
@@ -20,34 +26,12 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   });
 
   test('should handle zero income correctly', async ({ page }) => {
-    // Set taxpayer profile
-    const categorySelect = categoryRadios(page).first();
-    if (await categorySelect.count() > 0) {
-      await selectCategory(page, 'general');
-      await page.waitForTimeout(500);
-    }
-    
-    // Set zero salary
-    const salaryInput = page.locator('input[type="number"]').first();
-    await salaryInput.fill('0');
-    await page.waitForTimeout(1000);
-    
-    // Should show minimum tax for both years
-    const pageContent = await page.textContent('body');
-    
-    // Should contain minimum tax information
-    expect(pageContent).toMatch(/minimum.*tax/i);
-    
-    // Both calculations should show positive tax amounts (minimum tax)
-    const h2Elements = page.locator('h2');
-    const h2Texts = await h2Elements.allTextContents();
-    
-    // Should have tax amounts in h2 headings
-    const hasPositiveNumbers = h2Texts.some(text => {
-      const match = text.match(/(\d+)/);
-      return match && parseInt(match[1]) > 0;
-    });
-    expect(hasPositiveNumbers).toBe(true);
+    await selectCategory(page, 'general');
+    await setMonthly(page, 'basic', 0);
+
+    // Minimum tax applies only above the threshold, so zero income owes nothing
+    await expectBothYears(page, 0);
+    await expect(page.locator('.min-tax-notice')).toHaveCount(0);
   });
 
   test('should handle exact threshold amounts for general taxpayer', async ({ page }) => {
@@ -82,225 +66,80 @@ test.describe('Edge Cases and Boundary Values - Dual Tax Calculator', () => {
   });
 
   test('should handle boundary values for different taxpayer categories', async ({ page }) => {
+    // Monthly basic chosen so taxable salary (2/3 of gross) is 60,000 above each threshold
     const categoryTests = [
-      { 
-        category: 'female', 
-        threshold2024: 400000, 
-        threshold2025: 450000,
-        monthlyThreshold2024: 33334,
-        monthlyThreshold2025: 37500
-      },
-      { 
-        category: 'disabled', 
-        threshold2024: 475000, 
-        threshold2025: 525000,
-        monthlyThreshold2024: 39583,
-        monthlyThreshold2025: 43750
-      },
-      { 
-        category: 'freedom_fighter', 
-        threshold2024: 500000, 
-        threshold2025: 550000,
-        monthlyThreshold2024: 41667,
-        monthlyThreshold2025: 45834
-      }
+      { category: 'female', monthlyBasic: 63750, tax: 6000 }, // threshold 450,000, taxable 510,000
+      { category: 'disabled', monthlyBasic: 73125, tax: 6000 }, // threshold 525,000, taxable 585,000
+      { category: 'freedom_fighter', monthlyBasic: 76250, tax: 6000 }, // threshold 550,000, taxable 610,000
     ];
-    
-    for (const test of categoryTests) {
-      // Set taxpayer category
-      const categorySelect = categoryRadios(page).first();
-      if (await categorySelect.count() > 0) {
-        await selectCategory(page, test.category);
-        await page.waitForTimeout(500);
-      }
-      
-      // Test salary just above threshold
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill((test.monthlyThreshold2025 + 1000).toString());
-      await page.waitForTimeout(1000);
-      
-      // Should show appropriate thresholds
-      const pageContent = await page.textContent('body');
-      
-      // Should show different tax amounts for 2024 vs 2025
-      const h2Elements = page.locator('h2');
-      const h2Texts = await h2Elements.allTextContents();
-      
-      // Extract tax amounts
-      const taxAmounts = h2Texts.map(text => {
-        const match = text.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      });
-      
-      // Both should be positive and potentially different
-      expect(taxAmounts[0]).toBeGreaterThan(0);
-      expect(taxAmounts[1]).toBeGreaterThan(0);
+
+    for (const { category, monthlyBasic, tax } of categoryTests) {
+      await selectCategory(page, category);
+      await setMonthly(page, 'basic', monthlyBasic);
+      await expectBothYears(page, tax);
     }
   });
 
   test('should handle very high income correctly', async ({ page }) => {
-    // Set general taxpayer
-    const categorySelect = categoryRadios(page).first();
-    if (await categorySelect.count() > 0) {
-      await selectCategory(page, 'general');
-      await page.waitForTimeout(500);
-    }
-    
-    // Test very high income scenarios
-    const highIncomeTests = [
-      { monthly: 500000, annual: 6000000, description: '6M annual income' },
-      { monthly: 1000000, annual: 12000000, description: '12M annual income' }
-    ];
-    
-    for (const test of highIncomeTests) {
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill(test.monthly.toString());
-      await page.waitForTimeout(1000);
-      
-      // Should show substantial tax amounts
-      const h2Elements = page.locator('h2');
-      const h2Texts = await h2Elements.allTextContents();
-      
-      // Extract tax amounts
-      const taxAmounts = h2Texts.map(text => {
-        const match = text.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      });
-      
-      // Both should show substantial tax (over 1M for 6M+ income)
-      expect(taxAmounts[0]).toBeGreaterThan(500000);
-      expect(taxAmounts[1]).toBeGreaterThan(500000);
-      
-      // Should use highest tax brackets
-      const pageContent = await page.textContent('body');
-      expect(pageContent).toContain('30%'); // Highest bracket
-    }
+    await selectCategory(page, 'general');
+
+    // Gross 6M: exemption capped at 500,000 -> taxable 5.5M
+    // 30,000 + 60,000 + 100,000 + 500,000 + 30% of the 1.9M above 36 lakh
+    await setMonthly(page, 'basic', 500000);
+    await expectBothYears(page, 1260000);
+
+    // Gross 12M -> taxable 11.5M: 690,000 + 30% of 7.9M
+    await setMonthly(page, 'basic', 1000000);
+    await expectBothYears(page, 3060000);
+
+    await expect(panelRow(page, FY_2025, 'Slab tax (gross)').first()).toBeVisible();
   });
 
   test('should handle negative and invalid input values', async ({ page }) => {
-    const salaryInput = page.locator('input[type="number"]').first();
-    
-    // Test negative value
-    await salaryInput.fill('-1000');
-    await page.waitForTimeout(1000);
-    
-    // Input should either reject negative value or treat as zero
-    const inputValue = await salaryInput.inputValue();
-    const numericValue = parseInt(inputValue) || 0;
-    expect(numericValue).toBeGreaterThanOrEqual(0);
-    
-    // Should still show minimum tax calculations
-    const h2Elements = page.locator('h2');
-    const h2Texts = await h2Elements.allTextContents();
-    const hasNumbers = h2Texts.some(text => /\d/.test(text));
-    expect(hasNumbers).toBe(true);
-    
-    // Test extremely large value
-    await salaryInput.fill('99999999');
-    await page.waitForTimeout(1000);
-    
-    // Should handle large values gracefully
-    const largeInputValue = await salaryInput.inputValue();
-    expect(largeInputValue).toBeTruthy();
-    
-    // Should still show calculations
-    const h2TextsLarge = await h2Elements.allTextContents();
-    const hasNumbersLarge = h2TextsLarge.some(text => /\d/.test(text));
-    expect(hasNumbersLarge).toBe(true);
+    const julyBasic = page.getByRole('spinbutton', { name: 'July basic', exact: true });
+
+    // A negative breakdown entry is clamped to zero
+    await julyBasic.fill('-1000');
+    await expect(julyBasic).toHaveValue('0');
+    await expectBothYears(page, 0);
+
+    // Extremely large value still yields a finite, positive tax
+    await julyBasic.fill('99999999');
+    await expect(julyBasic).toHaveValue('99999999');
+    await expect
+      .poll(async () => Number((await calcPanel(page, FY_2025).locator('.calc-heading-amount').innerText()).replace(/[^\d.-]/g, '')))
+      .toBeGreaterThan(0);
   });
 
   test('should handle minimum tax boundaries for different locations', async ({ page }) => {
-    // Test different locations for 2024-25 vs 2025-26 minimum tax differences
-    const locationTests = [
-      { location: 'dhaka', min2024: 5000, min2025: 5000 },
-      { location: 'chittagong', min2024: 5000, min2025: 5000 },
-      { location: 'district', min2024: 3000, min2025: 5000 } // Different between years
-    ];
-    
-    for (const test of locationTests) {
-      // Set location if location selector exists
-      const locationSelect = page.locator('select').filter({ hasText: /location|city|area/i }).first();
-      if (await locationSelect.count() > 0) {
-        await locationSelect.selectOption(test.location);
-        await page.waitForTimeout(500);
-      }
-      
-      // Set very low salary to trigger minimum tax
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill('20000'); // 240K annually (below all thresholds)
-      await page.waitForTimeout(1000);
-      
-      // For district location, should show different minimum tax between years
-      if (test.location === 'district') {
-        const pageContent = await page.textContent('body');
-        
-        // Should show minimum tax application
-        expect(pageContent).toMatch(/minimum.*tax/i);
-        
-        // Should show different amounts for 2024 vs 2025
-        const h2Elements = page.locator('h2');
-        const h2Texts = await h2Elements.allTextContents();
-        
-        // Extract tax amounts
-        const taxAmounts = h2Texts.map(text => {
-          const match = text.match(/(\d+)/);
-          return match ? parseInt(match[1]) : 0;
-        });
-        
-        // For district: 2024 should be 3000, 2025 should be 5000
-        expect(taxAmounts.some(amount => amount >= 3000)).toBe(true);
-        expect(taxAmounts.some(amount => amount >= 5000)).toBe(true);
-      }
+    // 50,500 x 12 = 606,000 gross -> taxable 404,000: slab tax 400, just above the 4 lakh threshold
+    await setMonthly(page, 'basic', 50500);
+
+    // FY 2025-26 and FY 2026-27 use one unified minimum tax across every location
+    for (const location of ['dhaka', 'chittagong', 'other_city', 'district']) {
+      await page.locator('#profile-location').selectOption(location);
+      await expectBothYears(page, 5000);
     }
+
+    // First-time filers pay BDT 1,000 minimum instead
+    await page.locator('#first-time-filer').check({ force: true });
+    await expectBothYears(page, 1000);
   });
 
   test('should handle tax slab boundary values', async ({ page }) => {
-    // Set general taxpayer
-    const categorySelect = categoryRadios(page).first();
-    if (await categorySelect.count() > 0) {
-      await selectCategory(page, 'general');
-      await page.waitForTimeout(500);
-    }
-    
-    // Test income levels that hit slab boundaries
+    await selectCategory(page, 'general');
+
+    // taxable salary = 2/3 of gross while gross <= 1.5M, so monthly basic = taxable / 8
     const slabBoundaryTests = [
-      { monthly: 37500, annual: 450000, description: 'End of 5% bracket (2024-25 only)' },
-      { monthly: 56250, annual: 675000, description: 'End of first taxable bracket (2025-26)' },
-      { monthly: 70833, annual: 850000, description: 'Mid-level slab boundary' },
-      { monthly: 131250, annual: 1575000, description: 'Higher slab boundary' }
+      { monthly: 50000, taxable: 400000, tax: 0 },
+      { monthly: 87500, taxable: 700000, tax: 30000 },
+      { monthly: 125000, taxable: 1000000, tax: 75000 },
+      { monthly: 175000, taxable: 1600000, tax: 190000 }, // gross 2.1M, exemption capped at 500,000
     ];
-    
-    for (const test of slabBoundaryTests) {
-      const salaryInput = page.locator('input[type="number"]').first();
-      await salaryInput.fill(test.monthly.toString());
-      await page.waitForTimeout(1000);
-      
-      // Should show progressive tax calculations
-      const pageContent = await page.textContent('body');
-      
-      // Should show multiple tax rates being applied
-      expect(pageContent).toContain('10%');
-      expect(pageContent).toContain('15%');
-      
-      // For the 450K test, 2024-25 should show 5% but 2025-26 should not
-      if (test.annual === 450000) {
-        expect(pageContent).toContain('5%'); // 2024-25 has 5% bracket
-      }
-      
-      // Both years should show reasonable tax amounts
-      const h2Elements = page.locator('h2');
-      const h2Texts = await h2Elements.allTextContents();
-      
-      const taxAmounts = h2Texts.map(text => {
-        const match = text.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      });
-      
-      // Both should be positive and reasonable for the income level
-      expect(taxAmounts[0]).toBeGreaterThan(0);
-      expect(taxAmounts[1]).toBeGreaterThan(0);
-      expect(taxAmounts[0]).toBeLessThan(test.annual * 0.5); // Less than 50% tax
-      expect(taxAmounts[1]).toBeLessThan(test.annual * 0.5);
+
+    for (const { monthly, tax } of slabBoundaryTests) {
+      await setMonthly(page, 'basic', monthly);
+      await expectBothYears(page, tax);
     }
   });
 
