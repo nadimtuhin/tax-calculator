@@ -136,6 +136,8 @@ test.describe('StarModal Component', () => {
     await page.evaluate(() => {
       localStorage.setItem('tax-calculator-never-star', 'true');
     });
+    // The first-visit timer was armed by the page load above, so reload with the flag already set
+    await page.reload();
     
     // Modal should not be visible
     await page.waitForTimeout(2000);
@@ -159,7 +161,7 @@ test.describe('StarModal Component', () => {
     await expect(modal).toBeVisible();
     
     // Buttons should be adequately sized for touch
-    const starBtn = page.locator('.star-btn');
+    const starBtn = page.locator('.star-modal .star-btn');
     const laterBtn = page.locator('.later-btn');
     const neverBtn = page.locator('.never-btn');
     
@@ -172,19 +174,22 @@ test.describe('StarModal Component', () => {
     await page.goto('/');
     await expect(page.locator('.star-modal-overlay')).toBeVisible({ timeout: 3000 });
     
-    // Tab through the buttons
-    await page.keyboard.press('Tab'); // Focus star button
-    await expect(page.locator('.star-modal .star-btn')).toBeFocused();
-    
-    await page.keyboard.press('Tab'); // Focus later button
-    await expect(page.locator('.star-modal .later-btn')).toBeFocused();
-    
-    await page.keyboard.press('Tab'); // Focus never button
-    await expect(page.locator('.star-modal .never-btn')).toBeFocused();
-    
-    await page.keyboard.press('Tab'); // Focus close button
+    // The modal has no focus trap, so start from its close button and walk the actions in DOM order
+    await page.locator('.close-btn').focus();
     await expect(page.locator('.close-btn')).toBeFocused();
-    
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.star-modal .star-btn')).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.star-modal .later-btn')).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.star-modal .never-btn')).toBeFocused();
+
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('.close-btn')).toBeFocused();
+
     // Press Enter on close button
     await page.keyboard.press('Enter');
     await expect(page.locator('.star-modal-overlay')).not.toBeVisible();

@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { categoryRadios, selectedCategory } from './helpers/category.js';
+import { categoryRadios, selectedCategory, selectCategory } from './helpers/category.js';
+import { FY_2025, calcPanel } from './helpers/fa2026-calc-ui.js';
+
+const firstSlabText = async (page) =>
+  calcPanel(page, FY_2025).locator('table.invoice tr').filter({ hasText: /lakh/ }).first().innerText();
 
 test.describe('Taxpayer Profile Selection', () => {
   test.beforeEach(async ({ page }) => {
@@ -57,58 +61,27 @@ test.describe('Taxpayer Profile Selection', () => {
   });
 
   test('should allow selecting senior citizen profile', async ({ page }) => {
-    const seniorOption = page.locator('option[value="senior"], input[value="senior"], [data-value="senior"]');
-    
-    if (await seniorOption.count() > 0) {
-      await seniorOption.first().click();
-      await page.waitForTimeout(500);
-      
-      // Verify higher tax-free threshold is applied
-      const taxSlabs = page.locator('table tbody tr, .slab-row');
-      if (await taxSlabs.count() > 0) {
-        const firstSlab = taxSlabs.first();
-        const slabText = await firstSlab.textContent();
-        
-        // Senior citizens should have 4 lakh threshold
-        expect(slabText).toContain('4');
-      }
-    }
+    await selectCategory(page, 'senior');
+    expect(await selectedCategory(page)).toBe('senior');
+
+    // FY 2025-26 tax-free threshold: 4.5 lakh
+    await expect.poll(() => firstSlabText(page)).toContain('First Tk4.5 lakh [0-4.5 lakh]');
   });
 
   test('should allow selecting disabled person profile', async ({ page }) => {
-    const disabledOption = page.locator('option[value="disabled"], input[value="disabled"], [data-value="disabled"]');
-    
-    if (await disabledOption.count() > 0) {
-      await disabledOption.first().click();
-      await page.waitForTimeout(500);
-      
-      // Disabled persons should have 4.75 lakh threshold
-      const taxSlabs = page.locator('table tbody tr, .slab-row');
-      if (await taxSlabs.count() > 0) {
-        const firstSlab = taxSlabs.first();
-        const slabText = await firstSlab.textContent();
-        
-        expect(slabText).toContain('4.8');
-      }
-    }
+    await selectCategory(page, 'disabled');
+    expect(await selectedCategory(page)).toBe('disabled');
+
+    // FY 2025-26 tax-free threshold: 5.25 lakh
+    await expect.poll(() => firstSlabText(page)).toContain('First Tk5.25 lakh [0-5.25 lakh]');
   });
 
   test('should allow selecting freedom fighter profile', async ({ page }) => {
-    const freedomFighterOption = page.locator('option[value="freedom_fighter"], input[value="freedom_fighter"], [data-value="freedom_fighter"]');
-    
-    if (await freedomFighterOption.count() > 0) {
-      await freedomFighterOption.first().click();
-      await page.waitForTimeout(500);
-      
-      // Freedom fighters should have 5 lakh threshold
-      const taxSlabs = page.locator('table tbody tr, .slab-row');
-      if (await taxSlabs.count() > 0) {
-        const firstSlab = taxSlabs.first();
-        const slabText = await firstSlab.textContent();
-        
-        expect(slabText).toContain('5');
-      }
-    }
+    await selectCategory(page, 'freedom_fighter');
+    expect(await selectedCategory(page)).toBe('freedom_fighter');
+
+    // FY 2025-26 tax-free threshold: 5.5 lakh
+    await expect.poll(() => firstSlabText(page)).toContain('First Tk5.5 lakh [0-5.5 lakh]');
   });
 
   test('should allow setting age and location', async ({ page }) => {
@@ -126,27 +99,14 @@ test.describe('Taxpayer Profile Selection', () => {
   });
 
   test('should update tax calculations when profile changes', async ({ page }) => {
-    // Get initial tax calculation
-    const taxDisplay = page.locator('h2, .total-tax, [data-testid="total-tax"]').first();
-    let initialTax = '';
-    
-    if (await taxDisplay.count() > 0) {
-      initialTax = await taxDisplay.textContent();
-    }
-    
-    // Change profile
-    const femaleOption = page.locator('option[value="female"], input[value="female"]');
-    if (await femaleOption.count() > 0) {
-      await femaleOption.first().click();
-      await page.waitForTimeout(1000);
-      
-      // Check if tax calculation changed
-      if (initialTax) {
-        const newTax = await taxDisplay.textContent();
-        // Tax calculation should have updated (threshold changed)
-        expect(newTax).not.toBe(initialTax);
-      }
-    }
+    await page.getByRole('spinbutton', { name: 'July basic', exact: true }).fill('100000');
+    await selectCategory(page, 'general');
+    const amount = calcPanel(page, FY_2025).locator('h2.calc-heading .calc-heading-amount');
+    await expect(amount).toHaveText(/45,?000/);
+
+    // Female threshold is 4.5 lakh: 3L@10% + 0.5L@15% = 37,500
+    await selectCategory(page, 'female');
+    await expect(amount).toHaveText(/37,?500/);
   });
 
   test('should persist profile selection on page reload', async ({ page }) => {

@@ -6,7 +6,7 @@ test.describe('Basic Navigation', () => {
     
     await expect(page).toHaveTitle(/Tax calculator/);
     await expect(page.locator('#app').first()).toBeVisible();
-    await expect(page.locator('nav')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
   });
 
   test('should have working navigation links', async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('Basic Navigation', () => {
     await expect(page.locator('#app').first()).toBeVisible();
     
     // Check if mobile navigation works
-    const navbar = page.locator('nav');
+    const navbar = page.getByRole('navigation', { name: 'Main navigation' });
     await expect(navbar).toBeVisible();
   });
 });
