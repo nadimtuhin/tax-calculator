@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { selectCategory } from './helpers/category.js';
+import { selectCategory, selectedCategory } from './helpers/category.js';
 import {
   openCalculator,
   setMonthlySalary,
@@ -121,12 +121,15 @@ test.describe('Error Handling and Edge Cases', () => {
 
       await age.fill('64');
       await expect(notice).toHaveCount(0);
+      expect(await selectedCategory(page)).toBe('general');
 
+      // At 65 the general category is switched to senior automatically
       await age.fill('65');
-      await expect(notice).toBeVisible();
+      await expect.poll(() => selectedCategory(page)).toBe('senior');
 
+      // Senior threshold 4.5 lakh: slab tax 3,000 is lifted to the 5,000 minimum tax
       await setMonthlySalary(page, 60000);
-      await expect(panelTotal(page)).toHaveText('8000');
+      await expect(panelTotal(page)).toHaveText('5000');
     });
   });
 
@@ -183,7 +186,7 @@ test.describe('Error Handling and Edge Cases', () => {
         await salaryInput.tap();
         await salaryInput.fill('60000');
 
-        await page.touchScreen.tap(200, 300);
+        await page.touchscreen.tap(200, 300);
         await page.evaluate(() => window.scrollBy(0, 200));
 
         await expect(panelTotal(page)).toHaveText('8000');
@@ -210,8 +213,8 @@ test.describe('Error Handling and Edge Cases', () => {
 
     test('should handle multiple browser tabs correctly', async ({ context, page }) => {
       await setMonthlySalary(page, 55000);
-      // State is saved to localStorage on a 200ms debounce
-      await page.waitForFunction(() => localStorage.getItem('app')?.includes('55000'));
+      // vuex-persistedstate saves the whole store under the app version key ("0.8")
+      await page.waitForFunction(() => localStorage.getItem('0.8')?.includes('55000'));
 
       const newPage = await context.newPage();
       await newPage.goto('/');
@@ -227,9 +230,9 @@ test.describe('Error Handling and Edge Cases', () => {
       const pageErrors = [];
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
-      // The app persists its whole state under the "app" key
+      // The app persists its whole state under the version key "0.8"
       await page.evaluate(() => {
-        localStorage.setItem('app', 'invalid-json{');
+        localStorage.setItem('0.8', 'invalid-json{');
       });
       await page.reload();
       await expect(page.locator('main')).toBeVisible();

@@ -185,14 +185,18 @@ test.describe('Performance Testing - Dual Tax Calculator', () => {
 
   test('should render tables efficiently with dual calculations', async ({ page }) => {
     const startTime = Date.now();
-    await setMonthlyBasic(page, 200000);
+    // Gross 6M -> taxable 5.5M, so the top 30% slab (1.9M above 36 lakh = 570,000) applies
+    await setMonthlyBasic(page, 500000);
 
     const invoices = page.locator('table.invoice');
     await expect(invoices).toHaveCount(2, { timeout: 3000 });
     await expect(invoices.nth(0)).toContainText('Total tax', { timeout: 3000 });
     await expect(invoices.nth(1)).toContainText('Total tax', { timeout: 3000 });
-    await expect(invoices.nth(0)).toContainText('30%', { timeout: 3000 });
-    await expect(invoices.nth(1)).toContainText('30%', { timeout: 3000 });
+    for (const i of [0, 1]) {
+      const topSlab = invoices.nth(i).locator('tr').filter({ hasText: 'Above' });
+      await expect(topSlab.locator('td').nth(1)).toHaveText('30', { timeout: 3000 });
+      await expect(topSlab.locator('td').last()).toHaveText('570000', { timeout: 3000 });
+    }
 
     const renderTime = Date.now() - startTime;
     expect(renderTime).toBeLessThan(2000);
