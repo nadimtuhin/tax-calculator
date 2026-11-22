@@ -22,7 +22,10 @@
     "security:scan-image": "trivy image --scanners vuln,secret",
     "security:config": "trivy config .",
     "mcp:start": "node packages/mcp/bin/tax-calculator-mcp.js",
-    "mcp:test": "npm --prefix packages/mcp test"
+    "mcp:test": "npm --prefix packages/mcp test",
+    "v2:dev": "npm --prefix apps/web-v2 run dev",
+    "v2:build": "npm --prefix apps/web-v2 run build",
+    "v2:verify-bend": "node scripts/bend-verify.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
@@ -90,7 +93,8 @@
     "testMatch": [
       "**/tests/unit/**/*.spec.js",
       "**/tests/unit/**/*.test.js",
-      "**/tests/integration/**/*.test.js"
+      "**/tests/integration/**/*.test.js",
+      "**/tests/v2/**/*.test.js"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",

@@ -32,6 +32,11 @@ jobs:
     - name: Run unit tests
       run: yarn test --forceExit
     
+    - name: Build v2 (apps/web-v2)
+      run: |
+        npm --prefix apps/web-v2 ci
+        npm --prefix apps/web-v2 run build
+
     - name: Build project
       run: yarn build
       env:
