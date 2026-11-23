@@ -9,7 +9,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@tax-engine': path.resolve(__dirname, '../../src/utils/taxEngine.js'),
-      '@repo-src': path.resolve(__dirname, '../../src'),
     },
   },
   server: {

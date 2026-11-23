@@ -1,4 +1,4 @@
-import { calculateTaxForYear } from '../../../../src/utils/taxEngine.js'
+import { calculateTaxForYear, DEFAULT_FISCAL_YEAR } from '../../../../src/utils/taxEngine.js'
 
 export const YEARS = [
   { id: '2025-26', label: 'FY 2025-26' },
@@ -30,9 +30,52 @@ export function syncEmployerNames(jobs) {
   })
 }
 
+/** Keep employer month ranges ordered, gapless, and non-overlapping along the FY timeline. */
+export function clampJobChain(jobs) {
+  if (!jobs.length) return
+  jobs[0].from = Math.max(0, Math.min(11, jobs[0].from))
+  for (let i = 0; i < jobs.length; i++) {
+    jobs[i].from = Math.max(0, Math.min(11, jobs[i].from))
+    jobs[i].to = Math.max(jobs[i].from, Math.min(11, jobs[i].to))
+    if (i > 0) {
+      const prevEnd = jobs[i - 1].to
+      if (jobs[i].from <= prevEnd) jobs[i].from = Math.min(prevEnd + 1, 11)
+      jobs[i].to = Math.max(jobs[i].to, jobs[i].from)
+    }
+    if (i < jobs.length - 1 && jobs[i].to >= jobs[i + 1].from) {
+      jobs[i].to = Math.max(jobs[i].from, jobs[i + 1].from - 1)
+    }
+  }
+  jobs[jobs.length - 1].to = Math.min(11, jobs[jobs.length - 1].to)
+}
+
+export function pickJobMonth(jobs, index, k) {
+  const j = jobs[index]
+  if (k < j.from) {
+    j.from = k
+    if (index > 0) jobs[index - 1].to = k - 1
+  } else if (k > j.to) {
+    j.to = k
+    if (index < jobs.length - 1) jobs[index + 1].from = k + 1
+  } else if (k - j.from <= j.to - k) {
+    j.from = k
+  } else {
+    j.to = k
+  }
+  clampJobChain(jobs)
+}
+
+export function addJobToChain(jobs) {
+  const last = jobs[jobs.length - 1]
+  const from = Math.min(last.to + 1, 11)
+  jobs.push({ name: '', customName: false, from, to: 11, pay: 90000 })
+  clampJobChain(jobs)
+  syncEmployerNames(jobs)
+}
+
 const run = (year, annual, investments, tds, extra = {}) => {
   try {
-    return calculateTaxForYear({
+    const data = calculateTaxForYear({
       year,
       income: {
         gross_salary: Math.max(0, annual),
@@ -44,14 +87,22 @@ const run = (year, annual, investments, tds, extra = {}) => {
       investments: Number(investments) || 0,
       tds: Number(tds) || 0,
     })
-  } catch {
-    return null
+    return { ok: true, data }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, message }
   }
 }
 
 export function createInitialState() {
+  const jobs = [
+    { name: 'Previous job', customName: false, from: 0, to: 5, pay: 78000 },
+    { name: 'Current job', customName: false, from: 6, to: 11, pay: 96000 },
+  ]
+  clampJobChain(jobs)
+  syncEmployerNames(jobs)
   return {
-    year: '2026-27',
+    year: DEFAULT_FISCAL_YEAR,
     raise: null,
     job: null,
     missed: null,
@@ -60,14 +111,10 @@ export function createInitialState() {
     salary: 85000,
     raiseAfter: 98000,
     raiseMonth: 6,
-    jobs: [
-      { name: 'Previous job', customName: false, from: 0, to: 5, pay: 78000 },
-      { name: 'Current job', customName: false, from: 6, to: 11, pay: 96000 },
-    ],
+    jobs,
     missedSet: [3, 4],
     investments: 200000,
     tds: 0,
-    editing: false,
   }
 }
 
@@ -96,18 +143,22 @@ function employers(s, withRaise) {
 export function buildScenario(s, withRaise = true) {
   const missed = s.missed ? s.missedSet : []
   const pays = Array(12).fill(0)
+  const monthEmployer = Array(12).fill(-1)
   const segments = []
+
   employers(s, withRaise).forEach((e, ei) => {
     const cut = e.raise ? Math.min(Math.max(s.raiseMonth, e.from), e.to + 1) : e.to + 1
     const parts = [{ a: e.from, b: cut - 1, pay: e.pay, tag: e.raise && cut <= e.to ? 'before raise' : '' }]
     if (e.raise && cut <= e.to) parts.push({ a: cut, b: e.to, pay: s.raiseAfter, tag: 'after raise' })
+
     parts.forEach((p) => {
       let amt = 0
       for (let m = p.a; m <= p.b; m++) {
-        if (!missed.includes(m)) {
-          pays[m] += p.pay
-          amt += p.pay
-        }
+        if (missed.includes(m)) continue
+        if (monthEmployer[m] !== -1 && monthEmployer[m] !== ei) continue
+        monthEmployer[m] = ei
+        pays[m] = p.pay
+        amt += p.pay
       }
       if (p.b >= p.a && amt > 0) {
         segments.push({
@@ -121,6 +172,7 @@ export function buildScenario(s, withRaise = true) {
       }
     })
   })
+
   const salaryTotal = pays.reduce((a, b) => a + b, 0)
   const extra = { bonus: 0, bonus2: 0, additional_income: 0 }
   if (s.bonus) {
@@ -153,18 +205,25 @@ export function buildScenario(s, withRaise = true) {
 export function computeTax(s) {
   const actual = buildScenario(s, true)
   const baseline = buildScenario(s, false)
-  const result = run(s.year, actual.salaryTotal, s.investments, s.tds, actual.extra)
-  const baselineResult = run(s.year, baseline.salaryTotal, s.investments, s.tds, baseline.extra)
+  const resultWrap = run(s.year, actual.salaryTotal, s.investments, s.tds, actual.extra)
+  const baselineWrap = run(s.year, baseline.salaryTotal, s.investments, s.tds, baseline.extra)
   const bands = (r) =>
-  r
-    ? r.slab_breakdown
-        .filter((b) => b.taxable_amount_bdt > 0)
-        .map((b) => ({
-          ...b,
-          color: BAND_COLORS[Math.min(r.slab_breakdown.indexOf(b), 5)],
-        }))
-    : []
-  return { actual, baseline, result, baselineResult, bands: bands(result) }
+    r
+      ? r.slab_breakdown
+          .filter((b) => b.taxable_amount_bdt > 0)
+          .map((b) => ({
+            ...b,
+            color: BAND_COLORS[Math.min(r.slab_breakdown.indexOf(b), 5)],
+          }))
+      : []
+  return {
+    actual,
+    baseline,
+    result: resultWrap.ok ? resultWrap.data : null,
+    baselineResult: baselineWrap.ok ? baselineWrap.data : null,
+    error: resultWrap.ok ? null : resultWrap.message,
+    bands: resultWrap.ok ? bands(resultWrap.data) : [],
+  }
 }
 
 export function presetScenario(s, id) {
@@ -192,6 +251,7 @@ export function presetScenario(s, id) {
     s.raiseMonth = 9
     s.raiseAfter = 108000
   }
+  clampJobChain(s.jobs)
   syncEmployerNames(s.jobs)
 }
 

@@ -17,6 +17,7 @@ export function MonthChips({ from, to, label, min = 0, max = 11, onPick }: Props
           key={m}
           type="button"
           disabled={i < min || i > max}
+          aria-pressed={i >= from && i <= to}
           className={[i >= from && i <= to ? 'on' : '', i === from || i === to ? 'edge' : ''].filter(Boolean).join(' ')}
           onClick={() => onPick(i)}
         >

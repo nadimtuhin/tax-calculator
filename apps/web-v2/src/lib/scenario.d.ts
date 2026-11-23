@@ -12,6 +12,9 @@ export function buildScenario(s: ScenarioState, withRaise?: boolean): BuiltScena
 export function computeTax(s: ScenarioState): TaxBundle
 export function presetScenario(s: ScenarioState, id: string): void
 export function raiseRangeFor(s: ScenarioState): [number, number]
+export function clampJobChain(jobs: Job[]): void
+export function pickJobMonth(jobs: Job[], index: number, k: number): void
+export function addJobToChain(jobs: Job[]): void
 
 export type Job = {
   name: string
@@ -63,4 +66,5 @@ export type TaxBundle = {
   }
   baselineResult: TaxBundle['result']
   bands: Array<{ rate_percent: number; taxable_amount_bdt: number; tax_bdt: number; color: string }>
+  error: string | null
 }

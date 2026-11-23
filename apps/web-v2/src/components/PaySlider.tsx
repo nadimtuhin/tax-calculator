@@ -32,6 +32,10 @@ export function PaySlider({
         max={max}
         step={step}
         value={value}
+        aria-label={label}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
         style={{ '--p': `${pct}%` } as React.CSSProperties}
         onChange={(e) => onChange(Number(e.target.value))}
       />

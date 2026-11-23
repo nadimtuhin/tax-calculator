@@ -3,14 +3,17 @@ import { BandBars } from './components/BandBars'
 import { BandFlow } from './components/BandFlow'
 import { MonthChips } from './components/MonthChips'
 import { MonthTimeline } from './components/MonthTimeline'
+import { EmployerName } from './components/EmployerName'
 import { PaySlider } from './components/PaySlider'
 import {
   BONUS_TYPES,
   MONTHS,
   YEARS,
+  addJobToChain,
   computeTax,
   createInitialState,
   isAnswered,
+  pickJobMonth,
   presetScenario,
   raiseRangeFor,
   scenarioOf,
@@ -56,6 +59,10 @@ function App() {
   const [vw, setVw] = useState(typeof window !== 'undefined' ? window.innerWidth : 390)
 
   useEffect(() => {
+    document.title = 'Bangladesh income tax calculator (v2)'
+  }, [])
+
+  useEffect(() => {
     const id = getScenarioFromUrl()
     setS((prev) => {
       const next = { ...prev, ...createInitialState() }
@@ -73,7 +80,7 @@ function App() {
   const answered = isAnswered(s)
   const scenario = scenarioOf(s)
   const tax = useMemo(() => computeTax(s), [s])
-  const { actual, baseline, result, baselineResult, bands } = tax
+  const { actual, baseline, result, baselineResult, bands, error: taxError } = tax
   const raiseRange = raiseRangeFor(s)
 
   useEffect(() => {
@@ -105,18 +112,18 @@ function App() {
     })
   }
 
-  const pickJobMonth = (j: { from: number; to: number }, k: number) => {
-    if (k < j.from) j.from = k
-    else if (k > j.to) j.to = k
-    else if (k - j.from <= j.to - k) j.from = k
-    else j.to = k
-    setS((st) => ({ ...st, jobs: [...st.jobs] }))
+  const handlePickJobMonth = (index: number, k: number) => {
+    setS((st) => {
+      const jobs = st.jobs.map((j) => ({ ...j }))
+      pickJobMonth(jobs, index, k)
+      return { ...st, jobs }
+    })
   }
 
   const addJob = () => {
     setS((st) => {
-      const jobs = [...st.jobs, { name: '', customName: false, from: 6, to: 11, pay: 90000 }]
-      syncEmployerNames(jobs)
+      const jobs = st.jobs.map((j) => ({ ...j }))
+      addJobToChain(jobs)
       return { ...st, jobs }
     })
   }
@@ -128,15 +135,6 @@ function App() {
       syncEmployerNames(jobs)
       return { ...st, jobs }
     })
-  }
-
-  const renameEmployer = (j: { name: string; customName?: boolean }) => {
-    const next = window.prompt('Employer label', j.name)
-    if (next != null && next.trim()) {
-      j.name = next.trim()
-      j.customName = true
-      setS((st) => ({ ...st, jobs: [...st.jobs] }))
-    }
   }
 
   const typeLabel = (id: string) => (BONUS_TYPES.find((t) => t.id === id) || {}).label || ''
@@ -182,9 +180,16 @@ function App() {
             <p className="eyebrow">Income tax · sample data</p>
             <h1>Your income tax</h1>
           </div>
-          <div className="seg" role="tablist">
+          <div className="seg" role="tablist" aria-label="Fiscal year">
             {YEARS.map((y) => (
-              <button key={y.id} type="button" className={s.year === y.id ? 'on' : ''} onClick={() => setS((st) => ({ ...st, year: y.id }))}>
+              <button
+                key={y.id}
+                type="button"
+                role="tab"
+                aria-selected={s.year === y.id}
+                className={s.year === y.id ? 'on' : ''}
+                onClick={() => setS((st) => ({ ...st, year: y.id }))}
+              >
                 {y.label}
               </button>
             ))}
@@ -267,9 +272,14 @@ function App() {
                       <div key={i} className="emp">
                         <div className="eh">
                           <i style={{ background: ['#1f3d30', '#2f6a4f', '#4d8c6f', '#7fae96'][i % 4] }} />
-                          <button type="button" className="nm tap-rename" onClick={() => renameEmployer(j)}>
-                            {j.name}
-                          </button>
+                          <EmployerName
+                            value={j.name}
+                            onSave={(name) => {
+                              j.name = name
+                              j.customName = true
+                              setS((st) => ({ ...st, jobs: [...st.jobs] }))
+                            }}
+                          />
                           <small>
                             {MONTHS[j.from]}–{MONTHS[j.to]}
                           </small>
@@ -280,7 +290,7 @@ function App() {
                           ) : null}
                         </div>
                         <p className="lbl">Months worked: tap first and last month</p>
-                        <MonthChips from={j.from} to={j.to} label={j.name + ' months'} onPick={(k) => pickJobMonth(j, k)} />
+                        <MonthChips from={j.from} to={j.to} label={j.name + ' months'} onPick={(k) => handlePickJobMonth(i, k)} />
                         <PaySlider value={j.pay} onChange={(v) => { j.pay = v; setS((st) => ({ ...st, jobs: [...st.jobs] })) }} label="Monthly salary" />
                       </div>
                     ))}
@@ -341,6 +351,12 @@ function App() {
           </aside>
 
           <section className="right">
+            {taxError ? (
+              <div className="card pad error" role="alert">
+                <p>Tax calculation could not run.</p>
+                <p className="err-detail">{taxError}</p>
+              </div>
+            ) : null}
             {displayResult ? (
               <>
                 {!answered ? (

@@ -13,7 +13,7 @@ const short = (v: number) => (v >= 1000 ? Math.round(v / 100) / 10 + 'k' : Strin
 export function MonthTimeline({ pays, gaps, missedOn, editable, onToggle }: Props) {
   const max = Math.max(...pays, 1)
   return (
-    <div className="tl" role="group" aria-label="Income by month">
+    <div className="tl tl-grid" role="group" aria-label="Income by month; tap to mark unpaid">
       {MONTHS.map((m, i) => (
         <button
           key={m}

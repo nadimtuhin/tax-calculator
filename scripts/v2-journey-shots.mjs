@@ -9,7 +9,7 @@ const root = path.dirname(fileURLToPath(import.meta.url))
 const outDir = path.join(root, '..', '.agent-run', 'v2-shots')
 fs.mkdirSync(outDir, { recursive: true })
 
-const scenarios = ['questions', 'none', 'raise', 'jobchange', 'missed', 'bonus', 'combo']
+const scenarios = ['jobchange', 'missed']
 
 const server = spawn('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5174'], {
   cwd: path.join(root, '..', 'apps', 'web-v2'),
@@ -29,4 +29,4 @@ for (const id of scenarios) {
 
 await browser.close()
 server.kill('SIGTERM')
-console.log('Saved', scenarios.length, 'journey screenshots to', outDir)
+console.log('Re-shot', scenarios.join(', '), 'in', outDir)

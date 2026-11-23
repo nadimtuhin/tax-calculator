@@ -17,7 +17,7 @@
 
 - **Install:** `cargo install hvm bend-lang` (Rust **stable 1.100+**; system Cargo 1.83 is too old for current crates).
 - **Use:** `verify/slab_batch.bend` independently recomputes FY 2026-27 **gross slab tax** for a batch of taxable incomes; `scripts/bend-verify.mjs` compares to `calculateSlabBreakdown` + `sumSlabTax` from the JS engine.
-- **Runner:** `bend run-c` (parallel C backend). Verified **9/9** in-range cases (0–1.72M BDT taxable).
+- **Runner:** `bend run-c` (parallel C backend). `slab_cut` uses `((amount*rate)+50)/100` to match JS `Math.round`. Verified **10/10** in-range cases (includes taxable **400006**); full-engine spot checks **assert/fail**.
 - **Limit:** Bend 0.2.x **U24** integers overflow above ~1.7M BDT in multi-slab sums; incomes **2.5M** and **5.0M** are checked in JS only (logged by the harness, not faked).
 
 ## Commands

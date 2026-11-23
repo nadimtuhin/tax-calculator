@@ -37,6 +37,9 @@ jobs:
         npm --prefix apps/web-v2 ci
         npm --prefix apps/web-v2 run build
 
+    - name: Bend slab verifier (skip if bend not installed)
+      run: yarn v2:verify-bend
+
     - name: Build project
       run: yarn build
       env:
