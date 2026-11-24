@@ -294,13 +294,13 @@ describe('Breakdown Store Module', () => {
     test('should handle negative values gracefully', () => {
       store.commit('updateTotalSalary', 50000);
       
-      // Try negative percentage (should convert to number)
+      // Negative percentages are clamped to zero
       store.commit('changeBreakdownPercentage', { part: 'basic', value: -10 });
-      expect(store.state.breakdown.salaryBreakdown.basic.percentage).toBe(-10);
+      expect(store.state.breakdown.salaryBreakdown.basic.percentage).toBe(0);
       
-      // Try negative amount (should convert to number)
+      // Negative amounts are clamped to zero
       store.commit('changeBreakdownAmount', { part: 'house', value: -5000 });
-      expect(store.state.breakdown.salaryBreakdown.house.amount).toBe(-5000);
+      expect(store.state.breakdown.salaryBreakdown.house.amount).toBe(0);
     });
 
     test('should handle very large numbers', () => {
