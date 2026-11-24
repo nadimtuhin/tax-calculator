@@ -4,9 +4,9 @@ import { calculateTaxForYear } from '@/utils/taxEngine';
 // Each rule is checked exactly on its threshold and 1 taka above it.
 //
 // The expected values are written out here as literals, not read from the engine, so a change
-// to a rule constant fails a test. They pin the rules as the engine states them today; the
-// sources each rule comes from are cited next to the constants in src/utils/ (taxSlabs*.js,
-// taxEngine.js). See the PR for which of those were re-verified and which were not.
+// to a rule constant fails a test. They pin the rules as the engine states them today. Each rule
+// constant has a one-line source comment next to it in src/utils/ (taxSlabs*.js, taxEngine.js,
+// fa2026Rules.js). PR #104 lists which values were re-checked and the open FY 2025-26 question.
 
 const LAKH = 100000;
 
