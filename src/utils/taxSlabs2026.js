@@ -19,7 +19,7 @@ const TAX_SLAB_AMOUNTS_2026 = [3, 4, 5, 20]; // 3L, 4L, 5L, 20L
 const TAX_RATES_2026 = [0, 10, 15, 20, 25, 30];
 
 const formatLakh = (lakhs) => {
-  return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
+  return Number(lakhs.toFixed(2)).toString();
 };
 
 const formatRange = (from, to) => {

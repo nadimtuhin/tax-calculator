@@ -166,6 +166,13 @@ describe('Tax Slabs 2026-27 Utility Functions', () => {
       expect(slabs).toHaveLength(6);
     });
 
+    test('disabled (525k): labels keep two decimals instead of rounding to 5.3 lakh', () => {
+      const titles = calculateTaxSlabs2026(525000).map(([title]) => title);
+      expect(titles[0]).toBe('First Tk5.25 lakh [0-5.25 lakh]');
+      expect(titles[1]).toBe('Next Tk3 lakh [5.25-8.25 lakh]');
+      expect(titles[5]).toBe('Above [37.25-UP lakh]');
+    });
+
     test('general: slab boundaries and rates correct', () => {
       const slabs = calculateTaxSlabs2026(400000);
 

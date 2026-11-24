@@ -5,7 +5,7 @@ const TAX_SLAB_AMOUNTS = [1, 4, 5, 5, 20]; // After threshold: 1L, 4L, 5L, 5L, 2
 const TAX_RATES = [0, 5, 10, 15, 20, 25, 30]; // 0% for threshold, then 5%, 10%, 15%, 20%, 25%, 30%
 
 const formatLakh = (lakhs) => {
-  return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
+  return Number(lakhs.toFixed(2)).toString();
 };
 
 const formatRange = (from, to) => {

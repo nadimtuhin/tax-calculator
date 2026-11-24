@@ -128,9 +128,9 @@ describe('Calculation-2024 Component', () => {
 
       const slabs = wrapper.vm.slabs;
       
-      expect(slabs[0]).toEqual(['First Tk4.8 lakh [0-4.8 lakh]', 0, 475000, 0]);
-      expect(slabs[1]).toEqual(['Next Tk1 lakh [4.8-5.8 lakh]', 475000, 575000, 5]);
-      expect(slabs[2]).toEqual(['Next Tk4 lakh [5.8-9.8 lakh]', 575000, 975000, 10]);
+      expect(slabs[0]).toEqual(['First Tk4.75 lakh [0-4.75 lakh]', 0, 475000, 0]);
+      expect(slabs[1]).toEqual(['Next Tk1 lakh [4.75-5.75 lakh]', 475000, 575000, 5]);
+      expect(slabs[2]).toEqual(['Next Tk4 lakh [5.75-9.75 lakh]', 575000, 975000, 10]);
     });
 
     test('should generate correct tax slabs for senior citizen', () => {
@@ -170,9 +170,9 @@ describe('Calculation-2024 Component', () => {
 
       const slabs = wrapper.vm.slabs;
       
-      expect(slabs[0]).toEqual(['First Tk4.8 lakh [0-4.8 lakh]', 0, 475000, 0]);
-      expect(slabs[1]).toEqual(['Next Tk1 lakh [4.8-5.8 lakh]', 475000, 575000, 5]);
-      expect(slabs[2]).toEqual(['Next Tk4 lakh [5.8-9.8 lakh]', 575000, 975000, 10]);
+      expect(slabs[0]).toEqual(['First Tk4.75 lakh [0-4.75 lakh]', 0, 475000, 0]);
+      expect(slabs[1]).toEqual(['Next Tk1 lakh [4.75-5.75 lakh]', 475000, 575000, 5]);
+      expect(slabs[2]).toEqual(['Next Tk4 lakh [5.75-9.75 lakh]', 575000, 975000, 10]);
     });
 
     test('should generate correct tax slabs for freedom fighter', () => {
@@ -564,7 +564,7 @@ describe('Calculation-2024 Component', () => {
       });
 
       const newSlabs = wrapper.vm.slabs;
-      expect(newSlabs[0]).toEqual(['First Tk4.8 lakh [0-4.8 lakh]', 0, 475000, 0]);
+      expect(newSlabs[0]).toEqual(['First Tk4.75 lakh [0-4.75 lakh]', 0, 475000, 0]);
       
       // Tax should be recalculated with new threshold
       const taxBreakdown = wrapper.vm.taxBreakdown;
