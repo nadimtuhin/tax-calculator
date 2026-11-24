@@ -9,6 +9,12 @@ import { BLOG_POSTS, getBlogPost } from '@/data/blogPosts'
 import appRouter from '@/router/index'
 import { calculateInvestmentRebateForYear } from '@/utils/taxEngine'
 
+// The app router is created with createWebHistory at import time, which adds
+// popstate/pagehide/visibilitychange listeners. Remove them when this file is done.
+afterAll(() => {
+  appRouter.options.history.destroy()
+})
+
 function createTestRouter() {
   return createRouter({
     history: createMemoryHistory(),

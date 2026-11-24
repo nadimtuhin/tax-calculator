@@ -43,6 +43,8 @@ describe('Side-by-Side Tax Comparison Integration', () => {
     if (wrapper) {
       wrapper.unmount();
     }
+    // createWebHistory adds popstate/pagehide/visibilitychange listeners; remove them.
+    router.options.history.destroy();
   });
 
   describe('Component Integration', () => {
