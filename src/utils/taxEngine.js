@@ -1,4 +1,5 @@
 import { calculateTaxSlabs } from './taxSlabs.js';
+import { calculateTaxSlabs2023 } from './taxSlabs2023.js';
 import {
   calculateTaxSlabs2025,
   getTaxFreeThreshold2025,
@@ -48,9 +49,9 @@ export const FISCAL_YEAR_METADATA = {
     fiscalYear: '2023-24',
     label: 'FY 2023-2024',
     assessmentYear: '2024-25',
-    slabRatesPercent: [0, 5, 10, 15, 20, 25, 30],
+    slabRatesPercent: [0, 5, 10, 15, 20, 25],
     autoPromotesAge65: false,
-    notes: 'Income Year 2023-24 (Assessment Year 2024-25). 7-slab progressive structure; ITA 2023 Para 27 single-pool employment exemption min(1/3 gross, BDT 4.5L); location-tiered minimum tax above threshold (BDT 3,000-5,000); Section 78 rebate min(3% taxable, 15% eligible investment, BDT 10L); Mutual Fund cap BDT 5L.',
+    notes: 'Income Year 2023-24 (Assessment Year 2024-25). 6 slabs (0%, 5%, 10%, 15%, 20%, 25%; no 30% band before Finance Act 2024); ITA 2023 Para 27 single-pool employment exemption min(1/3 gross, BDT 4.5L); location-tiered minimum tax above threshold (BDT 3,000-5,000); Section 78 rebate min(3% taxable, 15% eligible investment, BDT 10L); Mutual Fund cap BDT 5L.',
   },
   '2024-25': {
     fiscalYear: '2024-25',
@@ -560,6 +561,9 @@ export function calculateTaxSlabsForYear(year, taxFreeThreshold) {
   }
   if (year === '2025-26') {
     return calculateTaxSlabs2025(taxFreeThreshold);
+  }
+  if (year === '2023-24') {
+    return calculateTaxSlabs2023(taxFreeThreshold);
   }
   return calculateTaxSlabs(taxFreeThreshold);
 }
