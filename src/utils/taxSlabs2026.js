@@ -19,7 +19,7 @@ const TAX_SLAB_AMOUNTS_2026 = [3, 4, 5, 20]; // 3L, 4L, 5L, 20L
 const TAX_RATES_2026 = [0, 10, 15, 20, 25, 30];
 
 const formatLakh = (lakhs) => {
-  return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
+  return Number(lakhs.toFixed(2)).toString();
 };
 
 const formatRange = (from, to) => {
@@ -96,6 +96,7 @@ export const MINIMUM_TAX_2026 = {
   district: 5000
 };
 
+// Source: ITA 2023 s.163 as amended by Finance Act 2026 (KPMG https://assets.kpmg.com/content/dam/kpmg/bd/pdf/Salient_features_of_Finance_Bill_2026(Tax-and_VAT).pdf)
 export const MINIMUM_TAX_FIRST_TIME_2026 = 1000;
 
 /**
@@ -159,7 +160,7 @@ export function calculateInvestmentRebate2026(
 ) {
   const threePercentOfBase = calculateRebateIncomeBase(taxableIncome, baseExclusions) * 0.03;
   const tenPercentOfInvestment = totalEligibleInvestment * 0.10;
-  const capTk750000 = 750000;
+  const capTk750000 = 750000; // ITA 2023 s.78(c) as amended by Finance Act 2026 (KPMG Finance Bill 2026 salient features)
 
   return Math.round(Math.max(0, Math.min(threePercentOfBase, tenPercentOfInvestment, capTk750000)));
 }

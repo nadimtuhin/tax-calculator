@@ -29,6 +29,7 @@ import {
 import calculateTaxBreakdown2025 from '../calculateTaxBreakdown2025';
 import calculateTaxBreakdown2026 from '../calculateTaxBreakdown2026';
 import calculateTaxBreakdown from '../calculateTaxBreakdown';
+import { parseAmount } from '../utils/parseAmount';
 
 function monthlyDefault() {
   return {
@@ -133,10 +134,10 @@ const salaries = {
       }));
     },
     changeInvestment(state, { index, value }) {
-      state.investments[index].amount = +value;
+      state.investments[index].amount = parseAmount(value);
     },
     changeInvestmentPolicyValue(state, { index, value }) {
-      const cleaned = value === '' || value === null || value === undefined ? null : Math.max(0, +value || 0);
+      const cleaned = value === '' || value === null || value === undefined ? null : parseAmount(value);
       state.investments[index].policyValue = cleaned;
     },
     updateTaxpayerProfile(state, profile) {
@@ -153,16 +154,16 @@ const salaries = {
       state.taxpayerProfile.parentOfDisabled = state.taxpayerProfile.disabledDependentCount > 0;
     },
     setEarlyRedemptionRebateRepayable(state, value) {
-      state.earlyRedemptionRebateRepayable = Math.max(0, Number(value) || 0);
+      state.earlyRedemptionRebateRepayable = parseAmount(value);
     },
     setSolarElectricityBill(state, value) {
-      state.solarElectricityBill = Math.max(0, Number(value) || 0);
+      state.solarElectricityBill = parseAmount(value);
     },
     setGroupInsuranceReimbursement(state, value) {
-      state.groupInsuranceReimbursement = Math.max(0, Number(value) || 0);
+      state.groupInsuranceReimbursement = parseAmount(value);
     },
     setZakatDonation(state, value) {
-      state.zakatDonation = Math.max(0, Number(value) || 0);
+      state.zakatDonation = parseAmount(value);
     },
     setCurrentYear(state, year) {
       state.currentYear = year;
@@ -175,21 +176,21 @@ const salaries = {
     },
     changeSubsequentSalaries(state, { index, value }) {
       const { months } = state;
-      months[index].salary = +value;
+      months[index].salary = parseAmount(value);
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].salary = months[index].salary;
       }
     },
     changeSubsequentTds(state, { index, value }) {
       const { months } = state;
-      months[index].tds = +value;
+      months[index].tds = parseAmount(value);
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].tds = months[index].tds;
       }
     },
     changeParts(state, { part, index, value }) {
       const { months } = state;
-      months[index].breakdown[part] = +value;
+      months[index].breakdown[part] = parseAmount(value);
       for (let ii = index + 1; ii <= 11; ii++) {
         months[ii].breakdown[part] = months[index].breakdown[part];
       }
@@ -198,13 +199,13 @@ const salaries = {
       });
     },
     changeOthers(state, value) {
-      state.others = +value;
+      state.others = parseAmount(value);
     },
     changeBonus(state, value) {
-      state.bonus = +value;
+      state.bonus = parseAmount(value);
     },
     changeBonus2(state, value) {
-      state.bonus2 = +value;
+      state.bonus2 = parseAmount(value);
     },
     setShowBonus2(state, value) {
       state.showBonus2 = value;

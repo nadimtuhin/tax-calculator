@@ -30,7 +30,7 @@ jobs:
       run: yarn lint
 
     - name: Run unit tests
-      run: yarn test --forceExit
+      run: yarn test --detectOpenHandles
     
     - name: Build v2 (apps/web-v2)
       run: |

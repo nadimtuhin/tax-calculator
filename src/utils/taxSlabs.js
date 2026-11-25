@@ -1,11 +1,12 @@
 const LAKH = 100000;
 
-// Bangladesh Tax Slab Structure (amounts in lakh)
+// Bangladesh Tax Slab Structure FY 2024-25 / AY 2025-26 (Finance Act 2024, amounts in lakh)
+// Source: PwC "Navigating the complexity: Finance Act, 2024 Bangladesh" (Jul 2024), individual tax rates: https://www.pwc.com/jp/en/services/globalization/news/assets/pdf/bangladesh-finance-act-2024.pdf
 const TAX_SLAB_AMOUNTS = [1, 4, 5, 5, 20]; // After threshold: 1L, 4L, 5L, 5L, 20L
 const TAX_RATES = [0, 5, 10, 15, 20, 25, 30]; // 0% for threshold, then 5%, 10%, 15%, 20%, 25%, 30%
 
 const formatLakh = (lakhs) => {
-  return lakhs === Math.floor(lakhs) ? `${lakhs}` : `${lakhs.toFixed(1)}`;
+  return Number(lakhs.toFixed(2)).toString();
 };
 
 const formatRange = (from, to) => {
