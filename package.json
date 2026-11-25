@@ -77,7 +77,12 @@
     "fast-uri": "^3.1.7",
     "joi": "^17.13.9",
     "launch-editor": "^2.14.2",
-    "@vue/server-renderer": "3.5.42"
+    "@vue/server-renderer": "3.5.42",
+    "express": "4.22.3",
+    "body-parser": "1.20.9",
+    "qs": "6.16.2",
+    "**/js-beautify/glob": "10.5.0",
+    "**/editorconfig/minimatch": "9.0.9"
   },
   "jest": {
     "testEnvironment": "jsdom",
