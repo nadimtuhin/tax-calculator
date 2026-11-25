@@ -1,0 +1,4 @@
+# Deploy previews only. Overrides the site's pinned Node 10.24.1, which
+# Yarn rejects (package.json engines: >=16 <25). Production stays pinned.
+[context.deploy-preview.environment]
+  NODE_VERSION = "22"

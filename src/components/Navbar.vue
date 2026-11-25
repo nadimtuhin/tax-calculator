@@ -115,6 +115,7 @@
 
 <script>
 import { confirmToast, showToast } from '@/utils/toast'
+import { currentHostname, isLocalHostname } from '@/utils/hostname'
 
 export default {
   name: 'Navbar',
@@ -125,7 +126,7 @@ export default {
   },
   computed: {
     isLocalhost() {
-      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      return isLocalHostname(currentHostname());
     }
   },
   methods: {

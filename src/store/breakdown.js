@@ -1,3 +1,5 @@
+import { parseAmount } from '../utils/parseAmount';
+
 function getTotalSalary(salaryBreakdown) {
   const { basic, house, medical, lfa, transport } = salaryBreakdown;
   return Math.round(
@@ -35,7 +37,7 @@ const breakdown = {
   },
   mutations: {
     updateTotalSalary(state, totalSalary) {
-      state.totalSalary = +totalSalary;
+      state.totalSalary = parseAmount(totalSalary);
 
       state.parts.forEach(part => {
         const amount = state.totalSalary * (state.salaryBreakdown[part].percentage / 100);
@@ -44,7 +46,7 @@ const breakdown = {
     },
 
     changeBreakdownPercentage(state, { part, value }) {
-      state.salaryBreakdown[part].percentage = +value;
+      state.salaryBreakdown[part].percentage = Math.min(100, parseAmount(value));
 
       const amount = state.totalSalary * (state.salaryBreakdown[part].percentage / 100);
       state.salaryBreakdown[part].amount = Math.round(amount);
@@ -52,12 +54,13 @@ const breakdown = {
     },
 
     changeBreakdownAmount(state, { part, value }) {
-      state.salaryBreakdown[part].amount = +value;
+      state.salaryBreakdown[part].amount = parseAmount(value);
 
       state.totalSalary = getTotalSalary(state.salaryBreakdown);
 
-      state.salaryBreakdown[part].percentage =
-        (state.salaryBreakdown[part].amount * 100) / state.totalSalary;
+      state.salaryBreakdown[part].percentage = state.totalSalary > 0
+        ? (state.salaryBreakdown[part].amount * 100) / state.totalSalary
+        : 0;
 
     },
   }

@@ -192,6 +192,7 @@ export const LIFE_INSURANCE_POLICY_RATE = 0.10;
 export const LIFE_INSURANCE_CAP_RULE = '10% of policy sum assured';
 
 export const TAX_FREE_THRESHOLDS_BY_YEAR = {
+  // Source: Finance Act 2023 Schedule 1 (Deloitte Tax Highlights 2023: https://www.deloitte.com/content/dam/assets-shared/docs/services/consulting/2024/dttl-tax-bangladeshhighlights-2023.pdf)
   '2023-24': {
     general: 350000,
     female: 400000,
@@ -201,6 +202,7 @@ export const TAX_FREE_THRESHOLDS_BY_YEAR = {
     freedom_fighter: 500000,
     third_gender: 475000,
   },
+  // Source: Finance Act 2024 Schedule 1 (PwC "Navigating the complexity: Finance Act, 2024 Bangladesh" (Jul 2024), individual tax rates: https://www.pwc.com/jp/en/services/globalization/news/assets/pdf/bangladesh-finance-act-2024.pdf)
   '2024-25': {
     general: 350000,
     female: 400000,
@@ -210,6 +212,7 @@ export const TAX_FREE_THRESHOLDS_BY_YEAR = {
     freedom_fighter: 500000,
     third_gender: 475000,
   },
+  // Source: cited next to TAX_FREE_THRESHOLDS_2025 / _2026 in taxSlabs2025.js / taxSlabs2026.js
   '2025-26': {
     ...TAX_FREE_THRESHOLDS_2025,
     parent_disabled: PARENT_OF_DISABLED_ALLOWANCE_2025,
@@ -227,18 +230,21 @@ export const MINIMUM_TAX_BY_YEAR = {
     other_city: 3000,
     district: 2000,
   },
+  // Source: ITA 2023 s.163(2) minimum tax by area (https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf)
   '2023-24': {
     dhaka: 5000,
     chittagong: 5000,
     other_city: 4000,
     district: 3000,
   },
+  // Source: ITA 2023 s.163(2), unchanged by Finance Act 2024 (https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf)
   '2024-25': {
     dhaka: 5000,
     chittagong: 5000,
     other_city: 4000,
     district: 3000,
   },
+  // Source: cited next to MINIMUM_TAX_2025 / _2026 in taxSlabs2025.js / taxSlabs2026.js
   '2025-26': {
     ...MINIMUM_TAX_2025,
   },
@@ -248,24 +254,28 @@ export const MINIMUM_TAX_BY_YEAR = {
 };
 
 export const REBATE_RULES_BY_YEAR = {
+  // Source: ITA 2023 s.78 as enacted (https://nbr.gov.bd/uploads/acts/Income_tax_act_2023.pdf; Deloitte Tax Highlights 2023)
   '2023-24': {
     taxableIncomeRate: 0.03,
     investmentRate: 0.15,
     maxCap: 1000000,
     formula: 'min(3% of taxable income, 15% of eligible investment, BDT 1,000,000)',
   },
+  // Source: ITA 2023 s.78, unchanged by Finance Act 2024 (PwC "Navigating the complexity: Finance Act, 2024 Bangladesh" (Jul 2024), individual tax rates: https://www.pwc.com/jp/en/services/globalization/news/assets/pdf/bangladesh-finance-act-2024.pdf)
   '2024-25': {
     taxableIncomeRate: 0.03,
     investmentRate: 0.15,
     maxCap: 1000000,
     formula: 'min(3% of taxable income, 15% of eligible investment, BDT 1,000,000)',
   },
+  // Source: ITA 2023 s.78 as amended by Finance Act 2026 (KPMG https://assets.kpmg.com/content/dam/kpmg/bd/pdf/Salient_features_of_Finance_Bill_2026(Tax-and_VAT).pdf)
   '2025-26': {
     taxableIncomeRate: 0.03,
     investmentRate: 0.10,
     maxCap: 750000,
     formula: 'min(3% of taxable income, 10% of eligible investment, BDT 750,000)',
   },
+  // Source: ITA 2023 s.78 as amended by Finance Act 2026 (KPMG https://assets.kpmg.com/content/dam/kpmg/bd/pdf/Salient_features_of_Finance_Bill_2026(Tax-and_VAT).pdf)
   '2026-27': {
     taxableIncomeRate: 0.03,
     investmentRate: 0.10,
