@@ -131,10 +131,10 @@
               <table class="breakdown-table">
                 <thead>
                   <tr>
-                    <th>Component</th>
-                    <th>FY {{ fromShort }}</th>
-                    <th>FY {{ toShort }}</th>
-                    <th>Difference</th>
+                    <th scope="col">Component</th>
+                    <th scope="col">FY {{ fromShort }}</th>
+                    <th scope="col">FY {{ toShort }}</th>
+                    <th scope="col">Difference</th>
                   </tr>
                 </thead>
                 <tbody>

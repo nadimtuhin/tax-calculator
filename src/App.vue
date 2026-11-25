@@ -10,15 +10,15 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import Navbar from './components/Navbar.vue'
-import StarModal from './components/StarModal.vue'
 import ToastHost from './components/ToastHost.vue'
 
 export default {
   name: "App",
   components: {
     Navbar,
-    StarModal,
+    StarModal: defineAsyncComponent(() => import(/* webpackChunkName: "star-modal" */ './components/StarModal.vue')),
     ToastHost
   }
 };
