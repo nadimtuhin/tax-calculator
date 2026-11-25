@@ -2,11 +2,12 @@
   <!-- Skip link for accessibility -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <header>
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="navbar-container">
       <!-- Brand section -->
       <div class="navbar-brand-section">
-        <router-link to="/" class="navbar-brand" aria-label="BD Tax Calculator - Go to calculator">
+        <router-link to="/" class="navbar-brand">
           <span class="brand-icon" aria-hidden="true">
             <svg class="brand-mark" viewBox="0 0 64 64" width="30" height="30" fill="none" focusable="false">
               <rect x="2" y="2" width="60" height="60" rx="14" class="brand-mark-bg" />
@@ -109,10 +110,12 @@
       </div>
     </div>
   </nav>
+  </header>
 </template>
 
 <script>
 import { confirmToast, showToast } from '@/utils/toast'
+import { currentHostname, isLocalHostname } from '@/utils/hostname'
 
 export default {
   name: 'Navbar',
@@ -123,7 +126,7 @@ export default {
   },
   computed: {
     isLocalhost() {
-      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      return isLocalHostname(currentHostname());
     }
   },
   methods: {

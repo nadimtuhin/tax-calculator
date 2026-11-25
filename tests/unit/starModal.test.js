@@ -15,12 +15,30 @@ const originalLocalStorage = global.localStorage;
 // Override localStorage globally
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-  writable: true
+  writable: true,
+  configurable: true
 });
 global.localStorage = localStorageMock;
 
+// Keep the real implementations so they can be restored after this file.
+const originalAddEventListener = document.addEventListener;
+const originalRemoveEventListener = document.removeEventListener;
+const originalConsoleWarn = global.console.warn;
+
 // Mock console methods
 global.console.warn = jest.fn();
+
+afterAll(() => {
+  document.addEventListener = originalAddEventListener;
+  document.removeEventListener = originalRemoveEventListener;
+  global.console.warn = originalConsoleWarn;
+  Object.defineProperty(window, 'localStorage', {
+    value: originalLocalStorage,
+    writable: true,
+    configurable: true
+  });
+  global.localStorage = originalLocalStorage;
+});
 
 describe('StarModal Component', () => {
   let wrapper;
@@ -131,6 +149,34 @@ describe('StarModal Component', () => {
       
       expect(document.removeEventListener).toHaveBeenCalledWith('keydown', handleKeydown);
       expect(window.showStarModal).toBeUndefined();
+    });
+
+    test('should cancel the pending first-visit timer on unmount', () => {
+      localStorageMock.getItem.mockReturnValue(null);
+      wrapper = mount(StarModal);
+      expect(jest.getTimerCount()).toBe(1);
+
+      wrapper.unmount();
+      wrapper = null;
+
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test('should cancel the pending reminder timer on unmount', () => {
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'tax-calculator-visited') return 'true';
+        if (key === 'tax-calculator-star-reminded') return eightDaysAgo.toISOString();
+        return null;
+      });
+      wrapper = mount(StarModal);
+      expect(jest.getTimerCount()).toBe(1);
+
+      wrapper.unmount();
+      wrapper = null;
+
+      expect(jest.getTimerCount()).toBe(0);
     });
 
     test('should not remove global reference if it has been overridden', () => {

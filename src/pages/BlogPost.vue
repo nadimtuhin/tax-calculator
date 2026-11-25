@@ -34,8 +34,8 @@
         <ul>
           <li v-for="source in post.citations" :key="source">
             <span class="citation-text">{{ citationText(source) }} </span>
-            <a :href="sourceUrl(source)" target="_blank" rel="noopener noreferrer" class="citation-link" :aria-label="`Open official NBR source for: ${citationText(source)}`">
-              [Official NBR Source ↗]
+            <a :href="sourceUrl(source)" target="_blank" rel="noopener noreferrer" class="citation-link">
+              Official NBR Source<span class="sr-only"> (opens in a new tab)</span>
             </a>
           </li>
         </ul>
@@ -198,6 +198,11 @@ export default {
 .sources-section ul { padding-left: 1.5rem; }
 .sources-section li { margin-bottom: var(--space-2); overflow-wrap: anywhere; }
 .sources-section a { color: var(--accent); }
+.citation-link {
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .source-caution { margin-top: var(--space-3); font-size: var(--text-sm); }
 
 .calculator-callout {
