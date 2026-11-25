@@ -84,8 +84,8 @@ describe('year separation in comparison getters', () => {
 });
 
 describe('persistence', () => {
-  test('migratePersistedState keeps and clamps both inputs', () => {
-    const { migratePersistedState } = require('@/store');
+  test('migratePersistedState keeps and clamps both inputs', async () => {
+    const { migratePersistedState } = await import('@/store');
     const out = migratePersistedState({
       salaries: { groupInsuranceReimbursement: '5000', zakatDonation: -3 },
     });

@@ -3,10 +3,10 @@ import StarModal from '@/components/StarModal.vue';
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn()
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn()
 };
 
 // Store the original localStorage
@@ -26,7 +26,7 @@ const originalRemoveEventListener = document.removeEventListener;
 const originalConsoleWarn = global.console.warn;
 
 // Mock console methods
-global.console.warn = jest.fn();
+global.console.warn = vi.fn();
 
 afterAll(() => {
   document.addEventListener = originalAddEventListener;
@@ -45,18 +45,18 @@ describe('StarModal Component', () => {
 
   beforeEach(() => {
     // Clear all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorageMock.getItem.mockClear();
     localStorageMock.setItem.mockClear();
     localStorageMock.removeItem.mockClear();
     
     // Clear any existing timers
-    jest.clearAllTimers();
-    jest.useFakeTimers();
+    vi.clearAllTimers();
+    vi.useFakeTimers();
     
     // Mock DOM methods
-    document.addEventListener = jest.fn();
-    document.removeEventListener = jest.fn();
+    document.addEventListener = vi.fn();
+    document.removeEventListener = vi.fn();
     
     // Clear window properties
     delete window.showStarModal;
@@ -66,8 +66,8 @@ describe('StarModal Component', () => {
     if (wrapper) {
       wrapper.unmount();
     }
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('Component Rendering', () => {
@@ -154,12 +154,12 @@ describe('StarModal Component', () => {
     test('should cancel the pending first-visit timer on unmount', () => {
       localStorageMock.getItem.mockReturnValue(null);
       wrapper = mount(StarModal);
-      expect(jest.getTimerCount()).toBe(1);
+      expect(vi.getTimerCount()).toBe(1);
 
       wrapper.unmount();
       wrapper = null;
 
-      expect(jest.getTimerCount()).toBe(0);
+      expect(vi.getTimerCount()).toBe(0);
     });
 
     test('should cancel the pending reminder timer on unmount', () => {
@@ -171,17 +171,17 @@ describe('StarModal Component', () => {
         return null;
       });
       wrapper = mount(StarModal);
-      expect(jest.getTimerCount()).toBe(1);
+      expect(vi.getTimerCount()).toBe(1);
 
       wrapper.unmount();
       wrapper = null;
 
-      expect(jest.getTimerCount()).toBe(0);
+      expect(vi.getTimerCount()).toBe(0);
     });
 
     test('should not remove global reference if it has been overridden', () => {
       wrapper = mount(StarModal);
-      window.showStarModal = jest.fn(); // Override with different function
+      window.showStarModal = vi.fn(); // Override with different function
       
       wrapper.unmount();
       
@@ -199,7 +199,7 @@ describe('StarModal Component', () => {
       expect(wrapper.vm.showModal).toBe(false);
       
       // Fast-forward timers
-      jest.advanceTimersByTime(1500);
+      vi.advanceTimersByTime(1500);
       await wrapper.vm.$nextTick();
       
       expect(wrapper.vm.showModal).toBe(true);
@@ -214,7 +214,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2000);
       
       expect(wrapper.vm.showModal).toBe(false);
     });
@@ -227,7 +227,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2000);
       
       expect(wrapper.vm.showModal).toBe(false);
     });
@@ -244,7 +244,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       await wrapper.vm.$nextTick();
       
       expect(wrapper.vm.showModal).toBe(true);
@@ -262,7 +262,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2000);
       
       expect(wrapper.vm.showModal).toBe(false);
     });
@@ -525,7 +525,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       
       expect(wrapper.vm.showModal).toBe(true);
     });
@@ -539,7 +539,7 @@ describe('StarModal Component', () => {
       
       wrapper = mount(StarModal);
       
-      jest.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2000);
       
       // Should not crash, and modal should not show due to invalid date
       expect(wrapper.vm.showModal).toBe(false);

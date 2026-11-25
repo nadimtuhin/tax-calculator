@@ -2,3 +2,7 @@
 # Yarn rejects (package.json engines: >=16 <25). Production stays pinned.
 [context.deploy-preview.environment]
   NODE_VERSION = "22"
+
+[build]
+  command = "yarn build"
+  publish = "dist"
