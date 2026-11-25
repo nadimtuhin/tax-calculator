@@ -21,33 +21,29 @@ const formatRange = (from, to) => {
  * @returns {Array} Array of slab definitions [description, from, to, rate]
  */
 export function calculateTaxSlabs(taxFreeThreshold) {
-  const thresholdInLakh = taxFreeThreshold / LAKH;
-  
-  // Build all slab amounts including threshold
-  const allSlabAmounts = [thresholdInLakh, ...TAX_SLAB_AMOUNTS];
-  
+  // Keep every bound in taka. Dividing by 1 lakh and multiplying back drifts
+  // by a fraction of a taka when the threshold is not an exact lakh value.
+  const widthsBdt = [+taxFreeThreshold, ...TAX_SLAB_AMOUNTS.map((lakhs) => lakhs * LAKH)];
+
   let cumulative = 0;
   const slabs = [];
-  
-  // Create each slab progressively
-  allSlabAmounts.forEach((amount, index) => {
-    const from = cumulative * LAKH;
-    const to = (cumulative + amount) * LAKH;
+
+  widthsBdt.forEach((width, index) => {
+    const from = cumulative;
+    const to = cumulative + width;
     const slabType = index === 0 ? 'First' : 'Next';
-    const description = `${slabType} Tk${formatLakh(amount)} lakh ${formatRange(from, to)}`;
-    
+    const description = `${slabType} Tk${formatLakh(width / LAKH)} lakh ${formatRange(from, to)}`;
+
     slabs.push([description, from, to, TAX_RATES[index]]);
-    cumulative += amount;
+    cumulative = to;
   });
-  
-  // Add final "Above" slab
-  const finalFrom = cumulative * LAKH;
+
   slabs.push([
-    `Above ${formatRange(finalFrom, Infinity)}`,
-    finalFrom,
+    `Above ${formatRange(cumulative, Infinity)}`,
+    cumulative,
     Infinity,
     TAX_RATES[TAX_RATES.length - 1]
   ]);
-  
+
   return slabs;
 }

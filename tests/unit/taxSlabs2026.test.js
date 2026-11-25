@@ -8,6 +8,7 @@ import {
   MINIMUM_TAX_2026,
   MINIMUM_TAX_FIRST_TIME_2026
 } from '@/utils/taxSlabs2026';
+import { calculateTaxForYear } from '@/utils/taxEngine';
 
 // ─── Sources ───────────────────────────────────────────────────────────────
 // PwC Finance Act 2026: https://www.pwc.com/bd/en/assets/pdfs/budget/finance-act-2026-key-amendments.pdf
@@ -337,18 +338,21 @@ describe('Tax Slabs 2026-27 Utility Functions', () => {
       expect(tax - rebate).toBe(150000);
     });
 
-    // Example 3: income below threshold → minimum tax applies
-    test('income below threshold (3L): minimum tax Tk 5,000 applies', () => {
-      const slabs = calculateTaxSlabs2026(400000);
-      const taxable = 300000;
-      let tax = 0;
-      slabs.forEach(([, low, high, rate]) => {
-        if (taxable > low) {
-          const portion = Math.min(taxable, high === Infinity ? taxable : high) - low;
-          tax += Math.round((portion * rate) / 100);
-        }
-      });
-      expect(Math.max(tax, 5000)).toBe(5000);
+    // Income at or below the threshold is not charged the Tk 5,000 minimum.
+    // Minimum tax applies only once taxable income exceeds the threshold.
+    test('income at or below the threshold pays no minimum tax', () => {
+      const below = calculateTaxForYear({ year: '2026-27', category: 'general', age: 30, taxable_income: 300000 });
+      const at = calculateTaxForYear({ year: '2026-27', category: 'general', age: 30, taxable_income: 400000 });
+
+      expect(below.gross_tax_bdt).toBe(0);
+      expect(below.total_tax_bdt).toBe(0);
+      expect(below.minimum_tax_bdt).toBe(0);
+      expect(below.is_minimum_tax_applied).toBe(false);
+      expect(below.payable_tax_bdt).toBe(0);
+
+      expect(at.gross_tax_bdt).toBe(0);
+      expect(at.total_tax_bdt).toBe(0);
+      expect(at.is_minimum_tax_applied).toBe(false);
     });
 
     // Example 4: first-time filer, income 5L (general)
