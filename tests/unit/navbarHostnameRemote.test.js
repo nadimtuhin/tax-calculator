@@ -10,8 +10,11 @@ import breakdownStore from '@/store/breakdown';
 
 // jsdom cannot change window.location.hostname inside a test, so this file sets the URL
 // for the whole environment. navbar.test.js covers http://localhost/.
+const page = { template: '<div>Page</div>' };
+
 describe('Navbar on tax.nadimtuhin.com', () => {
   let wrapper;
+  let router;
 
   beforeEach(async () => {
     const store = createStore({
@@ -20,9 +23,13 @@ describe('Navbar on tax.nadimtuhin.com', () => {
         breakdown: { ...breakdownStore, namespaced: false },
       },
     });
-    const router = createRouter({
+    router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/', name: 'Home', component: { template: '<div>Home</div>' } }],
+      routes: [
+        { path: '/', name: 'Home', component: page },
+        { path: '/blog', name: 'Blog', component: page },
+        { path: '/referrals', name: 'Referrals', component: page },
+      ],
     });
     await router.push('/');
     wrapper = mount(Navbar, { global: { plugins: [store, router] } });
@@ -30,6 +37,7 @@ describe('Navbar on tax.nadimtuhin.com', () => {
 
   afterEach(() => {
     wrapper.unmount();
+    router.options.history.destroy();
   });
 
   test('runs on tax.nadimtuhin.com', () => {
