@@ -9,7 +9,7 @@
   "scripts": {
     "serve": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.js --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "lint": "eslint --fix src/",
     "test": "vitest run",
@@ -69,7 +69,6 @@
     "fast-uri": "^3.1.7",
     "joi": "^17.13.9",
     "launch-editor": "^2.14.2",
-    "@vue/server-renderer": "3.5.42",
     "express": "4.22.3",
     "body-parser": "1.20.9",
     "qs": "6.16.2",
