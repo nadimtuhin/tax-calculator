@@ -61,7 +61,8 @@ export default {
   data() {
     return {
       showModal: false,
-      debugMode: false
+      debugMode: false,
+      showTimerId: null
     }
   },
   mounted() {
@@ -72,6 +73,7 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener('keydown', this.handleKeydown)
+    this.clearShowTimer()
     // Clean up global reference
     if (window.showStarModal === this.forceShow) {
       delete window.showStarModal
@@ -106,9 +108,7 @@ export default {
         // Show if first visit
         if (!hasVisited) {
           // Reduced delay for better UX
-          setTimeout(() => {
-            this.showModal = true
-          }, 1500)
+          this.scheduleShow(1500)
           localStorage.setItem('tax-calculator-visited', 'true')
           return
         }
@@ -120,9 +120,7 @@ export default {
           const daysDiff = Math.floor((now - reminderDate) / (1000 * 60 * 60 * 24))
           
           if (daysDiff >= 7) {
-            setTimeout(() => {
-              this.showModal = true
-            }, 1000)
+            this.scheduleShow(1000)
           }
         }
       } catch (error) {
@@ -131,6 +129,21 @@ export default {
       }
     },
     
+    scheduleShow(delay) {
+      this.clearShowTimer()
+      this.showTimerId = setTimeout(() => {
+        this.showTimerId = null
+        this.showModal = true
+      }, delay)
+    },
+
+    clearShowTimer() {
+      if (this.showTimerId !== null) {
+        clearTimeout(this.showTimerId)
+        this.showTimerId = null
+      }
+    },
+
     closeModal() {
       this.showModal = false
     },
