@@ -6,6 +6,7 @@ import ToastHost from '@/components/ToastHost.vue';
 import salariesStore from '@/store/salaries';
 import breakdownStore from '@/store/breakdown';
 import { clearToasts, dismissToast, toastState } from '@/utils/toast';
+import * as hostnameUtils from '@/utils/hostname';
 
 // Mock window methods
 global.URL.createObjectURL = jest.fn(() => 'mock-url');
@@ -38,21 +39,13 @@ describe('Navbar Component', () => {
   let wrapper;
   let store;
   let router;
-  let originalLocation;
-
-  beforeAll(() => {
-    // Store original location for restoration
-    originalLocation = window.location;
-  });
+  let hostnameSpy;
 
   beforeEach(() => {
-    // Reset location hostname before each test
-    try {
-      delete window.location.hostname;
-    } catch (e) {
-      // Ignore if can't delete
-    }
-    
+    // jsdom cannot change window.location.hostname mid-test, so stub the one function
+    // Navbar uses to read it. Tests that care about the hostname set a return value.
+    hostnameSpy = jest.spyOn(hostnameUtils, 'currentHostname');
+
     store = createStore({
       modules: {
         salaries: {
@@ -87,16 +80,12 @@ describe('Navbar Component', () => {
   afterEach(() => {
     if (wrapper) {
       wrapper.unmount();
+      wrapper = null;
     }
-    // Restore original location
-    window.location = originalLocation;
+    // createWebHistory adds popstate/pagehide/visibilitychange listeners; remove them.
+    router.options.history.destroy();
     clearToasts();
     jest.restoreAllMocks();
-  });
-
-  afterAll(() => {
-    // Ensure location is fully restored
-    window.location = originalLocation;
   });
 
   describe('Component Rendering', () => {
@@ -179,30 +168,66 @@ describe('Navbar Component', () => {
       expect(dataActions.exists()).toBe(false);
     });
 
-    // jsdom serves this file from http://localhost/. Other hostnames are covered in
-    // navbarHostnameRemote.test.js and navbarHostnameLoopback.test.js, which set their own URL.
-    test('should show star button on localhost', () => {
+    test('should show star button only on localhost', () => {
+      hostnameSpy.mockReturnValue('localhost');
       wrapper = mount(Navbar, {
         global: {
           plugins: [store, router]
         }
       });
 
-      expect(window.location.hostname).toBe('localhost');
       expect(wrapper.find('.star-btn').exists()).toBe(true);
+    });
+
+    test('should hide star button when not on localhost', () => {
+      hostnameSpy.mockReturnValue('tax.nadimtuhin.com');
+      wrapper = mount(Navbar, {
+        global: {
+          plugins: [store, router]
+        }
+      });
+
+      expect(wrapper.find('.star-btn').exists()).toBe(false);
     });
   });
 
   describe('Computed Properties', () => {
-    beforeEach(() => {
+    const mountWithHostname = (hostname) => {
+      hostnameSpy.mockReturnValue(hostname);
+      return mount(Navbar, {
+        global: {
+          plugins: [store, router]
+        }
+      });
+    };
+
+    test('isLocalhost should detect localhost correctly', () => {
+      wrapper = mountWithHostname('localhost');
+      expect(wrapper.vm.isLocalhost).toBe(true);
+    });
+
+    test('isLocalhost should detect 127.0.0.1 correctly', () => {
+      wrapper = mountWithHostname('127.0.0.1');
+      expect(wrapper.vm.isLocalhost).toBe(true);
+    });
+
+    test('isLocalhost should return false for other hostnames', () => {
+      for (const hostname of ['tax.nadimtuhin.com', 'localhost.example.com', '127.0.0.2', '']) {
+        wrapper = mountWithHostname(hostname);
+        expect(wrapper.vm.isLocalhost).toBe(false);
+        wrapper.unmount();
+        wrapper = null;
+      }
+    });
+
+    test('isLocalhost reads the real jsdom hostname when not stubbed', () => {
+      hostnameSpy.mockRestore();
       wrapper = mount(Navbar, {
         global: {
           plugins: [store, router]
         }
       });
-    });
-
-    test('isLocalhost should detect localhost correctly', () => {
+      // jest-environment-jsdom serves tests from http://localhost/
       expect(window.location.hostname).toBe('localhost');
       expect(wrapper.vm.isLocalhost).toBe(true);
     });
@@ -210,7 +235,7 @@ describe('Navbar Component', () => {
 
   describe('Star Modal Functionality', () => {
     beforeEach(() => {
-      // jsdom serves this file from http://localhost/, so the star button renders.
+      hostnameSpy.mockReturnValue('localhost');
       wrapper = mount(Navbar, {
         global: {
           plugins: [store, router]
@@ -226,6 +251,7 @@ describe('Navbar Component', () => {
       await starBtn.trigger('click');
 
       expect(mockShowStarModal).toHaveBeenCalled();
+      delete window.showStarModal;
     });
 
     test('should show alert when showStarModal is not available', async () => {
@@ -245,6 +271,7 @@ describe('Navbar Component', () => {
       expect(window.alert).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
+      delete window.showStarModal;
     });
   });
 
