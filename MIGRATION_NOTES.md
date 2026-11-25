@@ -3,7 +3,7 @@
 ## What changed
 - Build: `@vue/cli-service` (webpack 5, webpack-dev-server 4) → Vite 8 + `@vitejs/plugin-vue`. Config in `vite.config.mjs`.
 - `public/index.html` → `index.html` at repo root (Vite entry); `<%= BASE_URL %>` → `/`, plus `<script type="module" src="/src/main.js">`. SEO tags, GA4 and canonical unchanged.
-- Tests: Jest 30 + `@vue/vue3-jest` + babel-jest → Vitest 5 (jsdom, globals). Test changes are mechanical only: `jest.*` → `vi.*`, one `require` → `await import`, constructor mocks use `function` (Vitest calls mocks with `new`), index.html path.
+- Tests: Jest 30 + `@vue/vue3-jest` + babel-jest → Vitest 4.1 (jsdom, globals; v5 requires Node 22.12+, CI matrix includes Node 20). Test changes are mechanical only: `jest.*` → `vi.*`, one `require` → `await import`, constructor mocks use `function` (Vitest calls mocks with `new`), index.html path.
 - Removed: `vue.config.js`, `babel.config.js`, `__mocks__/perfect-debounce.js`, Vue CLI plugins, Jest packages, `@babel/preset-env`, webpack-era yarn resolutions.
 - Kept resolutions: `@vue/server-renderer` pin; `js-beautify/glob` → ^14.0.2 and `editorconfig/minimatch` → ^11.0.1 (via `@vue/test-utils`; clears minimatch <11.0.1).
 - `.vue` extensionless imports keep working via `resolve.extensions`.
