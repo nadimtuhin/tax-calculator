@@ -52,7 +52,9 @@
     "vue-eslint-parser": "^10.4.0"
   },
   "resolutions": {
-    "@vue/server-renderer": "3.5.42"
+    "@vue/server-renderer": "3.5.42",
+    "**/js-beautify/glob": "^14.0.2",
+    "**/editorconfig/minimatch": "^11.0.1"
   },
   "keywords": [
     "vue",
