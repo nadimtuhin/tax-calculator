@@ -42,8 +42,6 @@ jobs:
 
     - name: Build project
       run: yarn build
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
 
     - name: Install and test MCP server
       run: |

@@ -1,4 +1,11 @@
-# Deploy previews only. Overrides the site's pinned Node 10.24.1, which
-# Yarn rejects (package.json engines: >=16 <25). Production stays pinned.
+# The site UI still pins Node 10.24.1, which Vite 8 cannot run on
+# (package.json engines: >=20.19.0 <25). Use Node 22 for every context.
+[build]
+  command = "yarn build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
 [context.deploy-preview.environment]
   NODE_VERSION = "22"
