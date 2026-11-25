@@ -19,4 +19,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    include: [
+      'tests/unit/**/*.{spec,test}.js',
+      'tests/integration/**/*.test.js',
+      'tests/v2/**/*.test.js',
+    ],
+    // Long engine sweeps (slabRoundingDrift, boundary sweep) exceed 5s on a loaded machine.
+    testTimeout: 30000,
+    hookTimeout: 30000,
+  },
 })

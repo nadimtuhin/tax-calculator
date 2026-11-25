@@ -133,7 +133,7 @@ describe('Investment Component', () => {
     });
 
     test('should allow editing investment amounts and commit changeInvestment', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
       const firstInput = wrapper.findAll('input[type="number"]')[0];
       await firstInput.setValue('75000');
       await firstInput.trigger('input');
