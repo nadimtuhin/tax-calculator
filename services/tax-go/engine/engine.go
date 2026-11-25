@@ -66,7 +66,7 @@ func orDefault(v, def Value) Value {
 // V8's TypeError for the first property; primitives destructure to undefined fields.
 func destructure(args Value, first string) Value {
 	if args == nil {
-		throwType("Cannot destructure property '" + first + "' of 'object null' as it is null.")
+		throwType("Cannot read properties of null (reading '" + first + "')")
 	}
 	if jsval.IsUndefined(args) {
 		return jsval.NewObject()
