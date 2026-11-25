@@ -15,7 +15,8 @@ const originalLocalStorage = global.localStorage;
 // Override localStorage globally
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-  writable: true
+  writable: true,
+  configurable: true
 });
 global.localStorage = localStorageMock;
 
@@ -31,7 +32,11 @@ afterAll(() => {
   document.addEventListener = originalAddEventListener;
   document.removeEventListener = originalRemoveEventListener;
   global.console.warn = originalConsoleWarn;
-  Object.defineProperty(window, 'localStorage', { value: originalLocalStorage, writable: true });
+  Object.defineProperty(window, 'localStorage', {
+    value: originalLocalStorage,
+    writable: true,
+    configurable: true
+  });
   global.localStorage = originalLocalStorage;
 });
 
@@ -152,6 +157,7 @@ describe('StarModal Component', () => {
       expect(jest.getTimerCount()).toBe(1);
 
       wrapper.unmount();
+      wrapper = null;
 
       expect(jest.getTimerCount()).toBe(0);
     });
@@ -168,6 +174,7 @@ describe('StarModal Component', () => {
       expect(jest.getTimerCount()).toBe(1);
 
       wrapper.unmount();
+      wrapper = null;
 
       expect(jest.getTimerCount()).toBe(0);
     });
