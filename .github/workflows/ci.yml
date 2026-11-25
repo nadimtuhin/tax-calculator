@@ -30,7 +30,7 @@ jobs:
       run: yarn lint
 
     - name: Run unit tests
-      run: yarn test --detectOpenHandles
+      run: yarn test
     
     - name: Build v2 (apps/web-v2)
       run: |
@@ -47,3 +47,29 @@ jobs:
       run: |
         npm --prefix packages/mcp ci
         npm --prefix packages/mcp test
+
+  e2e-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
+
+    - name: Build
+      run: yarn build
+
+    - name: Playwright smoke (chromium, vite preview on 8080)
+      run: npx playwright test tests/e2e/smoke.spec.js --project=chromium --reporter=line
+      env:
+        PW_SERVER_COMMAND: yarn preview --port 8080 --strictPort

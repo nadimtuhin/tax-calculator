@@ -9,31 +9,31 @@ import { clearToasts, dismissToast, toastState } from '@/utils/toast';
 import * as hostnameUtils from '@/utils/hostname';
 
 // Mock window methods
-global.URL.createObjectURL = jest.fn(() => 'mock-url');
-global.URL.revokeObjectURL = jest.fn();
+global.URL.createObjectURL = vi.fn(() => 'mock-url');
+global.URL.revokeObjectURL = vi.fn();
 
 // Mock document.createElement for export functionality test
 const originalCreateElement = document.createElement;
-document.createElement = jest.fn().mockImplementation((tagName) => {
+document.createElement = vi.fn().mockImplementation((tagName) => {
   const element = originalCreateElement.call(document, tagName);
   if (tagName === 'a' && element) {
-    element.click = jest.fn();
+    element.click = vi.fn();
   }
   return element;
 });
 
 // Mock FileReader
-global.FileReader = jest.fn().mockImplementation(() => ({
-  readAsText: jest.fn(),
+global.FileReader = vi.fn().mockImplementation(function () { return ({
+  readAsText: vi.fn(),
   onload: null,
   result: null
-}));
+}); });
 
 // Mock Blob
-global.Blob = jest.fn().mockImplementation((content, options) => ({
+global.Blob = vi.fn().mockImplementation(function (content, options) { return ({
   content,
   options
-}));
+}); });
 
 describe('Navbar Component', () => {
   let wrapper;
@@ -44,7 +44,7 @@ describe('Navbar Component', () => {
   beforeEach(() => {
     // jsdom cannot change window.location.hostname mid-test, so stub the one function
     // Navbar uses to read it. Tests that care about the hostname set a return value.
-    hostnameSpy = jest.spyOn(hostnameUtils, 'currentHostname');
+    hostnameSpy = vi.spyOn(hostnameUtils, 'currentHostname');
 
     store = createStore({
       modules: {
@@ -70,10 +70,10 @@ describe('Navbar Component', () => {
     });
 
     // Clear mocks
-    jest.clearAllMocks();
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
-    jest.spyOn(window, 'confirm').mockImplementation(() => {});
-    jest.spyOn(window, 'prompt').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
+    vi.spyOn(window, 'confirm').mockImplementation(() => {});
+    vi.spyOn(window, 'prompt').mockImplementation(() => {});
     clearToasts();
   });
 
@@ -85,7 +85,7 @@ describe('Navbar Component', () => {
     // createWebHistory adds popstate/pagehide/visibilitychange listeners; remove them.
     router.options.history.destroy();
     clearToasts();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Component Rendering', () => {
@@ -244,7 +244,7 @@ describe('Navbar Component', () => {
     });
 
     test('should call window.showStarModal when star button is clicked', async () => {
-      const mockShowStarModal = jest.fn();
+      const mockShowStarModal = vi.fn();
       window.showStarModal = mockShowStarModal;
 
       const starBtn = wrapper.find('.star-btn');
@@ -256,7 +256,7 @@ describe('Navbar Component', () => {
 
     test('should show alert when showStarModal is not available', async () => {
       window.showStarModal = undefined;
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const starBtn = wrapper.find('.star-btn');
       await starBtn.trigger('click');
@@ -286,7 +286,7 @@ describe('Navbar Component', () => {
     });
 
     test('should populate random data when random button is clicked', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
       const randomBtn = wrapper.find('.action-btn-random');
 
       await randomBtn.trigger('click');
@@ -323,7 +323,7 @@ describe('Navbar Component', () => {
     test('should generate senior citizen age when category is senior', async () => {
       // Mock Math.random to return 0 (first category = 'general', but we'll test the age logic)
       const originalRandom = Math.random;
-      Math.random = jest.fn()
+      Math.random = vi.fn()
         .mockReturnValueOnce(0.25) // categories[1] = 'female'... wait let's make it senior
         .mockReturnValueOnce(0.75) // categories[3] would be 'senior' if it exists
         .mockReturnValue(0.5); // Default for other random calls
@@ -401,7 +401,7 @@ describe('Navbar Component', () => {
 
     test('should trigger file input when import button is clicked', async () => {
       const fileInput = wrapper.find('input[type="file"]');
-      const clickSpy = jest.spyOn(fileInput.element, 'click').mockImplementation(() => {});
+      const clickSpy = vi.spyOn(fileInput.element, 'click').mockImplementation(() => {});
 
       const importBtn = wrapper.findAll('.action-btn').find(btn => 
         btn.text().includes('Import')
@@ -422,7 +422,7 @@ describe('Navbar Component', () => {
     });
 
     test('should import data when file is selected', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
       const testData = {
         taxpayerProfile: { category: 'senior', age: 65, location: 'chittagong' },
         bonus: 75000,
@@ -431,11 +431,11 @@ describe('Navbar Component', () => {
 
       // Mock FileReader
       const mockFileReader = {
-        readAsText: jest.fn(),
+        readAsText: vi.fn(),
         onload: null,
         result: JSON.stringify(testData)
       };
-      global.FileReader.mockImplementation(() => mockFileReader);
+      global.FileReader.mockImplementation(function () { return mockFileReader; });
 
       const fileInput = wrapper.find('input[type="file"]');
       const mockFile = new File(['test'], 'test.json', { type: 'application/json' });
@@ -464,11 +464,11 @@ describe('Navbar Component', () => {
 
     test('should handle invalid JSON gracefully', async () => {
       const mockFileReader = {
-        readAsText: jest.fn(),
+        readAsText: vi.fn(),
         onload: null,
         result: 'invalid json'
       };
-      global.FileReader.mockImplementation(() => mockFileReader);
+      global.FileReader.mockImplementation(function () { return mockFileReader; });
 
       const fileInput = wrapper.find('input[type="file"]');
       const mockFile = new File(['invalid'], 'test.json', { type: 'application/json' });
@@ -519,7 +519,7 @@ describe('Navbar Component', () => {
     });
 
     test('should reset data when confirmed', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
 
       const resetBtn = wrapper.find('.action-btn-danger');
       const pending = resetBtn.trigger('click');
@@ -562,7 +562,7 @@ describe('Navbar Component', () => {
     });
 
     test('should not reset data when cancelled', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
 
       const resetBtn = wrapper.find('.action-btn-danger');
       const pending = resetBtn.trigger('click');
@@ -601,7 +601,7 @@ describe('Navbar Component', () => {
 
     test('confirms reset through rendered ToastHost buttons', async () => {
       const host = mount(ToastHost);
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
 
       const resetBtn = wrapper.find('.action-btn-danger');
       await resetBtn.trigger('click');
@@ -704,7 +704,7 @@ describe('Navbar Component', () => {
 
     test('shows a toast when the star modal is not ready', () => {
       window.showStarModal = undefined;
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       wrapper.vm.openStarModal();
 
@@ -724,7 +724,7 @@ describe('Navbar Component', () => {
       const fileInput = wrapper.find('input[type="file"]');
       expect(fileInput.exists()).toBe(true);
       
-      const clickSpy = jest.spyOn(fileInput.element, 'click').mockImplementation(() => {});
+      const clickSpy = vi.spyOn(fileInput.element, 'click').mockImplementation(() => {});
 
       wrapper.vm.triggerFileInput();
 

@@ -206,9 +206,9 @@ describe('Lawyer Referrals Page & Form Safety', () => {
   })
 
   test('Form cannot be submitted and performs zero network or storage actions', async () => {
-    localStorageSpy = jest.spyOn(Storage.prototype, 'setItem')
+    localStorageSpy = vi.spyOn(Storage.prototype, 'setItem')
     originalFetch = global.fetch
-    fetchSpy = jest.fn()
+    fetchSpy = vi.fn()
     global.fetch = fetchSpy
 
     const router = createTestRouter()

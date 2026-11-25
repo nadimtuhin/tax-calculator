@@ -101,7 +101,7 @@ describe('resolveDefaultFiscalYear', () => {
 
 describe('fiscal year default wiring', () => {
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('engine default matches the resolved completed year for today', () => {
@@ -111,8 +111,8 @@ describe('fiscal year default wiring', () => {
   });
 
   test('fresh store on 5 Nov 2026 selects FY 2025-26 and keeps the comparison pair', () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
+    vi.useFakeTimers();
+    vi.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
 
     const state = salariesStore.state();
     expect(state.currentYear).toBe('2025-26');
@@ -133,19 +133,19 @@ describe('fiscal year default wiring', () => {
   });
 
   test('fresh store rolls to FY 2026-27 on 1 July 2027 and not a day earlier', () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(at(2027, 5, 30, 23, 59, 59, 999));
+    vi.useFakeTimers();
+    vi.setSystemTime(at(2027, 5, 30, 23, 59, 59, 999));
     expect(salariesStore.state().currentYear).toBe('2025-26');
 
-    jest.setSystemTime(at(2027, 6, 1, 0, 0, 0, 0));
+    vi.setSystemTime(at(2027, 6, 1, 0, 0, 0, 0));
     expect(salariesStore.state().currentYear).toBe('2026-27');
     expect(salariesStore.state().comparisonFromYear).toBe('2025-26');
     expect(salariesStore.state().comparisonToYear).toBe('2026-27');
   });
 
   test('profile select follows the fresh-store year on 5 Nov 2026', () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
+    vi.useFakeTimers();
+    vi.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
 
     const store = createStore({
       modules: {
@@ -167,8 +167,8 @@ describe('fiscal year default wiring', () => {
   });
 
   test('a saved fiscal year wins over the auto default', async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
+    vi.useFakeTimers();
+    vi.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
 
     const keptEarlier = migratePersistedState({
       salaries: { currentYear: '2024-25', bonus: 1000 },
@@ -202,8 +202,8 @@ describe('fiscal year default wiring', () => {
   });
 
   test('a missing or blank saved year uses the auto default', () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
+    vi.useFakeTimers();
+    vi.setSystemTime(at(2026, 10, 5, 10, 0, 0, 0));
 
     const missing = migratePersistedState({ salaries: { bonus: 10 } });
     expect(missing.salaries.currentYear).toBe('2025-26');
