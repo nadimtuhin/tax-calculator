@@ -36,6 +36,13 @@ function dropJobsStartingAfterJune(jobs) {
   }
 }
 
+/** Drop employers that would share a month with a prior job after clamping (incl. 11–11 on June). */
+function dropJobsOverlappingPriorEnd(jobs) {
+  for (let i = jobs.length - 1; i > 0; i--) {
+    if (jobs[i].from <= jobs[i - 1].to) jobs.splice(i)
+  }
+}
+
 /** True when another employer can fit after the last job in the FY (last month is not June). */
 export function canAddJobToChain(jobs) {
   if (!jobs.length) return true
@@ -64,6 +71,7 @@ export function clampJobChain(jobs) {
     jobs[jobs.length - 1].to = Math.min(11, jobs[jobs.length - 1].to)
     const before = jobs.length
     dropJobsStartingAfterJune(jobs)
+    dropJobsOverlappingPriorEnd(jobs)
     if (jobs.length === before) break
   }
 }

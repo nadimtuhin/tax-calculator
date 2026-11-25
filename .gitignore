@@ -36,6 +36,3 @@ build
 # MCP package generated vendor copy & tarballs
 packages/mcp/vendor/
 *.tgz
-
-# Bend harness temp (scripts/bend-verify.mjs)
-verify/.slab_batch_combined.bend

@@ -1,8 +1,8 @@
-# Independent FY 2026-27 progressive slab gross tax — matches JS Math.round((amt/100)*rate).
-# js_slab_cut lives in verify/js_slab_exceptions.bend (generated; emulates IEEE float rounding).
+# Independent FY 2026-27 progressive slab gross tax — integer half-up per slice:
+# ((amount * rate) + 50) / 100  (same formula as Bend verifier compares to JS).
 
 def slab_cut(amount, rate):
-  return js_slab_cut(amount, rate)
+  return ((amount * rate) + 50) / 100
 
 def slice_tax(taxable, lo, hi, rate):
   switch taxable < lo:

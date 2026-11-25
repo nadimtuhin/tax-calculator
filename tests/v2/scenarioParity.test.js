@@ -134,6 +134,27 @@ describe('v2 employer months (no double count)', () => {
     expect(s.jobs[1].from).toBe(8);
   });
 
+  test('three-job chain: May tap on first employer drops clamped June duplicates', () => {
+    const s = baseState();
+    answered(s, { job: true });
+    s.jobs = [
+      { name: 'A', customName: true, from: 0, to: 5, pay: 78_000 },
+      { name: 'B', customName: true, from: 6, to: 8, pay: 96_000 },
+      { name: 'C', customName: true, from: 9, to: 11, pay: 90_000 },
+    ];
+    clampJobChain(s.jobs);
+    pickJobMonth(s.jobs, 0, 10);
+    expect(s.jobs).toHaveLength(2);
+    expect(s.jobs[0].from).toBe(0);
+    expect(s.jobs[0].to).toBe(10);
+    expect(s.jobs[1].from).toBe(11);
+    expect(s.jobs[1].to).toBe(11);
+    expect(s.jobs[1].pay).toBe(96_000);
+    const { salaryTotal, pays } = buildScenario(s);
+    expect(pays.filter((p) => p === 90_000)).toHaveLength(0);
+    expect(salaryTotal).toBe(11 * 78_000 + 96_000);
+  });
+
   test('tapping June on first employer drops later jobs (no 11–11 overlap)', () => {
     const s = baseState();
     answered(s, { job: true });
@@ -153,5 +174,62 @@ describe('v2 employer months (no double count)', () => {
     addJobToChain(s.jobs);
     expect(s.jobs).toHaveLength(before);
     expect(buildScenario(s).salaryTotal).toBe(12 * 78_000);
+  });
+
+  test.each([
+    [[{ from: 0, to: 11, pay: 85_000 }]],
+    [
+      { from: 0, to: 5, pay: 78_000 },
+      { from: 6, to: 11, pay: 96_000 },
+    ],
+    [
+      { from: 0, to: 5, pay: 78_000 },
+      { from: 6, to: 8, pay: 96_000 },
+      { from: 9, to: 11, pay: 90_000 },
+    ],
+  ])('month taps keep disjoint FY months (property)', (template) => {
+    const templateJobs = Array.isArray(template[0]) ? template[0] : template;
+    for (let jobIndex = 0; jobIndex < templateJobs.length; jobIndex++) {
+      for (let month = 0; month < 12; month++) {
+        const jobs = templateJobs.map((j, i) => ({
+          name: String(i),
+          customName: true,
+          from: j.from,
+          to: j.to,
+          pay: j.pay,
+        }));
+        clampJobChain(jobs);
+        pickJobMonth(jobs, jobIndex, month);
+        for (let i = 1; i < jobs.length; i++) {
+          expect(jobs[i].from).toBeGreaterThan(jobs[i - 1].to);
+        }
+        const covered = new Set();
+        jobs.forEach((j) => {
+          expect(j.from).toBeLessThanOrEqual(j.to);
+          expect(j.from).toBeLessThanOrEqual(11);
+          for (let m = j.from; m <= j.to; m++) {
+            expect(covered.has(m)).toBe(false);
+            covered.add(m);
+          }
+        });
+        const state = {
+          job: true,
+          missed: false,
+          raise: false,
+          bonus: false,
+          missedSet: [],
+          items: [],
+          jobs,
+        };
+        const { pays, segments } = buildScenario(state);
+        jobs.forEach((j, ei) => {
+          const contrib = segments.filter((seg) => seg.employer === ei).reduce((a, seg) => a + seg.amount, 0);
+          expect(contrib).toBeGreaterThan(0);
+        });
+        for (let m = 0; m < 12; m++) {
+          if (covered.has(m)) expect(pays[m]).toBeGreaterThan(0);
+        }
+      }
+    }
   });
 });
