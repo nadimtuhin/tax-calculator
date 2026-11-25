@@ -68,6 +68,7 @@
 
 <script>
 import { getBlogPost } from '@/data/blogPosts'
+import { blogPostMeta } from '@/router/meta'
 
 export default {
   name: 'BlogPost',
@@ -86,14 +87,16 @@ export default {
     post: {
       immediate: true,
       handler(post) {
-        if (post) {
-          document.title = `${post.title} | BD Tax Calculator`
-          const description = document.querySelector('meta[name="description"]')
-          if (description) description.content = post.excerpt
+        // No document during the build-time prerender; it writes the head itself.
+        if (post && typeof document !== 'undefined') {
+          const { title, description } = blogPostMeta(post)
+          document.title = title
+          const descriptionEl = document.querySelector('meta[name="description"]')
+          if (descriptionEl) descriptionEl.content = description
           const ogTitle = document.querySelector('meta[property="og:title"]')
-          if (ogTitle) ogTitle.content = `${post.title} | BD Tax Calculator`
+          if (ogTitle) ogTitle.content = title
           const ogDesc = document.querySelector('meta[property="og:description"]')
-          if (ogDesc) ogDesc.content = post.excerpt
+          if (ogDesc) ogDesc.content = description
         }
       }
     }

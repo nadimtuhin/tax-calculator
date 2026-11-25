@@ -36,3 +36,4 @@ build
 # MCP package generated vendor copy & tarballs
 packages/mcp/vendor/
 *.tgz
+dist-ssr
