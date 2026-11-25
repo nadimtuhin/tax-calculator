@@ -15,7 +15,7 @@ Branch: `cursor/build-v2-tax-calculator-34d2` · Draft PR **#102**
 
 | Check | Result |
 |--------|--------|
-| `npm test` | (see commit) |
+| `npm test` | **580 passed** (+ slab drift + employer property) |
 | `npm run v2:build` | OK |
 | `apps/web-v2` oxlint | OK |
 | `yarn v2:verify-bend` | SKIP locally unless `bend` installed |
