@@ -179,14 +179,17 @@ describe('Navbar Component', () => {
       expect(dataActions.exists()).toBe(false);
     });
 
-    test.skip('should show star button only on localhost', () => {
-      // This test is skipped due to JSDOM location mocking limitations
-      // The functionality works correctly in the browser
-    });
+    // jsdom serves this file from http://localhost/. Other hostnames are covered in
+    // navbarHostnameRemote.test.js and navbarHostnameLoopback.test.js, which set their own URL.
+    test('should show star button on localhost', () => {
+      wrapper = mount(Navbar, {
+        global: {
+          plugins: [store, router]
+        }
+      });
 
-    test.skip('should hide star button when not on localhost', () => {
-      // This test is skipped due to JSDOM location mocking limitations
-      // The functionality works correctly in the browser
+      expect(window.location.hostname).toBe('localhost');
+      expect(wrapper.find('.star-btn').exists()).toBe(true);
     });
   });
 
@@ -199,30 +202,15 @@ describe('Navbar Component', () => {
       });
     });
 
-    test.skip('isLocalhost should detect localhost correctly', () => {
-      // This test is skipped due to JSDOM location mocking limitations
-      // The functionality works correctly in the browser
-    });
-
-    test.skip('isLocalhost should detect 127.0.0.1 correctly', () => {
-      // This test is skipped due to JSDOM location mocking limitations
-      // The functionality works correctly in the browser
-    });
-
-    test.skip('isLocalhost should return false for other hostnames', () => {
-      // This test is skipped due to JSDOM location mocking limitations
-      // The functionality works correctly in the browser
+    test('isLocalhost should detect localhost correctly', () => {
+      expect(window.location.hostname).toBe('localhost');
+      expect(wrapper.vm.isLocalhost).toBe(true);
     });
   });
 
-  describe.skip('Star Modal Functionality', () => {
+  describe('Star Modal Functionality', () => {
     beforeEach(() => {
-      // Mock just the hostname property
-      Object.defineProperty(window.location, 'hostname', {
-        writable: true,
-        value: 'localhost'
-      });
-
+      // jsdom serves this file from http://localhost/, so the star button renders.
       wrapper = mount(Navbar, {
         global: {
           plugins: [store, router]
