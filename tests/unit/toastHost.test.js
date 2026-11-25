@@ -22,7 +22,7 @@ describe('ToastHost', () => {
       wrapper = null;
     }
     clearToasts();
-    jest.useRealTimers();
+    vi.useRealTimers();
     document.body.innerHTML = '';
   });
 
@@ -101,12 +101,12 @@ describe('ToastHost', () => {
 
   test('runs an action and dismisses the toast even if onClick throws', async () => {
     mountHost();
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     showToast('Are you sure?', {
       duration: 0,
       actions: [
         { label: 'Confirm reset', variant: 'danger', onClick },
-        { label: 'Cancel', variant: 'ghost', onClick: jest.fn() },
+        { label: 'Cancel', variant: 'ghost', onClick: vi.fn() },
       ],
     });
     await wrapper.vm.$nextTick();
@@ -145,8 +145,8 @@ describe('ToastHost', () => {
     showToast('Are you sure you want to reset all data?', {
       duration: 0,
       actions: [
-        { label: 'Confirm reset', variant: 'danger', onClick: jest.fn() },
-        { label: 'Cancel', variant: 'ghost', onClick: jest.fn() },
+        { label: 'Confirm reset', variant: 'danger', onClick: vi.fn() },
+        { label: 'Cancel', variant: 'ghost', onClick: vi.fn() },
       ],
     });
     await wrapper.vm.$nextTick();
@@ -162,7 +162,7 @@ describe('ToastHost', () => {
   });
 
   test('keeps focus on open confirmation when an unrelated toast times out or closes via Escape', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const trigger = document.createElement('button');
     trigger.textContent = 'Reset';
     document.body.appendChild(trigger);
@@ -177,7 +177,7 @@ describe('ToastHost', () => {
     await wrapper.vm.$nextTick();
     expect(document.activeElement.textContent).toBe('Cancel');
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     await wrapper.vm.$nextTick();
     expect(document.activeElement.textContent).toBe('Cancel');
 
@@ -246,7 +246,7 @@ describe('ToastHost', () => {
   });
 
   test('pauses timed toast while focused or hovered and restores focus on dismiss', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const trigger = document.createElement('button');
     trigger.textContent = 'Random';
     document.body.appendChild(trigger);
@@ -256,12 +256,12 @@ describe('ToastHost', () => {
     showToast('Random data populated!', { variant: 'success', duration: 1000 });
     await wrapper.vm.$nextTick();
 
-    jest.advanceTimersByTime(600);
+    vi.advanceTimersByTime(600);
     const dismissBtn = wrapper.find('[aria-label="Dismiss notification"]').element;
     dismissBtn.focus();
 
     // Does not auto-dismiss while dismiss control holds keyboard focus
-    jest.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(5000);
     await wrapper.vm.$nextTick();
     expect(toastState.items).toHaveLength(1);
     expect(document.activeElement).toBe(dismissBtn);
@@ -276,11 +276,11 @@ describe('ToastHost', () => {
     showToast('Hover toast', { duration: 1000 });
     await wrapper.vm.$nextTick();
     await wrapper.find('.toast').trigger('mouseenter');
-    jest.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(3000);
     expect(toastState.items).toHaveLength(1);
 
     await wrapper.find('.toast').trigger('mouseleave');
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     await wrapper.vm.$nextTick();
     expect(toastState.items).toHaveLength(0);
   });

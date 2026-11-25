@@ -206,9 +206,9 @@ describe('Lawyer Referrals Page & Form Safety', () => {
   })
 
   test('Form cannot be submitted and performs zero network or storage actions', async () => {
-    localStorageSpy = jest.spyOn(Storage.prototype, 'setItem')
+    localStorageSpy = vi.spyOn(Storage.prototype, 'setItem')
     originalFetch = global.fetch
-    fetchSpy = jest.fn()
+    fetchSpy = vi.fn()
     global.fetch = fetchSpy
 
     const router = createTestRouter()
@@ -255,8 +255,8 @@ describe('Light Theme & Accessibility Tokens', () => {
     expect(content).not.toContain('prefers-color-scheme')
   })
 
-  test('public/index.html includes color-scheme light meta', () => {
-    const indexPath = path.resolve(__dirname, '../../public/index.html')
+  test('index.html includes color-scheme light meta', () => {
+    const indexPath = path.resolve(__dirname, '../../index.html')
     const content = fs.readFileSync(indexPath, 'utf8')
 
     expect(content).toContain('content="light"')
@@ -279,5 +279,6 @@ describe('Light Theme & Accessibility Tokens', () => {
     }
     searchDir(path.resolve(__dirname, '../../src'))
     searchDir(path.resolve(__dirname, '../../public'))
+    expect(fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8')).not.toContain('prefers-color-scheme')
   })
 })

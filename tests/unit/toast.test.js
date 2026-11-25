@@ -15,7 +15,7 @@ describe('toast helper', () => {
 
   afterEach(() => {
     clearToasts();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('shows a dismissible info toast and returns its id', () => {
@@ -61,7 +61,7 @@ describe('toast helper', () => {
   });
 
   test('calls onDismiss with the reason', () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
     const id = showToast('Bye', { duration: 0, onDismiss });
 
     dismissToast(id, 'escape');
@@ -70,48 +70,48 @@ describe('toast helper', () => {
   });
 
   test('auto-dismisses after the duration and not before', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     showToast('Temporary', { duration: 1000 });
 
-    jest.advanceTimersByTime(999);
+    vi.advanceTimersByTime(999);
     expect(toastState.items).toHaveLength(1);
 
-    jest.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1);
     expect(toastState.items).toHaveLength(0);
   });
 
   test('does not auto-dismiss a toast with duration 0', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     showToast('Stay', { duration: 0 });
 
-    jest.advanceTimersByTime(10000);
+    vi.advanceTimersByTime(10000);
     expect(toastState.items).toHaveLength(1);
   });
 
   test('auto-dismisses a plain toast after four seconds', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     showToast('Saved');
 
-    jest.advanceTimersByTime(3999);
+    vi.advanceTimersByTime(3999);
     expect(toastState.items).toHaveLength(1);
 
-    jest.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1);
     expect(toastState.items).toHaveLength(0);
   });
 
   test('clears the auto-dismiss timer when dismissed early', () => {
-    jest.useFakeTimers();
-    const onDismiss = jest.fn();
+    vi.useFakeTimers();
+    const onDismiss = vi.fn();
     const id = showToast('Early', { duration: 1000, onDismiss });
 
     dismissToast(id);
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
   test('clearToasts removes every toast and settles their dismiss callbacks', () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
     showToast('One', { duration: 0, onDismiss });
     showToast('Two', { duration: 0 });
 
@@ -155,10 +155,10 @@ describe('toast helper', () => {
   });
 
   test('confirmToast does not time out while it is waiting for a choice', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const pending = confirmToast('Still there?');
 
-    jest.advanceTimersByTime(20000);
+    vi.advanceTimersByTime(20000);
     expect(toastState.items).toHaveLength(1);
 
     toastState.items[0].actions[1].onClick();
@@ -167,27 +167,27 @@ describe('toast helper', () => {
   });
 
   test('pauses and resumes auto-dismiss across independent reasons', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const id = showToast('Hold on', { duration: 1000 });
 
-    jest.advanceTimersByTime(400);
+    vi.advanceTimersByTime(400);
     expect(pauseToast(id, 'hover')).toBe(true);
     expect(pauseToast(id, 'focus')).toBe(true);
 
-    jest.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(5000);
     expect(toastState.items).toHaveLength(1);
 
     // Leaving hover while still focused keeps toast paused
     expect(resumeToast(id, 'hover')).toBe(true);
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
     expect(toastState.items).toHaveLength(1);
 
     // Leaving focus resumes remaining ~600ms
     expect(resumeToast(id, 'focus')).toBe(true);
-    jest.advanceTimersByTime(599);
+    vi.advanceTimersByTime(599);
     expect(toastState.items).toHaveLength(1);
 
-    jest.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1);
     expect(toastState.items).toHaveLength(0);
   });
 });

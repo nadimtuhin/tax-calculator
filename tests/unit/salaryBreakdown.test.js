@@ -293,7 +293,7 @@ describe('SalaryBreakdown Component', () => {
     });
 
     test('should call store mutations when inputs change', async () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
       
       const salaryInput = wrapper.find('input[type="number"]');
       await salaryInput.setValue('45000');
@@ -306,7 +306,7 @@ describe('SalaryBreakdown Component', () => {
 
   describe('Component Lifecycle', () => {
     test('should set default total salary on mount', () => {
-      const spy = jest.spyOn(store, 'commit');
+      const spy = vi.spyOn(store, 'commit');
       
       mount(SalaryBreakdown, {
         global: {
