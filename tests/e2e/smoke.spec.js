@@ -24,3 +24,16 @@ test.describe('smoke', () => {
     await expect(page.locator('h1')).toBeVisible();
   });
 });
+
+test.describe('smoke without JavaScript (prerendered HTML)', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('a guide serves its own title, canonical, h1 and body', async ({ page }) => {
+    const slug = 'section-78-investment-rebate-bangladesh';
+    await page.goto(`/blog/${slug}`);
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://tax.nadimtuhin.com/blog/${slug}`);
+    await expect(page.locator('h1')).toContainText(/Section 78/);
+    await expect(page.locator('main p').first()).toBeVisible();
+  });
+});
