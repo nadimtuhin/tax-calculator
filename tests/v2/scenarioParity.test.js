@@ -177,41 +177,50 @@ describe('v2 employer months (no double count)', () => {
   });
 
   test.each([
-    [[{ from: 0, to: 11, pay: 85_000 }]],
+    [[{ from: 0, to: 11, pay: 85_000 }], 1],
     [
-      { from: 0, to: 5, pay: 78_000 },
-      { from: 6, to: 11, pay: 96_000 },
+      [
+        { from: 0, to: 5, pay: 78_000 },
+        { from: 6, to: 11, pay: 96_000 },
+      ],
+      2,
     ],
     [
-      { from: 0, to: 5, pay: 78_000 },
-      { from: 6, to: 8, pay: 96_000 },
-      { from: 9, to: 11, pay: 90_000 },
+      [
+        { from: 0, to: 5, pay: 78_000 },
+        { from: 6, to: 8, pay: 96_000 },
+        { from: 9, to: 11, pay: 90_000 },
+      ],
+      3,
     ],
-  ])('month taps keep disjoint FY months (property)', (template) => {
-    const templateJobs = Array.isArray(template[0]) ? template[0] : template;
+  ])('month taps keep disjoint FY months (%i employers)', (templateJobs, employerCount) => {
+    expect(templateJobs).toHaveLength(employerCount)
+    const expectedTaps = templateJobs.length * 12
+    let taps = 0
     for (let jobIndex = 0; jobIndex < templateJobs.length; jobIndex++) {
       for (let month = 0; month < 12; month++) {
+        taps += 1
         const jobs = templateJobs.map((j, i) => ({
           name: String(i),
           customName: true,
           from: j.from,
           to: j.to,
           pay: j.pay,
-        }));
-        clampJobChain(jobs);
-        pickJobMonth(jobs, jobIndex, month);
+        }))
+        clampJobChain(jobs)
+        pickJobMonth(jobs, jobIndex, month)
         for (let i = 1; i < jobs.length; i++) {
-          expect(jobs[i].from).toBeGreaterThan(jobs[i - 1].to);
+          expect(jobs[i].from).toBeGreaterThan(jobs[i - 1].to)
         }
-        const covered = new Set();
+        const covered = new Set()
         jobs.forEach((j) => {
-          expect(j.from).toBeLessThanOrEqual(j.to);
-          expect(j.from).toBeLessThanOrEqual(11);
+          expect(j.from).toBeLessThanOrEqual(j.to)
+          expect(j.from).toBeLessThanOrEqual(11)
           for (let m = j.from; m <= j.to; m++) {
-            expect(covered.has(m)).toBe(false);
-            covered.add(m);
+            expect(covered.has(m)).toBe(false)
+            covered.add(m)
           }
-        });
+        })
         const state = {
           job: true,
           missed: false,
@@ -220,16 +229,17 @@ describe('v2 employer months (no double count)', () => {
           missedSet: [],
           items: [],
           jobs,
-        };
-        const { pays, segments } = buildScenario(state);
+        }
+        const { pays, segments } = buildScenario(state)
         jobs.forEach((j, ei) => {
-          const contrib = segments.filter((seg) => seg.employer === ei).reduce((a, seg) => a + seg.amount, 0);
-          expect(contrib).toBeGreaterThan(0);
-        });
+          const contrib = segments.filter((seg) => seg.employer === ei).reduce((a, seg) => a + seg.amount, 0)
+          expect(contrib).toBeGreaterThan(0)
+        })
         for (let m = 0; m < 12; m++) {
-          if (covered.has(m)) expect(pays[m]).toBeGreaterThan(0);
+          if (covered.has(m)) expect(pays[m]).toBeGreaterThan(0)
         }
       }
     }
-  });
+    expect(taps).toBe(expectedTaps)
+  })
 });
