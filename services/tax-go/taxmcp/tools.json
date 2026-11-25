@@ -1,0 +1,497 @@
+[
+  {
+    "name": "list_years",
+    "title": "List Supported Bangladesh Tax Years",
+    "description": "List supported Bangladesh fiscal/income years (FY 2023-24 through FY 2026-27), corresponding assessment years, slab rates, general thresholds, taxpayer categories, locations, salary exemption rules, and investment instrument caps.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_rules",
+    "title": "Get Bangladesh Tax Rules for Fiscal Year",
+    "description": "Return thresholds, parent-of-disabled allowance, progressive tax slabs, investment rebate formula/caps, minimum tax by location, and salary exemption caps for a Bangladesh Fiscal Year without calculating tax on an income.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "year": {
+          "default": "{{DEFAULT_FISCAL_YEAR}}",
+          "description": "Fiscal/Income Year, e.g. \"2025-26\", \"2026-27\", \"2024-25\", or \"2023-24\".",
+          "type": "string"
+        },
+        "category": {
+          "default": "general",
+          "description": "Taxpayer category: \"general\", \"female\", \"senior\" (65+), \"disabled\", \"third_gender\", \"freedom_fighter\" (gazetted war-wounded / July Warrior), or legacy \"parent_disabled\".",
+          "type": "string",
+          "enum": [
+            "general",
+            "female",
+            "senior",
+            "disabled",
+            "third_gender",
+            "freedom_fighter",
+            "parent_disabled"
+          ]
+        },
+        "age": {
+          "description": "Taxpayer age in whole years (optional; age >= 65 promotes general/female to senior threshold in FY 2025-26 and FY 2026-27).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "parent_of_disabled": {
+          "description": "True if parent or legal guardian of a person with disability (+BDT 50,000 threshold).",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "calculate_tax",
+    "title": "Calculate Bangladesh Personal Income Tax",
+    "description": "Calculate Bangladesh salaried personal income tax for a Fiscal Year (2023-24, 2024-25, 2025-26, or 2026-27). Accepts either post-exemption taxable_income OR salary income components (annual or monthly), taxpayer profile (category, age, parent_of_disabled, location, first_time_filer), investments, and TDS. Returns threshold used, taxable income, slab-by-slab breakdown, gross tax, rebate, minimum tax, and final payable tax.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "year": {
+          "default": "{{DEFAULT_FISCAL_YEAR}}",
+          "description": "Fiscal/Income Year, e.g. \"2025-26\", \"2026-27\", \"2024-25\", or \"2023-24\".",
+          "type": "string"
+        },
+        "category": {
+          "default": "general",
+          "description": "Taxpayer category: \"general\", \"female\", \"senior\" (65+), \"disabled\", \"third_gender\", \"freedom_fighter\" (gazetted war-wounded / July Warrior), or legacy \"parent_disabled\".",
+          "type": "string",
+          "enum": [
+            "general",
+            "female",
+            "senior",
+            "disabled",
+            "third_gender",
+            "freedom_fighter",
+            "parent_disabled"
+          ]
+        },
+        "age": {
+          "description": "Taxpayer age in whole years (optional; age >= 65 promotes general/female to senior threshold in FY 2025-26 and FY 2026-27).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "parent_of_disabled": {
+          "description": "True if parent or legal guardian of a person with disability (+BDT 50,000 additive threshold).",
+          "type": "boolean"
+        },
+        "location": {
+          "default": "dhaka",
+          "description": "Taxpayer location for minimum tax rules: \"dhaka\", \"chittagong\", \"other_city\" (other city corporations), or \"district\" (non-city-corporation areas).",
+          "type": "string",
+          "enum": [
+            "dhaka",
+            "chittagong",
+            "other_city",
+            "district"
+          ]
+        },
+        "first_time_filer": {
+          "description": "True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2025-26 and FY 2026-27 when above threshold).",
+          "type": "boolean"
+        },
+        "taxable_income": {
+          "description": "Annual post-exemption taxable income in BDT. Mutually exclusive with income.",
+          "type": "number",
+          "minimum": 0
+        },
+        "income": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "default": "annual",
+              "description": "Whether recurring salary fields (basic, house, medical, transport, lfa, others, or gross_salary) are monthly (multiplied by 12) or annual. Bonus fields are always annual.",
+              "type": "string",
+              "enum": [
+                "annual",
+                "monthly"
+              ]
+            },
+            "gross_salary": {
+              "description": "Unitemized gross employment salary in BDT (mutually exclusive with basic/house/medical/transport/lfa/employer_rpf/others). Receives the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool exemption min(1/3 of gross, cap) unless apply_exemption is false.",
+              "type": "number",
+              "minimum": 0
+            },
+            "use_standard_breakdown": {
+              "description": "When true alongside gross_salary, populates illustrative 60% basic, 25% house, 10% medical, 5% transport components.",
+              "type": "boolean"
+            },
+            "apply_exemption": {
+              "description": "When true (default), deducts the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool employment exemption min(1/3 of gross employment income, BDT 500,000; BDT 450,000 in FY 2023-24).",
+              "type": "boolean"
+            },
+            "basic": {
+              "description": "Basic salary in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "house": {
+              "description": "House rent allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "medical": {
+              "description": "Medical allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "transport": {
+              "description": "Conveyance/transport allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "lfa": {
+              "description": "Leave fare assistance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "employer_rpf": {
+              "description": "Employer contribution to Recognized Provident Fund (RPF) in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "others": {
+              "description": "Other recurring taxable allowances in BDT.",
+              "type": "number",
+              "minimum": 0
+            },
+            "bonus": {
+              "description": "Annual festival/performance bonus in BDT (always annual, fully taxable).",
+              "type": "number",
+              "minimum": 0
+            },
+            "bonus2": {
+              "description": "Second annual bonus in BDT (always annual, fully taxable).",
+              "type": "number",
+              "minimum": 0
+            },
+            "additional_income": {
+              "description": "Additional annual lump-sum taxable salary income in BDT.",
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false,
+          "description": "Salary components in BDT. Mutually exclusive with top-level taxable_income."
+        },
+        "investments": {
+          "description": "Eligible tax-rebate investments in BDT (number or itemized object).",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "description": "Total eligible investment in BDT."
+            },
+            {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "description": "Total eligible investment in BDT (mutually exclusive with itemized fields).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "dps": {
+                  "description": "Deposit Pension Scheme (DPS) contribution in BDT (instrument cap BDT 120,000).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "life_insurance": {
+                  "description": "Life insurance premium in BDT (requires life_insurance_policy_value when > 0; capped at 10% of policy sum assured).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "life_insurance_policy_value": {
+                  "description": "Total policy sum assured in BDT for life_insurance; caps eligible premium at 10% of policy sum assured per Sixth Schedule Part 3.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "stocks": {
+                  "description": "Listed shares/stocks investment in BDT.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "savings_certificate": {
+                  "description": "Sanchayapatra / savings certificate investment in BDT (instrument cap BDT 500,000).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "mutual_fund": {
+                  "description": "Mutual fund / unit certificate investment in BDT (cap BDT 500,000 through FY 2024-25; uncapped from FY 2025-26 onward per Finance Act 2026).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "others": {
+                  "description": "Other qualifying investment in BDT.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "apply_instrument_caps": {
+                  "description": "Statutory Sixth Schedule Part 3 instrument caps are always enforced on itemized investments (DPS <= 120,000, savings_certificate <= 500,000, life_insurance <= 10% of policy value, mutual_fund <= 500,000 through FY 2024-25 and uncapped in FY 2025-26/2026-27).",
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "tds": {
+          "default": 0,
+          "description": "Total annual Tax Deducted at Source (TDS) already withheld in BDT.",
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "compare_years",
+    "title": "Compare Bangladesh Income Tax Across Two Fiscal Years",
+    "description": "Run side-by-side Bangladesh income tax calculations for two Fiscal Years (defaults to 2025-26 vs 2026-27) using identical taxpayer profile, income, investments, and TDS. Returns full breakdowns for both years plus threshold, gross tax, rebate, total tax, and payable tax differences.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "from_year": {
+          "default": "{{DEFAULT_COMPARISON_FROM_YEAR}}",
+          "description": "Baseline Fiscal/Income Year, e.g. \"2024-25\" or \"2025-26\".",
+          "type": "string"
+        },
+        "to_year": {
+          "default": "{{DEFAULT_COMPARISON_TO_YEAR}}",
+          "description": "Comparison Fiscal/Income Year, e.g. \"2025-26\" or \"2026-27\".",
+          "type": "string"
+        },
+        "category": {
+          "default": "general",
+          "description": "Taxpayer category: \"general\", \"female\", \"senior\" (65+), \"disabled\", \"third_gender\", \"freedom_fighter\" (gazetted war-wounded / July Warrior), or legacy \"parent_disabled\".",
+          "type": "string",
+          "enum": [
+            "general",
+            "female",
+            "senior",
+            "disabled",
+            "third_gender",
+            "freedom_fighter",
+            "parent_disabled"
+          ]
+        },
+        "age": {
+          "description": "Taxpayer age in whole years (optional; age >= 65 promotes general/female to senior threshold in FY 2025-26 and FY 2026-27).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "parent_of_disabled": {
+          "description": "True if parent or legal guardian of a person with disability (+BDT 50,000 additive threshold).",
+          "type": "boolean"
+        },
+        "location": {
+          "default": "dhaka",
+          "description": "Taxpayer location for minimum tax rules: \"dhaka\", \"chittagong\", \"other_city\" (other city corporations), or \"district\" (non-city-corporation areas).",
+          "type": "string",
+          "enum": [
+            "dhaka",
+            "chittagong",
+            "other_city",
+            "district"
+          ]
+        },
+        "first_time_filer": {
+          "description": "True if first-time tax return filer (applies BDT 1,000 minimum tax in FY 2025-26 and FY 2026-27 when above threshold).",
+          "type": "boolean"
+        },
+        "taxable_income": {
+          "description": "Annual post-exemption taxable income in BDT. Mutually exclusive with income.",
+          "type": "number",
+          "minimum": 0
+        },
+        "income": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "default": "annual",
+              "description": "Whether recurring salary fields (basic, house, medical, transport, lfa, others, or gross_salary) are monthly (multiplied by 12) or annual. Bonus fields are always annual.",
+              "type": "string",
+              "enum": [
+                "annual",
+                "monthly"
+              ]
+            },
+            "gross_salary": {
+              "description": "Unitemized gross employment salary in BDT (mutually exclusive with basic/house/medical/transport/lfa/employer_rpf/others). Receives the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool exemption min(1/3 of gross, cap) unless apply_exemption is false.",
+              "type": "number",
+              "minimum": 0
+            },
+            "use_standard_breakdown": {
+              "description": "When true alongside gross_salary, populates illustrative 60% basic, 25% house, 10% medical, 5% transport components.",
+              "type": "boolean"
+            },
+            "apply_exemption": {
+              "description": "When true (default), deducts the ITA 2023 Sixth Schedule Part 1 Para 27 single-pool employment exemption min(1/3 of gross employment income, BDT 500,000; BDT 450,000 in FY 2023-24).",
+              "type": "boolean"
+            },
+            "basic": {
+              "description": "Basic salary in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "house": {
+              "description": "House rent allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "medical": {
+              "description": "Medical allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "transport": {
+              "description": "Conveyance/transport allowance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "lfa": {
+              "description": "Leave fare assistance in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "employer_rpf": {
+              "description": "Employer contribution to Recognized Provident Fund (RPF) in BDT (part of gross employment income pool).",
+              "type": "number",
+              "minimum": 0
+            },
+            "others": {
+              "description": "Other recurring taxable allowances in BDT.",
+              "type": "number",
+              "minimum": 0
+            },
+            "bonus": {
+              "description": "Annual festival/performance bonus in BDT (always annual, fully taxable).",
+              "type": "number",
+              "minimum": 0
+            },
+            "bonus2": {
+              "description": "Second annual bonus in BDT (always annual, fully taxable).",
+              "type": "number",
+              "minimum": 0
+            },
+            "additional_income": {
+              "description": "Additional annual lump-sum taxable salary income in BDT.",
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false,
+          "description": "Salary components in BDT. Mutually exclusive with top-level taxable_income."
+        },
+        "investments": {
+          "description": "Eligible tax-rebate investments in BDT (number or itemized object).",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "description": "Total eligible investment in BDT."
+            },
+            {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "description": "Total eligible investment in BDT (mutually exclusive with itemized fields).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "dps": {
+                  "description": "Deposit Pension Scheme (DPS) contribution in BDT (instrument cap BDT 120,000).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "life_insurance": {
+                  "description": "Life insurance premium in BDT (requires life_insurance_policy_value when > 0; capped at 10% of policy sum assured).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "life_insurance_policy_value": {
+                  "description": "Total policy sum assured in BDT for life_insurance; caps eligible premium at 10% of policy sum assured per Sixth Schedule Part 3.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "stocks": {
+                  "description": "Listed shares/stocks investment in BDT.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "savings_certificate": {
+                  "description": "Sanchayapatra / savings certificate investment in BDT (instrument cap BDT 500,000).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "mutual_fund": {
+                  "description": "Mutual fund / unit certificate investment in BDT (cap BDT 500,000 through FY 2024-25; uncapped from FY 2025-26 onward per Finance Act 2026).",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "others": {
+                  "description": "Other qualifying investment in BDT.",
+                  "type": "number",
+                  "minimum": 0
+                },
+                "apply_instrument_caps": {
+                  "description": "Statutory Sixth Schedule Part 3 instrument caps are always enforced on itemized investments (DPS <= 120,000, savings_certificate <= 500,000, life_insurance <= 10% of policy value, mutual_fund <= 500,000 through FY 2024-25 and uncapped in FY 2025-26/2026-27).",
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "tds": {
+          "default": 0,
+          "description": "Total annual Tax Deducted at Source (TDS) in BDT.",
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]
