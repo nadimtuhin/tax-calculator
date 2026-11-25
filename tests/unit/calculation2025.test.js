@@ -42,7 +42,7 @@ describe('Calculation-2025 Component', () => {
       const table = wrapper.find('table');
       expect(table.exists()).toBe(true);
       
-      const headers = table.findAll('td strong');
+      const headers = table.findAll('thead th');
       expect(headers.at(0).text()).toBe('Income (per year)');
       expect(headers.at(1).text()).toBe('New rate [%]');
       expect(headers.at(2).text()).toBe('Tax (BDT)');
