@@ -852,3 +852,238 @@ dd {
     font-size: 10px;
   }
 }
+
+/* Desktop only. Viewports under 1024px keep the approved mobile/tablet layout. */
+@media (min-width: 1024px) {
+  .i3 {
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(1200px 480px at 92% -120px, #dcefe3 0, transparent 68%),
+      radial-gradient(880px 420px at -8% -80px, #f7e9c9 0, transparent 70%),
+      var(--paper);
+  }
+  .banner {
+    padding: 10px 32px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .site-nav {
+    min-height: 72px;
+    padding: 0 max(24px, calc((100% - 1180px) / 2 + 24px));
+  }
+  .site-nav nav {
+    gap: 4px;
+  }
+  .site-nav .brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .site-nav nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 999px;
+  }
+  .site-nav nav a:hover {
+    color: var(--ink);
+  }
+  .shell {
+    max-width: 1180px;
+    padding: 44px 24px 96px;
+  }
+  header.top {
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  header.top h1 {
+    font-size: 2.75rem;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+  .seg {
+    flex: none;
+  }
+  .seg button {
+    min-height: 44px;
+    padding: 0 20px;
+  }
+  .grid {
+    grid-template-columns: minmax(360px, 400px) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  .left,
+  .right {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .left {
+    top: 24px;
+  }
+  .left > .card,
+  .right > .card,
+  .right > .sum,
+  .right .ghost-wrap {
+    margin-bottom: 0;
+  }
+  .card {
+    padding: 22px 22px 20px;
+    border-radius: 24px;
+  }
+  h2 {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    font-size: 15px;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .q {
+    padding: 14px 0;
+    gap: 14px;
+  }
+  .qt {
+    font-size: 15.5px;
+    line-height: 1.35;
+  }
+  .yn button {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+  .yn button:hover:not(.on),
+  .seg button:hover:not(.on) {
+    background: #f3f1e8;
+  }
+  .sumq {
+    padding: 12px;
+  }
+  .chips span,
+  .chips em {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .chips em {
+    padding: 0 8px;
+  }
+  .tap-rename {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .done,
+  .add,
+  .x,
+  .types button {
+    min-height: 44px;
+  }
+  summary {
+    min-height: 44px;
+    padding: 12px 0;
+  }
+  .add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .x {
+    width: 44px;
+    height: 44px;
+    flex: none;
+  }
+  .lawyer {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 0 10px;
+    border-radius: 10px;
+  }
+  .lawyer:hover {
+    background: rgba(10, 92, 58, 0.08);
+  }
+  .sum {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    padding: 28px 28px 22px;
+    border-radius: 28px;
+  }
+  .sum .big {
+    font-size: 3.25rem;
+    margin-top: 8px;
+  }
+  .sum dl {
+    width: 100%;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .sum dl > div {
+    min-width: 0;
+  }
+  .sum dl > div + div {
+    padding-left: 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .sum dt {
+    white-space: nowrap;
+  }
+  .sum dd {
+    font-size: 1.15rem;
+  }
+  .pad h3 {
+    font-size: 1.125rem;
+    margin-bottom: 16px;
+  }
+  .lines div {
+    padding: 11px 0;
+  }
+  .lines .due {
+    padding-top: 16px;
+  }
+  .lines .due b {
+    font-size: 1.65rem;
+  }
+  .tl .col {
+    height: 120px;
+    border-radius: 12px;
+  }
+  .ghost {
+    border-radius: 24px;
+    padding: 28px 24px 20px;
+  }
+  .ghost-msg b {
+    font-size: 1.5rem;
+  }
+  .ghost-msg span {
+    max-width: 360px;
+    line-height: 1.45;
+  }
+  .site-nav a:focus-visible,
+  .seg button:focus-visible,
+  .yn button:focus-visible,
+  .chips:focus-visible,
+  .done:focus-visible,
+  .add:focus-visible,
+  .x:focus-visible,
+  .types button:focus-visible,
+  .mc button:focus-visible,
+  .lawyer:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--g);
+    outline-offset: 2px;
+  }
+}
