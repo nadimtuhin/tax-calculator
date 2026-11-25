@@ -30,7 +30,7 @@ jobs:
       run: yarn lint
 
     - name: Run unit tests
-      run: yarn test --detectOpenHandles
+      run: yarn test
     
     - name: Build v2 (apps/web-v2)
       run: |
@@ -42,8 +42,6 @@ jobs:
 
     - name: Build project
       run: yarn build
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
 
     - name: Install and test MCP server
       run: |
