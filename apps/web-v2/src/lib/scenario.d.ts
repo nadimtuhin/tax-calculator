@@ -13,6 +13,7 @@ export function computeTax(s: ScenarioState): TaxBundle
 export function presetScenario(s: ScenarioState, id: string): void
 export function raiseRangeFor(s: ScenarioState): [number, number]
 export function clampJobChain(jobs: Job[]): void
+export function canAddJobToChain(jobs: Job[]): boolean
 export function pickJobMonth(jobs: Job[], index: number, k: number): void
 export function addJobToChain(jobs: Job[]): void
 

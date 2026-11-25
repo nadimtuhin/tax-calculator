@@ -10,6 +10,7 @@ import {
   MONTHS,
   YEARS,
   addJobToChain,
+  canAddJobToChain,
   computeTax,
   createInitialState,
   isAnswered,
@@ -122,6 +123,7 @@ function App() {
 
   const addJob = () => {
     setS((st) => {
+      if (!canAddJobToChain(st.jobs)) return st
       const jobs = st.jobs.map((j) => ({ ...j }))
       addJobToChain(jobs)
       return { ...st, jobs }
@@ -294,9 +296,11 @@ function App() {
                         <PaySlider value={j.pay} onChange={(v) => { j.pay = v; setS((st) => ({ ...st, jobs: [...st.jobs] })) }} label="Monthly salary" />
                       </div>
                     ))}
-                    <button type="button" className="add" onClick={addJob}>
-                      + Add employer
-                    </button>
+                    {canAddJobToChain(s.jobs) ? (
+                      <button type="button" className="add" onClick={addJob}>
+                        + Add employer
+                      </button>
+                    ) : null}
                   </>
                 ) : null}
                 {s.bonus ? (

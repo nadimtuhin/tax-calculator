@@ -30,23 +30,42 @@ export function syncEmployerNames(jobs) {
   })
 }
 
+function dropJobsStartingAfterJune(jobs) {
+  for (let i = jobs.length - 1; i >= 0; i--) {
+    if (jobs[i].from > 11) jobs.splice(i)
+  }
+}
+
+/** True when another employer can fit after the last job in the FY (last month is not June). */
+export function canAddJobToChain(jobs) {
+  if (!jobs.length) return true
+  return jobs[jobs.length - 1].to < 11
+}
+
 /** Keep employer month ranges ordered, gapless, and non-overlapping along the FY timeline. */
 export function clampJobChain(jobs) {
   if (!jobs.length) return
-  jobs[0].from = Math.max(0, Math.min(11, jobs[0].from))
-  for (let i = 0; i < jobs.length; i++) {
-    jobs[i].from = Math.max(0, Math.min(11, jobs[i].from))
-    jobs[i].to = Math.max(jobs[i].from, Math.min(11, jobs[i].to))
-    if (i > 0) {
-      const prevEnd = jobs[i - 1].to
-      if (jobs[i].from <= prevEnd) jobs[i].from = Math.min(prevEnd + 1, 11)
-      jobs[i].to = Math.max(jobs[i].to, jobs[i].from)
+  for (;;) {
+    dropJobsStartingAfterJune(jobs)
+    if (!jobs.length) return
+    jobs[0].from = Math.max(0, Math.min(11, jobs[0].from))
+    for (let i = 0; i < jobs.length; i++) {
+      jobs[i].from = Math.max(0, Math.min(11, jobs[i].from))
+      jobs[i].to = Math.max(jobs[i].from, Math.min(11, jobs[i].to))
+      if (i > 0) {
+        const prevEnd = jobs[i - 1].to
+        if (jobs[i].from <= prevEnd) jobs[i].from = Math.min(prevEnd + 1, 11)
+        jobs[i].to = Math.max(jobs[i].to, jobs[i].from)
+      }
+      if (i < jobs.length - 1 && jobs[i].to >= jobs[i + 1].from) {
+        jobs[i].to = Math.max(jobs[i].from, jobs[i + 1].from - 1)
+      }
     }
-    if (i < jobs.length - 1 && jobs[i].to >= jobs[i + 1].from) {
-      jobs[i].to = Math.max(jobs[i].from, jobs[i + 1].from - 1)
-    }
+    jobs[jobs.length - 1].to = Math.min(11, jobs[jobs.length - 1].to)
+    const before = jobs.length
+    dropJobsStartingAfterJune(jobs)
+    if (jobs.length === before) break
   }
-  jobs[jobs.length - 1].to = Math.min(11, jobs[jobs.length - 1].to)
 }
 
 export function pickJobMonth(jobs, index, k) {
@@ -56,7 +75,11 @@ export function pickJobMonth(jobs, index, k) {
     if (index > 0) jobs[index - 1].to = k - 1
   } else if (k > j.to) {
     j.to = k
-    if (index < jobs.length - 1) jobs[index + 1].from = k + 1
+    if (index < jobs.length - 1) {
+      const nextFrom = k + 1
+      if (nextFrom > 11) jobs.splice(index + 1)
+      else jobs[index + 1].from = nextFrom
+    }
   } else if (k - j.from <= j.to - k) {
     j.from = k
   } else {
@@ -66,6 +89,7 @@ export function pickJobMonth(jobs, index, k) {
 }
 
 export function addJobToChain(jobs) {
+  if (!canAddJobToChain(jobs)) return
   const last = jobs[jobs.length - 1]
   const from = Math.min(last.to + 1, 11)
   jobs.push({ name: '', customName: false, from, to: 11, pay: 90000 })

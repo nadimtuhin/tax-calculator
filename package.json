@@ -25,6 +25,7 @@
     "mcp:test": "npm --prefix packages/mcp test",
     "v2:dev": "npm --prefix apps/web-v2 run dev",
     "v2:build": "npm --prefix apps/web-v2 run build",
+    "v2:gen-bend-slab": "node scripts/gen-bend-slab-cut.mjs",
     "v2:verify-bend": "node scripts/bend-verify.mjs"
   },
   "dependencies": {

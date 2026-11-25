@@ -7,6 +7,7 @@ import {
   computeTax,
   buildScenario,
   addJobToChain,
+  canAddJobToChain,
   pickJobMonth,
   clampJobChain,
   BONUS_TYPES,
@@ -96,6 +97,8 @@ describe('v2 employer months (no double count)', () => {
   test('+ Add employer chains after prior job; salary counted once per month', () => {
     const s = baseState();
     answered(s, { job: true });
+    s.jobs[1].to = 10;
+    clampJobChain(s.jobs);
     addJobToChain(s.jobs);
     const after = buildScenario(s).salaryTotal;
     expect(after).toBeLessThan(1_584_000);
@@ -129,5 +132,26 @@ describe('v2 employer months (no double count)', () => {
     pickJobMonth(s.jobs, 0, 7);
     expect(s.jobs[0].to).toBe(7);
     expect(s.jobs[1].from).toBe(8);
+  });
+
+  test('tapping June on first employer drops later jobs (no 11–11 overlap)', () => {
+    const s = baseState();
+    answered(s, { job: true });
+    pickJobMonth(s.jobs, 0, 11);
+    expect(s.jobs).toHaveLength(1);
+    expect(s.jobs[0].from).toBe(0);
+    expect(s.jobs[0].to).toBe(11);
+    expect(buildScenario(s).salaryTotal).toBe(12 * 78_000);
+  });
+
+  test('add employer when chain ends in June is a no-op', () => {
+    const s = baseState();
+    answered(s, { job: true });
+    pickJobMonth(s.jobs, 0, 11);
+    expect(canAddJobToChain(s.jobs)).toBe(false);
+    const before = s.jobs.length;
+    addJobToChain(s.jobs);
+    expect(s.jobs).toHaveLength(before);
+    expect(buildScenario(s).salaryTotal).toBe(12 * 78_000);
   });
 });

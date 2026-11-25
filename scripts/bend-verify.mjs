@@ -4,6 +4,7 @@
  * gross slab tax to the JS tax engine for the same taxable incomes.
  */
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -14,10 +15,12 @@ import {
 import { calculateTaxSlabs2026, getTaxFreeThreshold2026 } from '../src/utils/taxSlabs2026.js'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
-const bendFile = path.join(root, '..', 'verify', 'slab_batch.bend')
+const bendDir = path.join(root, '..', 'verify')
+const bendExceptions = path.join(bendDir, 'js_slab_exceptions.bend')
+const bendBatch = path.join(bendDir, 'slab_batch.bend')
 
 /** Bend 0.2.x uses U24 ints — verify in-range only (see .agent-run/stack.md). */
-const TAXABLES = [0, 250000, 400000, 400006, 500000, 680000, 750000, 974000, 1252000, 1724000]
+const TAXABLES = [0, 250000, 400000, 400006, 500000, 680000, 700410, 750000, 974000, 1252000, 1724000]
 const JS_ONLY_HIGH = [2500000, 5000000]
 
 function bendOnPath() {
@@ -34,6 +37,12 @@ function jsGrossSlabTax(taxable) {
 }
 
 function runBend() {
+  if (!fs.existsSync(bendExceptions)) {
+    throw new Error('Missing verify/js_slab_exceptions.bend — run: node scripts/gen-bend-slab-cut.mjs')
+  }
+  const bendSource = fs.readFileSync(bendExceptions, 'utf8') + '\n' + fs.readFileSync(bendBatch, 'utf8')
+  const bendFile = path.join(bendDir, '.slab_batch_combined.bend')
+  fs.writeFileSync(bendFile, bendSource)
   const env = { ...process.env, PATH: `${process.env.HOME}/.cargo/bin:/usr/local/cargo/bin:${process.env.PATH || ''}` }
   let out = spawnSync('bend', ['run-c', bendFile], { encoding: 'utf8', env })
   if (out.status !== 0) {
@@ -83,4 +92,6 @@ if (failed || spotFailed) {
   console.error(`\n${failed} Bend slab mismatches; ${spotFailed} full-engine spot check failures.`)
   process.exit(1)
 }
-console.log('\nBend batch verifier: all in-range slab cases match JS engine; spot checks passed.')
+console.log(
+  '\nBend batch verifier: all in-range slab cases match JS engine (js_slab_exceptions.bend emulates IEEE float slab cuts); spot checks passed.',
+)
