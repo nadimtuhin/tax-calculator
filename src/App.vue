@@ -18,7 +18,7 @@ export default {
   name: "App",
   components: {
     Navbar,
-    StarModal: defineAsyncComponent(() => import(/* webpackChunkName: "star-modal" */ './components/StarModal.vue')),
+    StarModal: defineAsyncComponent(() => import('./components/StarModal.vue')),
     ToastHost
   }
 };

@@ -1,5 +1,8 @@
 {
-  "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }],
+  "framework": "vite",
+  "buildCommand": "yarn build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }, { "source": "/((?!api/|mcp$|assets/).*)", "destination": "/index.html" }],
   "functions": {
     "api/mcp.mjs": {
       "includeFiles": "{src/utils/**,packages/mcp/src/**}",

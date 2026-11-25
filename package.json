@@ -3,13 +3,14 @@
   "version": "1.1.0",
   "private": false,
   "engines": {
-    "node": ">=16.0.0 <25.0.0",
+    "node": ">=20.19.0 <25.0.0",
     "npm": ">=8.0.0"
   },
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "dev": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint --fix src/",
     "test": "jest",
     "test:e2e": "playwright test",
@@ -29,7 +30,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
-    "@vue/cli-plugin-babel": "^5.0.8",
     "vue": "^3.4.0",
     "vue-router": "^5.0.4",
     "vuex": "^4.1.0",
@@ -41,8 +41,7 @@
     "@babel/eslint-parser": "^7.22.0",
     "@babel/preset-env": "^7.28.0",
     "@playwright/test": "^1.54.1",
-    "@vue/cli-plugin-eslint": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
+    "@vitejs/plugin-vue": "^6.0.11",
     "@vue/test-utils": "^2.4.0",
     "@vue/vue3-jest": "^29.2.6",
     "babel-jest": "^30.0.5",
@@ -52,12 +51,8 @@
     "husky": "^9.1.7",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
+    "vite": "^8.3.6",
     "vue-eslint-parser": "^10.4.0"
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
   },
   "browserslist": [
     "> 1%",
