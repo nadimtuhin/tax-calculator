@@ -10,6 +10,7 @@
     />
     <meta name="theme-color" content="#f3f2ee" />
     <meta name="color-scheme" content="light" />
+    <link rel="canonical" href="https://tax.nadimtuhin.com/" />
 
     <link rel="icon" href="<%= BASE_URL %>favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="<%= BASE_URL %>favicon-32x32.png" sizes="32x32" type="image/png" />
@@ -42,10 +43,29 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Non-render-blocking. Noto is subset to U+09F3 (৳) so the Bengali file is not a full family download. -->
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Noto+Sans+Bengali:wght@500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@600;700&text=%E0%A7%B3&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap"
+      />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@600;700&text=%E0%A7%B3&display=swap"
+      />
+    </noscript>
     <title>Bangladesh Tax calculator — FY 2025-26 &amp; FY 2026-27 (BDT ৳)</title>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->

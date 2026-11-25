@@ -13,12 +13,18 @@
     </div>
     
     <div v-show="showModal" class="star-modal-overlay" @click="closeModal">
-      <div class="star-modal" @click.stop>
-      <button class="close-btn" @click="closeModal">&times;</button>
+      <div
+        class="star-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="star-modal-title"
+        @click.stop
+      >
+      <button class="close-btn" type="button" aria-label="× Close" @click="closeModal">&times;</button>
       
       <div class="modal-content">
-        <div class="star-icon">⭐</div>
-        <h2>Enjoying the Bangladesh Tax Calculator?</h2>
+        <div class="star-icon" aria-hidden="true">⭐</div>
+        <h2 id="star-modal-title">Enjoying the Bangladesh Tax Calculator?</h2>
         <p>
           If this tool has been helpful for calculating your taxes, 
           please consider giving us a star on GitHub! 
@@ -41,11 +47,11 @@
             Star on GitHub
           </a>
           
-          <button class="later-btn" @click="remindLater">
+          <button class="later-btn" type="button" @click="remindLater">
             Maybe Later
           </button>
           
-          <button class="never-btn" @click="neverShow">
+          <button class="never-btn" type="button" @click="neverShow">
             Don't Show Again
           </button>
         </div>
@@ -62,6 +68,11 @@ export default {
     return {
       showModal: false,
       debugMode: false
+    }
+  },
+  watch: {
+    showModal(isOpen) {
+      if (isOpen) this.focusCloseButton()
     }
   },
   mounted() {
@@ -136,9 +147,31 @@ export default {
     },
     
     handleKeydown(event) {
-      if (event.key === 'Escape' && this.showModal) {
+      if (!this.showModal) return
+      if (event.key === 'Escape') {
         this.closeModal()
+        return
       }
+      if (event.key !== 'Tab' || !event.preventDefault) return
+      const root = this.$el && this.$el.querySelector && this.$el.querySelector('.star-modal')
+      if (!root) return
+      const focusable = [...root.querySelectorAll('a[href], button:not([disabled])')]
+      if (focusable.length < 2) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    },
+    focusCloseButton() {
+      this.$nextTick(() => {
+        const button = this.$el && this.$el.querySelector && this.$el.querySelector('.close-btn')
+        if (button && button.focus) button.focus()
+      })
     },
     
     handleStarClick() {
@@ -232,11 +265,11 @@ export default {
 .close-btn:focus {
   background-color: #f5f5f5;
   color: #333;
-  outline: none;
 }
 
-.close-btn:focus {
-  box-shadow: 0 0 0 2px #007bff;
+.close-btn:focus-visible {
+  outline: 2px solid #0a5c3a;
+  outline-offset: 2px;
 }
 
 .modal-content {
@@ -310,11 +343,11 @@ export default {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(36, 41, 46, 0.3);
   color: white;
-  outline: none;
 }
 
-.star-btn:focus {
-  box-shadow: 0 0 0 2px #007bff, 0 4px 12px rgba(36, 41, 46, 0.3);
+.star-btn:focus-visible {
+  outline: 2px solid #0a5c3a;
+  outline-offset: 2px;
 }
 
 .star-btn *,
@@ -343,7 +376,7 @@ export default {
 .never-btn {
   background: none;
   border: none;
-  color: #6c757d;
+  color: #3f4752;
   padding: 10px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -358,16 +391,19 @@ export default {
   background-color: #ffffff;
   border-color: #007bff;
   color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.later-btn:focus-visible,
+.never-btn:focus-visible {
+  outline: 2px solid #0a5c3a;
+  outline-offset: 2px;
 }
 
 .never-btn:hover,
 .never-btn:focus {
-  color: #495057;
-  text-decoration: none;
+  color: #1f2933;
+  text-decoration: underline;
   background-color: #f8f9fa;
-  outline: none;
 }
 
 /* Mobile responsiveness */

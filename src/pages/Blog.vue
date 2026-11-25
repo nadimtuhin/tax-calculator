@@ -42,7 +42,7 @@
           </header>
           <p class="post-excerpt">{{ post.excerpt }}</p>
           <footer class="card-footer">
-            <router-link :to="`/blog/${post.slug}`" class="read-more-btn" :aria-label="`Read full guide: ${post.title}`">
+            <router-link :to="`/blog/${post.slug}`" class="read-more-btn" :aria-label="`Read Guide: ${post.title}`">
               Read Guide <span aria-hidden="true">→</span>
             </router-link>
           </footer>

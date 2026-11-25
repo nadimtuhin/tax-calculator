@@ -11,8 +11,8 @@
 <table class="income-table">
   <thead>
     <tr>
-      <th>Component</th>
-      <th>Annual Total</th>
+      <th scope="col">Component</th>
+      <th scope="col">Annual Total</th>
     </tr>
   </thead>
   <tbody>
@@ -62,7 +62,7 @@
           aria-label="About employment income exemption"
           :aria-expanded="showTooltip === 'exemption'"
           @click="toggleTooltip('exemption')"
-        >?</button>
+        ><span aria-hidden="true">?</span></button>
         <div v-if="showTooltip === 'exemption'" class="tooltip-overlay" @click="closeTooltip('exemption')">
           <div
             ref="modalExemption"

@@ -10,18 +10,19 @@
   <p class="unit-note">All amounts in ৳ (BDT). Scroll the grid sideways on small screens.</p>
   <div class="grid-scroll" tabindex="0" role="region" aria-label="Monthly salary grid">
   <table class="salary-grid">
+    <caption class="sr-only">Monthly salary, tax deducted at source, and salary components</caption>
     <thead>
       <tr>
-        <th></th>
-        <th>Salary</th>
-        <th>
+        <th scope="col">Month</th>
+        <th scope="col">Salary</th>
+        <th scope="col">
           <span title="tax deduction at source">TDS*</span>
         </th>
-        <th>Basic</th>
-        <th>House</th>
-        <th>Medical</th>
-        <th>Transport</th>
-        <th>Others</th>
+        <th scope="col">Basic</th>
+        <th scope="col">House</th>
+        <th scope="col">Medical</th>
+        <th scope="col">Transport</th>
+        <th scope="col">Others</th>
       </tr>
     </thead>
     <tbody>
@@ -75,9 +76,9 @@
             @click="$store.commit('setShowBonus2', true)" 
             class="add-bonus-btn"
             type="button"
-            title="Add another bonus"
+            aria-label="+ Add another bonus"
           >
-            +
+            <span aria-hidden="true">+</span>
           </button>
         </td>
         <td>
@@ -99,9 +100,9 @@
             @click="removeBonus2" 
             class="remove-bonus-btn"
             type="button"
-            title="Remove this bonus"
+            aria-label="× Remove this bonus"
           >
-            ×
+            <span aria-hidden="true">×</span>
           </button>
         </td>
         <td>

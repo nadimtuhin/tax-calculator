@@ -14,11 +14,12 @@
 
 <div class="table-scroll">
 <table class="investment-list">
+  <caption class="sr-only">Investments eligible for the Section 78 tax rebate</caption>
   <thead>
     <tr>
-      <th></th>
-      <th>Amount</th>
-      <th>Maximum allowed</th>
+      <th scope="col">Investment</th>
+      <th scope="col">Amount</th>
+      <th scope="col">Maximum allowed</th>
     </tr>
   </thead>
   <tbody>

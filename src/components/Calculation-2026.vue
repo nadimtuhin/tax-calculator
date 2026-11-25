@@ -5,18 +5,15 @@
     <h2 class="calc-heading"><span class="calc-heading-label">Tax for {{otherYearLabel}}</span> <span class="calc-heading-amount amount">{{totalTax}}</span></h2>
   </header>
   <table class="invoice">
-    <tbody>
+    <caption class="sr-only">Tax slab breakdown for {{ otherYearLabel }}</caption>
+    <thead>
       <tr>
-        <td>
-          <strong>Income (per year)</strong>
-        </td>
-        <td>
-          <strong>Rate [%]</strong>
-        </td>
-        <td>
-          <strong>Tax (BDT)</strong>
-        </td>
+        <th scope="col">Income (per year)</th>
+        <th scope="col">Rate [%]</th>
+        <th scope="col">Tax (BDT)</th>
       </tr>
+    </thead>
+    <tbody>
       <tr v-for="slab in taxBreakdown" :key="slab.id">
         <td>{{slab.slabTitle}}</td>
         <td>{{slab.slabPercentage}}</td>
@@ -106,6 +103,7 @@ export default {
   font-size: var(--text-sm);
 }
 
+.invoice th,
 .invoice td {
   padding: var(--space-3) var(--space-2);
   border-bottom: 1px solid var(--border);
@@ -113,20 +111,18 @@ export default {
   vertical-align: top;
 }
 
+.invoice th:not(:first-child),
 .invoice td:not(:first-child) {
   text-align: right;
 }
 
-.invoice tr:first-child td {
+.invoice thead th {
   color: var(--text-muted);
   font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom-color: var(--border-strong);
-}
-
-.invoice tr:first-child td strong {
-  font-weight: 600;
 }
 
 .invoice .row-total td {

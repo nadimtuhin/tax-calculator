@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
-import Blog from '@/pages/Blog.vue'
-import BlogPost from '@/pages/BlogPost.vue'
-import Referrals from '@/pages/Referrals.vue'
+
+const Blog = () => import(/* webpackChunkName: "blog" */ '@/pages/Blog.vue')
+const BlogPost = () => import(/* webpackChunkName: "blog" */ '@/pages/BlogPost.vue')
+const Referrals = () => import(/* webpackChunkName: "referrals" */ '@/pages/Referrals.vue')
 
 const routes = [
   {
