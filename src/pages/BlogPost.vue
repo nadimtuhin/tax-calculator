@@ -367,6 +367,24 @@ export default {
   color: var(--text);
 }
 
+.toc-inline summary::-webkit-details-marker { display: none; }
+.toc-inline summary { list-style: none; }
+
+.toc-inline summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s;
+}
+
+.toc-inline[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
 .toc-inline[open] summary {
   border-bottom: 1px solid var(--border);
 }
@@ -417,6 +435,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin: 0;
   padding: var(--space-3) 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -442,6 +461,7 @@ export default {
 }
 
 .disclaimer-banner p {
+  margin: 0;
   color: var(--text);
   font-size: var(--text-sm);
   line-height: 1.55;
@@ -648,12 +668,14 @@ export default {
 }
 
 .related-excerpt {
+  margin: 0;
   color: var(--text-muted);
   font-size: var(--text-sm);
   line-height: 1.55;
 }
 
 .related-meta {
+  margin: var(--space-1) 0 0;
   color: var(--text-muted);
   font-size: var(--text-xs);
   font-weight: 600;

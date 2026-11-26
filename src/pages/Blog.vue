@@ -114,6 +114,7 @@ export default {
   color: var(--text-muted);
   line-height: 1.55;
   max-width: 62ch;
+  margin: 0;
 }
 
 /* A quiet note, not a banner: it must stay visible but not outweigh the guides. */
@@ -142,6 +143,7 @@ export default {
 }
 
 .guides-count {
+  margin-top: 0;
   padding-bottom: var(--space-3);
   margin-bottom: var(--space-4);
   border-bottom: 1px solid var(--border);
