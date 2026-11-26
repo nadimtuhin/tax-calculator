@@ -61,6 +61,7 @@ describe('section anchors', () => {
     expect(slugify('Statement of assets and liabilities (Section 167)')).toBe('statement-of-assets-and-liabilities-section-167')
     expect(slugify('Concrete mapping: FY vs AY')).toBe('concrete-mapping-fy-vs-ay')
     expect(slugify('  —  ')).toBe('')
+    expect(slugify('Café Ünïcode Résumé')).toBe('cafe-unicode-resume')
   })
 
   test('ids are unique, including repeated headings and reserved ids', () => {
@@ -126,10 +127,10 @@ describe('Blog index cards', () => {
 describe('Guide page', () => {
   const post = BLOG_POSTS[1]
 
-  async function mountGuide() {
+  async function mountGuide(options = {}) {
     const router = createTestRouter()
     await router.push(`/blog/${post.slug}`)
-    return mount(BlogPost, { props: { slug: post.slug }, global: { plugins: [router] } })
+    return mount(BlogPost, { props: { slug: post.slug }, global: { plugins: [router] }, ...options })
   }
 
   test('table of contents links point at the section headings', async () => {
@@ -152,6 +153,32 @@ describe('Guide page', () => {
 
     const relatedHrefs = wrapper.findAll('.related-link').map((a) => a.attributes('href'))
     expect(relatedHrefs).toEqual(BLOG_POSTS.filter((p) => p.slug !== post.slug).map((p) => `/blog/${p.slug}`))
+  })
+
+  test('sources section is labelled by its own heading id', async () => {
+    const wrapper = await mountGuide()
+    const sources = wrapper.find('.sources-section')
+    expect(sources.find('h2').attributes('id')).toBe(sources.attributes('aria-labelledby'))
+  })
+
+  test('modified and non-primary clicks on a TOC link are left to the browser', async () => {
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const wrapper = await mountGuide({ attachTo: document.body })
+    const link = wrapper.find('.toc-rail .toc-link').element
+    const click = (init) => {
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init })
+      link.dispatchEvent(event)
+      return event.defaultPrevented
+    }
+    for (const init of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      expect(click(init), JSON.stringify(init)).toBe(false)
+    }
+    expect(scrollIntoView).not.toHaveBeenCalled()
+    expect(click({})).toBe(true)
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+    delete Element.prototype.scrollIntoView
   })
 
   test('paragraph text, including bullet lines, renders unchanged apart from ** markup', async () => {

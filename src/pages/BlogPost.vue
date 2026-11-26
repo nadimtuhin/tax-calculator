@@ -24,7 +24,7 @@
           </nav>
 
           <header class="article-header">
-            <h1>{{ post.title }}</h1>
+            <h1 ref="title" tabindex="-1">{{ post.title }}</h1>
             <p class="article-lead">{{ post.excerpt }}</p>
             <p class="article-meta">
               <span>{{ readingTime }}</span>
@@ -38,7 +38,7 @@
             <p><strong>Not tax advice:</strong> This article is educational information only. Verify current law and deadlines through official NBR publications or a qualified professional.</p>
           </aside>
 
-          <details class="toc-inline">
+          <details ref="inlineToc" class="toc-inline">
             <summary>In this guide</summary>
             <nav aria-label="In this guide">
               <ol class="toc-list">
@@ -50,7 +50,7 @@
           </details>
 
           <div class="article-body">
-            <section v-for="(section, sIndex) in post.sections" :key="section.heading" class="article-section">
+            <section v-for="(section, sIndex) in post.sections" :key="anchors[sIndex].id" class="article-section">
               <h2 :id="anchors[sIndex].id" tabindex="-1">{{ section.heading }}</h2>
               <p
                 v-for="(paragraph, index) in section.content"
@@ -68,7 +68,7 @@
             </section>
           </div>
 
-          <section class="sources-section" aria-labelledby="sources-heading">
+          <section class="sources-section" :aria-labelledby="SOURCES_ID">
             <h2 :id="SOURCES_ID" tabindex="-1">Official Sources</h2>
             <p>Statutory references and sources supporting this guide:</p>
             <ul>
@@ -126,6 +126,9 @@ import { BLOG_POSTS, getBlogPost } from '@/data/blogPosts'
 import { blogPostMeta } from '@/router/meta'
 import { GUIDE_PAGE_IDS, SOURCES_ID, readingTimeLabel, relatedGuides, sectionAnchors, splitListMarker } from '@/lib/blogGuide'
 
+// The sticky navbar's height plus a gap; headings above this line count as scrolled past.
+const BAND_TOP = 80
+
 export default {
   name: 'BlogPost',
   props: {
@@ -160,66 +163,94 @@ export default {
   watch: {
     post: {
       immediate: true,
-      handler(post) {
-        // No document during the build-time prerender; it writes the head itself.
-        if (post && typeof document !== 'undefined') {
-          const { title, description } = blogPostMeta(post)
-          document.title = title
-          const descriptionEl = document.querySelector('meta[name="description"]')
-          if (descriptionEl) descriptionEl.content = description
-          const ogTitle = document.querySelector('meta[property="og:title"]')
-          if (ogTitle) ogTitle.content = title
-          const ogDesc = document.querySelector('meta[property="og:description"]')
-          if (ogDesc) ogDesc.content = description
-        }
+      handler() {
+        this.applyPostMeta()
       }
     },
     slug(newSlug, oldSlug) {
-      // A related-guide link reuses this component; start the new guide at the top.
+      // Moving between guides (related link, Back, Forward) reuses this component.
       if (newSlug === oldSlug || typeof window === 'undefined') return
-      window.scrollTo({ top: 0 })
       this.activeId = null
-      this.$nextTick(this.observeHeadings)
+      this.$nextTick(() => {
+        if (this.$refs.inlineToc) this.$refs.inlineToc.open = false
+        const target = this.scrollToHash()
+        if (!target) window.scrollTo({ top: 0 })
+        // The clicked related link is gone from the new list; give focus a home on the new page.
+        ;(target || this.$refs.title)?.focus({ preventScroll: true })
+        this.observeHeadings()
+      })
     }
   },
   mounted() {
     this.observeHeadings()
     // The client render replaces the prerendered page, so the browser's own jump to a shared #section is lost.
-    const target = this.$route.hash && document.getElementById(decodeURIComponent(this.$route.hash.slice(1)))
-    if (target) target.scrollIntoView({ block: 'start' })
+    this.scrollToHash()
   },
   beforeUnmount() {
     if (this.observer) this.observer.disconnect()
   },
   methods: {
+    applyPostMeta() {
+      // No document during the build-time prerender; it writes the head itself.
+      if (!this.post || typeof document === 'undefined') return
+      const { title, description } = blogPostMeta(this.post)
+      document.title = title
+      const descriptionEl = document.querySelector('meta[name="description"]')
+      if (descriptionEl) descriptionEl.content = description
+      const ogTitle = document.querySelector('meta[property="og:title"]')
+      if (ogTitle) ogTitle.content = title
+      const ogDesc = document.querySelector('meta[property="og:description"]')
+      if (ogDesc) ogDesc.content = description
+    },
+    scrollToHash() {
+      const { hash } = this.$route
+      if (!hash) return null
+      let target = null
+      try {
+        target = document.getElementById(decodeURIComponent(hash.slice(1)))
+      } catch {
+        return null // malformed %-escape in a hand-typed URL
+      }
+      if (target) target.scrollIntoView({ block: 'start' })
+      return target
+    },
     observeHeadings() {
       if (this.observer) this.observer.disconnect()
       if (!this.post || typeof IntersectionObserver === 'undefined') return
-      // Highlight the heading nearest the top of the viewport, below the sticky navbar.
+      // The observer reports only headings that changed, so keep the full set that sits in the band.
+      const inBand = new Set()
       this.observer = new IntersectionObserver(
         (entries) => {
-          const visible = entries.filter((e) => e.isIntersecting)
-          if (visible.length) {
-            visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-            this.activeId = visible[0].target.id
-          }
+          entries.forEach((e) => (e.isIntersecting ? inBand.add(e.target.id) : inBand.delete(e.target.id)))
+          this.activeId = this.pickActiveId(inBand)
         },
-        { rootMargin: '-80px 0px -60% 0px' }
+        { rootMargin: `-${BAND_TOP}px 0px -60% 0px` }
       )
       this.tocItems.forEach(({ id }) => {
         const heading = document.getElementById(id)
         if (heading) this.observer.observe(heading)
       })
     },
+    pickActiveId(inBand) {
+      const ids = this.tocItems.map((item) => item.id)
+      const firstInBand = ids.find((id) => inBand.has(id))
+      if (firstInBand) return firstInBand
+      // Between headings: the reader is in the section whose heading was scrolled past last.
+      const passed = ids.filter((id) => document.getElementById(id)?.getBoundingClientRect().top < BAND_TOP)
+      return passed.length ? passed[passed.length - 1] : null
+    },
     goToSection(event, id) {
+      // New-tab and new-window clicks stay with the browser.
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
       const heading = document.getElementById(id)
       if (!heading) return
       event.preventDefault()
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       heading.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
       heading.focus({ preventScroll: true })
-      // Not a router navigation: the global afterEach would reset the guide title to the generic blog one.
-      window.history.replaceState(window.history.state, '', `#${id}`)
+      // The router keeps the hash so Back returns here; its global afterEach writes the generic blog
+      // title and description, so this guide's are put back once the navigation settles.
+      this.$router.replace({ hash: `#${id}` }).then(this.applyPostMeta, () => {})
       this.activeId = id
     },
     listMarker(paragraph) {
