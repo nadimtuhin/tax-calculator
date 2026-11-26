@@ -68,6 +68,48 @@ test.describe('blog guide navigation', () => {
     await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
   });
 
+  test('Back from a related guide returns to the section in the URL hash', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`/blog/${slug}`);
+    await page.locator('.toc-rail a[href="#sources-heading"]').click();
+    await expect(page).toHaveURL(/#sources-heading$/);
+    await page.locator('.related-link').first().click();
+    await expect(page.locator('h1')).not.toContainText(/Section 78/);
+    await page.goBack();
+    await expect(page.locator('h1')).toContainText(/Section 78/);
+    await expect(page).toHaveURL(/#sources-heading$/);
+    await expect(page.locator('#sources-heading')).toBeInViewport();
+  });
+
+  test('after a related guide click, focus moves to the new h1 and the inline TOC closes', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/blog/${slug}`);
+    await page.locator('.toc-inline summary').click();
+    await expect(page.locator('.toc-inline')).toHaveAttribute('open', '');
+    await page.locator('.related-link').first().click();
+    await expect(page.locator('h1')).not.toContainText(/Section 78/);
+    await expect(page.locator('h1')).toBeFocused();
+    await expect(page.locator('.toc-inline')).not.toHaveAttribute('open');
+  });
+
+  test('the active TOC item follows the reader back up the page', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`/blog/${slug}`);
+    const ids = await page.locator('.toc-rail .toc-link').evaluateAll((links) => links.map((a) => a.getAttribute('href').slice(1)));
+    const placeHeading = (id, y) =>
+      page.evaluate(([id, y]) => {
+        window.scrollTo({ top: window.scrollY + document.getElementById(id).getBoundingClientRect().top - y, behavior: 'instant' });
+      }, [id, y]);
+    const active = page.locator('.toc-rail .toc-link[aria-current="true"]');
+    await placeHeading(ids[2], 150);
+    await expect(active).toHaveAttribute('href', `#${ids[2]}`);
+    // Below the observer band (80px to 40% of the viewport), with the previous heading above it.
+    await placeHeading(ids[2], 450);
+    expect(await page.evaluate((id) => document.getElementById(id).getBoundingClientRect().top, ids[1])).toBeLessThan(80);
+    await expect(active).toHaveAttribute('href', `#${ids[1]}`);
+  });
+
   test('no horizontal overflow at 390px, and the inline table of contents works', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const path of ['/blog', `/blog/${slug}`]) {
