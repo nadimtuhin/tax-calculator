@@ -18,6 +18,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // scripts/prerender.mjs reads it to link each page's CSS.
+    manifest: true,
   },
   test: {
     environment: 'jsdom',
