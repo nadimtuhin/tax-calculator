@@ -33,24 +33,39 @@ test.describe('blog guide navigation', () => {
     await page.addInitScript(() => localStorage.setItem('tax-calculator-never-star', 'true'));
   });
 
-  test('a table of contents link scrolls its heading below the sticky navbar', async ({ page }) => {
+  test('a table of contents link scrolls its heading below the sticky navbar and keeps the guide title', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`/blog/${slug}`);
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
     await page.locator('.toc-rail a[href="#worked-numerical-example"]').click();
     await expect(page).toHaveURL(/#worked-numerical-example$/);
-    const heading = page.locator('#worked-numerical-example');
-    await expect(heading).toBeInViewport();
-    await expect.poll(async () => Math.round((await heading.boundingBox()).y)).toBeGreaterThanOrEqual(60);
+    const top = Math.round((await page.locator('#worked-numerical-example').boundingBox()).y);
+    expect(top).toBeGreaterThanOrEqual(60);
+    expect(top).toBeLessThanOrEqual(100);
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
   });
 
-  test('a related guide link opens that guide', async ({ page }) => {
+  test('a shared section link opens at that section', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`/blog/${slug}#worked-numerical-example`);
+    await expect(page.locator('#worked-numerical-example')).toBeInViewport();
+  });
+
+  test('a related guide link opens that guide, also after a table of contents click', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`/blog/${slug}`);
+    await page.locator('.toc-rail a[href="#sources-heading"]').click();
+    await expect(page).toHaveURL(/#sources-heading$/);
     const related = page.locator('.related-link').first();
     const href = await related.getAttribute('href');
     expect(href).not.toBe(`/blog/${slug}`);
     await related.click();
     await expect(page).toHaveURL(new RegExp(`${href}$`));
     await expect(page.locator('h1')).not.toContainText(/Section 78/);
+    await page.goBack();
+    await expect(page.locator('h1')).toContainText(/Section 78/);
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
   });
 
   test('no horizontal overflow at 390px, and the inline table of contents works', async ({ page }) => {
