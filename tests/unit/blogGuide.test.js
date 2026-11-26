@@ -1,8 +1,9 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import Blog from '@/pages/Blog.vue'
 import BlogPost from '@/pages/BlogPost.vue'
 import { BLOG_POSTS } from '@/data/blogPosts'
+import { blogPostMeta } from '@/router/meta'
 import {
   GUIDE_PAGE_IDS,
   readingMinutes,
@@ -20,8 +21,8 @@ function createTestRouter() {
     history: createMemoryHistory(),
     routes: [
       { path: '/', component: { template: '<div>Home</div>' } },
-      { path: '/blog', component: Blog },
-      { path: '/blog/:slug', component: BlogPost, props: true }
+      { path: '/blog', name: 'Blog', component: Blog },
+      { path: '/blog/:slug', name: 'BlogPost', component: BlogPost, props: true }
     ]
   })
 }
@@ -127,9 +128,17 @@ describe('Blog index cards', () => {
 describe('Guide page', () => {
   const post = BLOG_POSTS[1]
 
-  async function mountGuide(options = {}) {
-    const router = createTestRouter()
-    await router.push(`/blog/${post.slug}`)
+  // jsdom has no scrollIntoView; the stub is removed even when a test fails.
+  let scrollIntoView
+  beforeEach(() => {
+    scrollIntoView = Element.prototype.scrollIntoView = vi.fn()
+  })
+  afterEach(() => {
+    delete Element.prototype.scrollIntoView
+  })
+
+  async function mountGuide(options = {}, { url = `/blog/${post.slug}`, router = createTestRouter() } = {}) {
+    await router.push(url)
     return mount(BlogPost, { props: { slug: post.slug }, global: { plugins: [router] }, ...options })
   }
 
@@ -162,8 +171,6 @@ describe('Guide page', () => {
   })
 
   test('modified and non-primary clicks on a TOC link are left to the browser', async () => {
-    const scrollIntoView = vi.fn()
-    Element.prototype.scrollIntoView = scrollIntoView
     const wrapper = await mountGuide({ attachTo: document.body })
     const link = wrapper.find('.toc-rail .toc-link').element
     const click = (init) => {
@@ -178,7 +185,47 @@ describe('Guide page', () => {
     expect(click({})).toBe(true)
     expect(scrollIntoView).toHaveBeenCalledTimes(1)
     wrapper.unmount()
-    delete Element.prototype.scrollIntoView
+  })
+
+  test('a TOC click keeps the query string and sets the section hash', async () => {
+    const router = createTestRouter()
+    const wrapper = await mountGuide({ attachTo: document.body }, { router, url: `/blog/${post.slug}?utm_source=fb` })
+    const link = wrapper.find('.toc-rail .toc-link')
+    await link.trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.fullPath).toBe(`/blog/${post.slug}?utm_source=fb${link.attributes('href')}`)
+    wrapper.unmount()
+  })
+
+  test('hash-only navigation puts the guide title back; leaving the guide does not', async () => {
+    const router = createTestRouter()
+    // Stands in for the app router's afterEach, which writes the generic route title.
+    router.afterEach((to) => {
+      document.title = `generic ${to.name}`
+    })
+    const wrapper = await mountGuide({ attachTo: document.body }, { router })
+    const [first, second] = wrapper.findAll('.toc-rail .toc-link').map((a) => a.attributes('href'))
+    const guideTitle = blogPostMeta(post).title
+
+    for (const hash of [first, second]) {
+      await router.push({ hash })
+      await flushPromises()
+      expect(document.title, hash).toBe(guideTitle)
+    }
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.hash).toBe(first)
+    expect(document.title).toBe(guideTitle)
+
+    // A repeat TOC click on the current section must not leave the generic title behind.
+    await wrapper.find(`.toc-rail .toc-link[href="${first}"]`).trigger('click')
+    await flushPromises()
+    expect(document.title).toBe(guideTitle)
+
+    await router.push('/blog')
+    await flushPromises()
+    expect(document.title).toBe('generic Blog')
+    wrapper.unmount()
   })
 
   test('paragraph text, including bullet lines, renders unchanged apart from ** markup', async () => {

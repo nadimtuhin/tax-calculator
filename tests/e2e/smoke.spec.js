@@ -81,6 +81,47 @@ test.describe('blog guide navigation', () => {
     await expect(page.locator('#sources-heading')).toBeInViewport();
   });
 
+  // Chromium's own restoration ('auto') happens to win the race with the client render; 'manual'
+  // checks that the page restores the reader's place itself.
+  for (const scrollRestoration of ['auto', 'manual']) {
+    test(`Back from a related guide to a guide without a hash returns to where the reader was (scrollRestoration ${scrollRestoration})`, async ({ page }) => {
+      await page.addInitScript((mode) => { history.scrollRestoration = mode; }, scrollRestoration);
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(`/blog/${slug}`);
+      const related = page.locator('.related-link').first();
+      await related.scrollIntoViewIfNeeded();
+      await expect(related).toBeInViewport();
+      const readerY = await page.evaluate(() => window.scrollY);
+      expect(readerY).toBeGreaterThan(400);
+      await related.click();
+      await expect(page.locator('h1')).not.toContainText(/Section 78/);
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+      await page.goBack();
+      await expect(page.locator('h1')).toContainText(/Section 78/);
+      await expect(page).toHaveURL(new RegExp(`/blog/${slug}$`));
+      await expect.poll(async () => Math.abs((await page.evaluate(() => window.scrollY)) - readerY)).toBeLessThan(5);
+      await expect(page.locator('.related-link').first()).toBeInViewport();
+    });
+  }
+
+  test('a TOC click keeps the query string, and hash-only Back keeps the guide title', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`/blog/${slug}?utm_source=fb`);
+    await page.locator('.toc-rail a[href="#worked-numerical-example"]').click();
+    await expect(page).toHaveURL(new RegExp(`/blog/${slug}\\?utm_source=fb#worked-numerical-example$`));
+    // The URL changes before the router's afterEach writes the generic title; let it run first.
+    const settled = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => setTimeout(done, 50))));
+    await page.evaluate(() => { location.hash = '#sources-heading'; });
+    await expect(page).toHaveURL(/#sources-heading$/);
+    await settled();
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\?utm_source=fb#worked-numerical-example$/);
+    await settled();
+    await expect(page).toHaveTitle(/Section 78 Investment Rebate/);
+  });
+
   test('after a related guide click, focus moves to the new h1 and the inline TOC closes', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/blog/${slug}`);

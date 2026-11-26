@@ -167,14 +167,23 @@ export default {
         this.applyPostMeta()
       }
     },
+    '$route.hash'() {
+      // The router's global afterEach writes the generic guide title on every hash change (TOC
+      // click, hand-edited #hash, Back/Forward). Watchers run after it; leaving the guide is skipped.
+      if (this.$route.name === 'BlogPost') this.applyPostMeta()
+    },
     slug(newSlug, oldSlug) {
       // Moving between guides (related link, Back, Forward) reuses this component.
       if (newSlug === oldSlug || typeof window === 'undefined') return
+      // Its headings are about to be replaced; stop reporting on them now.
+      this.observer?.disconnect()
       this.activeId = null
       this.$nextTick(() => {
         if (this.$refs.inlineToc) this.$refs.inlineToc.open = false
         const target = this.scrollToHash()
-        if (!target) window.scrollTo({ top: 0 })
+        // vue-router saves the page's scroll position in history.state when leaving it, so Back
+        // returns to where the reader was; a newly opened guide has none and starts at the top.
+        if (!target) window.scrollTo(window.history.state?.scroll ?? { top: 0 })
         // The clicked related link is gone from the new list; give focus a home on the new page.
         ;(target || this.$refs.title)?.focus({ preventScroll: true })
         this.observeHeadings()
@@ -248,9 +257,11 @@ export default {
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       heading.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
       heading.focus({ preventScroll: true })
-      // The router keeps the hash so Back returns here; its global afterEach writes the generic blog
-      // title and description, so this guide's are put back once the navigation settles.
-      this.$router.replace({ hash: `#${id}` }).then(this.applyPostMeta, () => {})
+      // The router keeps the hash (and any ?query) so Back returns here. A repeat click is skipped:
+      // a duplicate navigation still runs afterEach, but no hash change would restore the title.
+      if (this.$route.hash !== `#${id}`) {
+        this.$router.replace({ query: this.$route.query, hash: `#${id}` }).catch(() => {})
+      }
       this.activeId = id
     },
     listMarker(paragraph) {
