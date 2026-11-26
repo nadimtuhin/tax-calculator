@@ -4,6 +4,7 @@ import Blog from '@/pages/Blog.vue'
 import BlogPost from '@/pages/BlogPost.vue'
 import { BLOG_POSTS } from '@/data/blogPosts'
 import {
+  GUIDE_PAGE_IDS,
   readingMinutes,
   readingTimeLabel,
   relatedGuides,
@@ -75,6 +76,11 @@ describe('section anchors', () => {
       expect(new Set(ids).size).toBe(post.sections.length)
       expect(ids).not.toContain('sources-heading')
     })
+  })
+
+  test('a heading never takes an id the page shell already uses', () => {
+    const post = { sections: [{ heading: 'Main content' }, { heading: 'Related heading' }] }
+    expect(sectionAnchors(post, GUIDE_PAGE_IDS).map((a) => a.id)).toEqual(['main-content-2', 'related-heading-2'])
   })
 })
 

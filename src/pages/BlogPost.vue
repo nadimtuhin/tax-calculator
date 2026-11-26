@@ -124,9 +124,7 @@
 <script>
 import { BLOG_POSTS, getBlogPost } from '@/data/blogPosts'
 import { blogPostMeta } from '@/router/meta'
-import { readingTimeLabel, relatedGuides, sectionAnchors, splitListMarker } from '@/lib/blogGuide'
-
-const SOURCES_ID = 'sources-heading'
+import { GUIDE_PAGE_IDS, SOURCES_ID, readingTimeLabel, relatedGuides, sectionAnchors, splitListMarker } from '@/lib/blogGuide'
 
 export default {
   name: 'BlogPost',
@@ -147,7 +145,7 @@ export default {
       return getBlogPost(this.slug || this.$route.params.slug)
     },
     anchors() {
-      return sectionAnchors(this.post, [SOURCES_ID, 'related-heading', 'toc-rail-title'])
+      return sectionAnchors(this.post, GUIDE_PAGE_IDS)
     },
     tocItems() {
       return [...this.anchors, { id: SOURCES_ID, heading: 'Official Sources' }]
@@ -186,6 +184,9 @@ export default {
   },
   mounted() {
     this.observeHeadings()
+    // The client render replaces the prerendered page, so the browser's own jump to a shared #section is lost.
+    const target = this.$route.hash && document.getElementById(decodeURIComponent(this.$route.hash.slice(1)))
+    if (target) target.scrollIntoView({ block: 'start' })
   },
   beforeUnmount() {
     if (this.observer) this.observer.disconnect()
@@ -217,7 +218,8 @@ export default {
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       heading.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
       heading.focus({ preventScroll: true })
-      this.$router.replace({ hash: `#${id}` }).catch(() => {})
+      // Not a router navigation: the global afterEach would reset the guide title to the generic blog one.
+      window.history.replaceState(window.history.state, '', `#${id}`)
       this.activeId = id
     },
     listMarker(paragraph) {

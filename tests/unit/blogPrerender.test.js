@@ -2,7 +2,7 @@
 // The build-time prerender has no document or window; the guide extras must still render.
 import { render } from '@/entry-server'
 import { BLOG_POSTS } from '@/data/blogPosts'
-import { readingTimeLabel, sectionAnchors } from '@/lib/blogGuide'
+import { GUIDE_PAGE_IDS, readingTimeLabel, sectionAnchors } from '@/lib/blogGuide'
 
 describe('prerendered blog HTML (no DOM)', () => {
   test('/blog renders the guide count and each card reading time', async () => {
@@ -19,7 +19,7 @@ describe('prerendered blog HTML (no DOM)', () => {
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1)
     expect(html).toContain('In this guide')
     expect(html).toContain(readingTimeLabel(post))
-    sectionAnchors(post).forEach(({ id }) => {
+    sectionAnchors(post, GUIDE_PAGE_IDS).forEach(({ id }) => {
       expect(html).toContain(`id="${id}"`)
       expect(html).toContain(`href="#${id}"`)
     })

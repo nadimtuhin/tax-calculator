@@ -2,6 +2,10 @@
 
 export const WORDS_PER_MINUTE = 200
 
+export const SOURCES_ID = 'sources-heading'
+// Ids already used on a guide page (app shell, sources, related, TOC rail); section anchors must avoid them.
+export const GUIDE_PAGE_IDS = ['app', 'tax-app', 'main-content', SOURCES_ID, 'related-heading', 'toc-rail-title']
+
 const countWords = (text) =>
   text.split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length
 
