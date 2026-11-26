@@ -37,16 +37,37 @@ function withHead(template, { title, description }, url) {
 }
 
 const template = await readFile(join(dist, 'index.html'), 'utf8')
+const manifestDir = join(dist, '.vite')
+const manifest = JSON.parse(await readFile(join(manifestDir, 'manifest.json'), 'utf8'))
+
+// Pages are lazy chunks, so their CSS is not in index.html; without it the prerendered page is
+// unstyled until JS runs. Vite's loader skips a stylesheet that is already linked.
+function pageStylesheets(path) {
+  const page = path === '/blog' ? 'Blog' : path.startsWith('/blog/') ? 'BlogPost' : path === '/referrals' ? 'Referrals' : null
+  const chunk = page && manifest[`src/pages/${page}.vue`]
+  if (!chunk) throw new Error(`prerender: no manifest chunk for ${path}`)
+  return [...chunkCss(chunk)].map((file) => `<link rel="stylesheet" crossorigin href="/${file}">`).join('')
+}
+
+// A chunk's own CSS plus that of the shared chunks it imports; the entry's CSS is in index.html already.
+function chunkCss(chunk, files = new Set(), seen = new Set()) {
+  if (!chunk || chunk.isEntry || seen.has(chunk)) return files
+  seen.add(chunk)
+  for (const file of chunk.css || []) files.add(file)
+  for (const key of chunk.imports || []) chunkCss(manifest[key], files, seen)
+  return files
+}
 
 for (const route of PRERENDER_ROUTES) {
   const url = `${CANONICAL_ORIGIN}${route.path}`
   const body = await render(route.path)
-  const html = replaceOnce(
+  let html = replaceOnce(
     withHead(template, route.meta, url),
     '<div id="app"></div>',
     () => `<div id="app">${body}</div>`,
     '<div id="app"></div>'
   )
+  html = replaceOnce(html, '</head>', () => `${pageStylesheets(route.path)}</head>`, '</head>')
   // /x is served from x/index.html by Netlify and Vercel, and from x.html by `vite preview`
   // (its SPA fallback skips directory indexes without a trailing slash). Real files win over
   // the SPA fallback on all three.
@@ -67,3 +88,5 @@ await writeFile(join(dist, 'sitemap.xml'), sitemap)
 console.log(`sitemap.xml: ${sitemapPaths.length} urls`)
 
 await rm(ssrDir, { recursive: true, force: true })
+// Build-time input only; keep it out of the deployed site.
+await rm(manifestDir, { recursive: true, force: true })

@@ -184,4 +184,14 @@ test.describe('smoke without JavaScript (prerendered HTML)', () => {
     await expect(page.locator('.article-meta')).toContainText(/\d+ min read/);
     await expect(page.locator('.related-link')).toHaveCount(2);
   });
+
+  test('a guide links its page stylesheet, so both tables of contents are styled before JS', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/blog/section-78-investment-rebate-bangladesh');
+    await expect(page.locator('head link[rel="stylesheet"][href^="/assets/BlogPost-"][href$=".css"]')).toHaveCount(1);
+    await expect(page.locator('.toc-rail')).toHaveCSS('display', 'none');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator('.toc-rail')).toHaveCSS('position', 'sticky');
+    await expect(page.locator('.toc-inline')).toHaveCSS('display', 'none');
+  });
 });
