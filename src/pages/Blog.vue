@@ -10,10 +10,31 @@
       </header>
 
       <section class="disclaimer-banner" role="region" aria-label="Legal disclaimer">
-        <div class="disclaimer-icon" aria-hidden="true">ℹ</div>
+        <svg class="disclaimer-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
         <div class="disclaimer-text">
           <strong>Not formal tax advice:</strong> These guides are educational materials designed to explain how Bangladesh tax provisions function. Tax laws and statutory circulars change; always consult a licensed tax lawyer or verified NBR publications for your specific return.
         </div>
+      </section>
+
+      <p class="guides-count">{{ guideCountLabel }}</p>
+
+      <section class="posts-grid" aria-label="List of tax guides">
+        <article
+          v-for="post in posts"
+          :key="post.slug"
+          class="post-card"
+        >
+          <h2 class="post-title">
+            <router-link :to="`/blog/${post.slug}`" class="post-title-link" :aria-label="`Read Guide: ${post.title}`">
+              {{ post.title }}
+            </router-link>
+          </h2>
+          <p class="post-excerpt">{{ post.excerpt }}</p>
+          <footer class="card-footer">
+            <span class="post-meta">{{ post.readingTime }}</span>
+            <span class="read-more" aria-hidden="true">Read guide <span class="read-more-arrow">→</span></span>
+          </footer>
+        </article>
       </section>
 
       <!-- Calculator Callout -->
@@ -26,40 +47,24 @@
           Open Tax Calculator <span aria-hidden="true">→</span>
         </router-link>
       </section>
-
-      <section class="posts-grid" aria-label="List of tax guides">
-        <article
-          v-for="post in posts"
-          :key="post.slug"
-          class="post-card"
-        >
-          <header class="card-header">
-            <h2>
-              <router-link :to="`/blog/${post.slug}`" class="post-title-link">
-                {{ post.title }}
-              </router-link>
-            </h2>
-          </header>
-          <p class="post-excerpt">{{ post.excerpt }}</p>
-          <footer class="card-footer">
-            <router-link :to="`/blog/${post.slug}`" class="read-more-btn" :aria-label="`Read Guide: ${post.title}`">
-              Read Guide <span aria-hidden="true">→</span>
-            </router-link>
-          </footer>
-        </article>
-      </section>
     </div>
   </div>
 </template>
 
 <script>
 import { BLOG_POSTS } from '@/data/blogPosts'
+import { readingTimeLabel } from '@/lib/blogGuide'
 
 export default {
   name: 'Blog',
   data() {
     return {
-      posts: BLOG_POSTS
+      posts: BLOG_POSTS.map((post) => ({ ...post, readingTime: readingTimeLabel(post) }))
+    }
+  },
+  computed: {
+    guideCountLabel() {
+      return `${this.posts.length} ${this.posts.length === 1 ? 'guide' : 'guides'}`
     }
   }
 }
@@ -69,7 +74,7 @@ export default {
 .blog-page {
   background-color: var(--bg);
   min-height: calc(100vh - 64px);
-  padding: var(--space-5) var(--space-4) var(--space-6);
+  padding: var(--space-6) var(--space-4) calc(var(--space-6) * 2);
 }
 
 .blog-container {
@@ -78,7 +83,7 @@ export default {
 }
 
 .blog-hero {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .hero-eyebrow {
@@ -92,111 +97,59 @@ export default {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .blog-hero h1 {
-  font-size: clamp(1.75rem, 3.5vw, 2.35rem);
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   color: var(--text);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .hero-subtitle {
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
   color: var(--text-muted);
-  line-height: 1.5;
-  max-width: 680px;
+  line-height: 1.55;
+  max-width: 62ch;
 }
 
+/* A quiet note, not a banner: it must stay visible but not outweigh the guides. */
 .disclaimer-banner {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  box-shadow: var(--shadow);
+  gap: var(--space-2);
+  max-width: 82ch;
+  margin-bottom: var(--space-6);
+  color: var(--text-muted);
 }
 
 .disclaimer-icon {
-  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 1px;
   color: var(--accent);
-  font-size: var(--text-lg);
-  line-height: 1;
 }
 
 .disclaimer-text {
   font-size: var(--text-sm);
-  color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .disclaimer-text strong {
   color: var(--text);
 }
 
-.calculator-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-4) var(--space-5);
-  margin-bottom: var(--space-5);
-  box-shadow: var(--shadow);
-}
-
-.calculator-banner-content h2 {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: var(--space-1);
-}
-
-.calculator-banner-content p {
-  font-size: var(--text-sm);
+.guides-count {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
   color: var(--text-muted);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.calculator-banner-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 40px;
-  padding: 0 var(--space-4);
-  background: var(--accent);
-  color: var(--on-accent);
-  border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
 }
 
-.calculator-banner-btn:hover,
-.calculator-banner-btn:focus-visible {
-  background: var(--accent-hover);
-}
-
-@media (max-width: 640px) {
-  .calculator-banner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-/* ponytail: CSS grid 3-column on desktop and single column on mobile. Upgrade to masonry if varying excerpt length distorts layout. */
 .posts-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -212,10 +165,12 @@ export default {
 @media (min-width: 960px) {
   .posts-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
   }
 }
 
 .post-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color: var(--surface);
@@ -232,26 +187,12 @@ export default {
   transform: translateY(-2px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .post-card {
-    transition: none;
-  }
-
-  .post-card:hover {
-    transform: none;
-  }
-}
-
-.card-header {
+.post-title {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
   margin-bottom: var(--space-2);
-}
-
-.post-card h2 {
-  font-size: 1.125rem;
-  font-weight: 650;
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-  margin: 0;
 }
 
 .post-title-link {
@@ -259,46 +200,139 @@ export default {
   text-decoration: none;
 }
 
-.post-title-link:hover,
-.post-title-link:focus-visible {
+/* The title link is the card's only link; this stretches its hit area over the whole card. */
+.post-title-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.post-card:hover .post-title-link {
   color: var(--accent);
-  text-decoration: underline;
+}
+
+@supports selector(:has(*)) {
+  .post-title-link:focus-visible {
+    outline: none;
+  }
+
+  .post-card:has(.post-title-link:focus-visible) {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
 }
 
 .post-excerpt {
   color: var(--text-muted);
   font-size: var(--text-sm);
-  line-height: 1.55;
+  line-height: 1.6;
   margin-bottom: var(--space-5);
   flex-grow: 1;
 }
 
 .card-footer {
   display: flex;
-  justify-content: flex-start;
-  margin-top: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
 }
 
-.read-more-btn {
+.post-meta {
+  color: var(--text-muted);
+}
+
+.read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.read-more-arrow {
+  transition: transform 0.15s;
+}
+
+.post-card:hover .read-more-arrow {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-card,
+  .read-more-arrow {
+    transition: none;
+  }
+
+  .post-card:hover,
+  .post-card:hover .read-more-arrow {
+    transform: none;
+  }
+}
+
+.calculator-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+}
+
+.calculator-banner-content h2 {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.calculator-banner-content p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.calculator-banner-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   min-height: 44px;
   padding: 0 var(--space-4);
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
+  background: var(--accent);
+  color: var(--on-accent);
   border-radius: var(--radius-sm);
-  color: var(--text);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
 }
 
-.read-more-btn:hover,
-.read-more-btn:focus-visible {
-  background: var(--accent);
-  border-color: var(--accent);
+.calculator-banner-btn:hover,
+.calculator-banner-btn:focus-visible {
+  background: var(--accent-hover);
   color: var(--on-accent);
+}
+
+@media (max-width: 640px) {
+  .blog-page {
+    padding-top: var(--space-5);
+  }
+
+  .calculator-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calculator-banner-btn {
+    justify-content: center;
+  }
 }
 </style>
